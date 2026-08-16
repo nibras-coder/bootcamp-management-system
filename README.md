@@ -78,3 +78,20 @@ To get a local copy up and running, follow these simple steps.
 ```bash
 git clone <repository-url>
 cd <project-folder>
+```
+### 2. Setup the Backend
+Open a terminal and navigate to your backend folder to start the API:
+
+```bash
+cd backend
+npm install
+npm run dev
+```
+### 3. Setup the Frontend
+Open a new terminal window and navigate to your frontend folder to start the React app:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
