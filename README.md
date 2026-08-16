@@ -76,8 +76,8 @@ To get a local copy up and running, follow these simple steps.
 
 ### 1. Clone the repository
 ```bash
-git clone <repository-url>
-cd <project-folder>
+git clone https://github.com/nibras-coder/bootcamp-management-system.git
+cd bootcamp-management-system
 ```
 ### 2. Setup the Backend
 Open a terminal and navigate to your backend folder to start the API:
