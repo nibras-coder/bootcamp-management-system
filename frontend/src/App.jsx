@@ -1,43 +1,30 @@
 import React from "react";
-import AdminLayout from "./components/AdminLayout";
-import UsersTable from "./components/UsersTable";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import AdminDashboard from "./pages/AdminDashboard";
 
 function App() {
   return (
-    <AdminLayout>
-      {/* Top Statistic Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <h3 className="text-bootcamp-textLight font-bold uppercase tracking-wider text-xs">
-            Total Students
-          </h3>
-          <p className="text-4xl text-bootcamp-textDark font-extrabold mt-2">
-            124
-          </p>
-        </div>
+    <BrowserRouter>
+      <Routes>
 
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <h3 className="text-bootcamp-textLight font-bold uppercase tracking-wider text-xs">
-            Active Batches
-          </h3>
-          <p className="text-4xl text-bootcamp-textDark font-extrabold mt-2">
-            8
-          </p>
-        </div>
+        {/* Login page */}
+        <Route path="/" element={<Login />} />
+        <Route path="/login" element={<Login />} />
 
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <h3 className="text-bootcamp-textLight font-bold uppercase tracking-wider text-xs">
-            Avg. Attendance
-          </h3>
-          <p className="text-4xl text-bootcamp-textDark font-extrabold mt-2">
-            92%
-          </p>
-        </div>
-      </div>
+        {/* Register page */}
+        <Route path="/register" element={<Register />} />
 
-      {/* Users Table */}
-      <UsersTable />
-    </AdminLayout>
+        {/* Dashboard */}
+        <Route path="/dashboard" element={<AdminDashboard />} />
+
+        {/* Any unknown URL goes back to Login */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+
+      </Routes>
+    </BrowserRouter>
   );
 }
 
