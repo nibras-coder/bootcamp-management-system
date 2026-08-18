@@ -1,13 +1,12 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import API from '../api/axios';
+import React, { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import API from "../api/axios";
 import Button from "../components/Button";
 import logo from "../assets/logo.png";
 
-
 const Login = () => {
-  const [formData, setFormData] = useState({ email: '', password: '' });
-  const [error, setError] = useState('');
+  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -17,19 +16,19 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
 
     try {
-      const response = await API.post('/auth/login', formData);
+      const response = await API.post("/auth/login", formData);
 
       if (response.data.token) {
-        localStorage.setItem('token', response.data.token);
+        localStorage.setItem("token", response.data.token);
       }
 
-      navigate('/dashboard');
+      navigate("/dashboard");
     } catch (err) {
-      setError(err.response?.data?.message || 'Invalid email or password');
+      setError(err.response?.data?.message || "Invalid email or password");
     } finally {
       setLoading(false);
     }
@@ -41,21 +40,35 @@ const Login = () => {
         {/* Left Form Panel */}
         <div className="w-full md:w-1/2 p-8 flex flex-col justify-center">
           <div className="mb-6 flex items-center gap-3">
-            <img src={logo} alt="ASTU MSJ Logo" className="w-12 h-12 object-contain" />
+            <img
+              src={logo}
+              alt="ASTU MSJ Logo"
+              className="w-12 h-12 object-contain"
+            />
             <div>
               <h1 className="text-lg font-bold text-gray-800">ASTU MSJ</h1>
               <p className="text-xs text-gray-500">Bootcamp System</p>
             </div>
           </div>
 
-          <h2 className="text-2xl font-bold text-gray-800 mb-1">Welcome Back!</h2>
-          <p className="text-xs text-gray-500 mb-6">Login to continue to your account</p>
+          <h2 className="text-2xl font-bold text-gray-800 mb-1">
+            Welcome Back!
+          </h2>
+          <p className="text-xs text-gray-500 mb-6">
+            Login to continue to your account
+          </p>
 
-          {error && <div className="mb-4 text-xs text-red-600 bg-red-50 p-3 rounded-lg">{error}</div>}
+          {error && (
+            <div className="mb-4 text-xs text-red-600 bg-red-50 p-3 rounded-lg">
+              {error}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold uppercase text-gray-600 mb-1">Email</label>
+              <label className="block text-xs font-semibold uppercase text-gray-600 mb-1">
+                Email
+              </label>
               <input
                 type="email"
                 name="email"
@@ -68,7 +81,9 @@ const Login = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold uppercase text-gray-600 mb-1">Password</label>
+              <label className="block text-xs font-semibold uppercase text-gray-600 mb-1">
+                Password
+              </label>
               <input
                 type="password"
                 name="password"
@@ -82,19 +97,30 @@ const Login = () => {
 
             <div className="flex items-center justify-between text-xs">
               <label className="flex items-center text-gray-600">
-                <input type="checkbox" className="mr-2 rounded border-gray-300 text-teal-600 focus:ring-teal-500" />
+                <input
+                  type="checkbox"
+                  className="mr-2 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
+                />
                 Remember me
               </label>
-              <a href="#forgot" className="text-teal-600 hover:underline">Forgot password?</a>
+              <a href="#forgot" className="text-teal-600 hover:underline">
+                Forgot password?
+              </a>
             </div>
 
             <Button type="submit" disabled={loading}>
-              {loading ? 'Logging in...' : 'Login'}
+              {loading ? "Logging in..." : "Login"}
             </Button>
           </form>
 
           <p className="mt-6 text-center text-xs text-gray-500">
-            Don't have an account? <Link to="/register" className="text-teal-600 font-medium hover:underline">Register here</Link>
+            Don't have an account?{" "}
+            <Link
+              to="/register"
+              className="text-teal-600 font-medium hover:underline"
+            >
+              Register here
+            </Link>
           </p>
         </div>
 
@@ -107,7 +133,9 @@ const Login = () => {
               className="w-full h-full object-contain rounded-full"
             />
           </div>
-          <h3 className="text-xl font-bold mb-2">Empowering Future Developers</h3>
+          <h3 className="text-xl font-bold mb-2">
+            Empowering Future Developers
+          </h3>
           <p className="text-xs text-teal-200">Learn. Build. Grow.</p>
         </div>
       </div>
