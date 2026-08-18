@@ -80,6 +80,7 @@ const AdminLayout = ({ children }) => {
             className="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-red-500/20 text-gray-300 hover:text-red-400 text-lg font-medium transition-all"
           >
             <LuLogOut className="text-2xl" />
+
             <span>Logout</span>
           </button>
         </div>

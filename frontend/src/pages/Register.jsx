@@ -78,7 +78,7 @@ const Register = () => {
 
       setSuccess(
         response.data?.message ||
-          "Registration successful! You can now log in."
+          "Registration successful! You can now log in.",
       );
 
       setFormData({
@@ -96,17 +96,14 @@ const Register = () => {
       console.error("Registration error:", err);
 
       const backendMessage =
-        err.response?.data?.message ||
-        err.response?.data?.error;
+        err.response?.data?.message || err.response?.data?.error;
 
       if (err.response?.status === 400) {
         setError(backendMessage || "Invalid registration information.");
       } else if (err.response?.status === 409) {
         setError("An account with this email already exists.");
       } else {
-        setError(
-          backendMessage || "Registration failed. Please try again."
-        );
+        setError(backendMessage || "Registration failed. Please try again.");
       }
     } finally {
       setLoading(false);
@@ -116,10 +113,8 @@ const Register = () => {
   return (
     <div className="min-h-screen bg-[#f4f7f8] flex items-center justify-center p-4">
       <div className="w-full max-w-5xl bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row">
-
         {/* LEFT SIDE */}
         <div className="w-full md:w-1/2 px-8 py-10 md:px-12 lg:px-16 flex flex-col justify-center">
-
           {/* Logo */}
           <div className="flex items-center gap-3 mb-7">
             <img
@@ -129,21 +124,15 @@ const Register = () => {
             />
 
             <div>
-              <h1 className="text-lg font-bold text-gray-800">
-                ASTU MSJ
-              </h1>
+              <h1 className="text-lg font-bold text-gray-800">ASTU MSJ</h1>
 
-              <p className="text-xs text-gray-500">
-                Bootcamp System
-              </p>
+              <p className="text-xs text-gray-500">Bootcamp System</p>
             </div>
           </div>
 
           {/* Heading */}
           <div className="mb-6">
-            <h2 className="text-3xl font-bold text-gray-800">
-              Create Account
-            </h2>
+            <h2 className="text-3xl font-bold text-gray-800">Create Account</h2>
 
             <p className="text-sm text-gray-500 mt-2">
               Register using your ASTU university email
@@ -165,7 +154,6 @@ const Register = () => {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-
             {/* Name */}
             <div>
               <label
@@ -270,9 +258,7 @@ const Register = () => {
 
                 <button
                   type="button"
-                  onClick={() =>
-                    setShowConfirmPassword((prev) => !prev)
-                  }
+                  onClick={() => setShowConfirmPassword((prev) => !prev)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500 hover:text-teal-700"
                 >
                   {showConfirmPassword ? "Hide" : "Show"}
@@ -304,18 +290,17 @@ const Register = () => {
 
         {/* RIGHT SIDE */}
         <div className="hidden md:flex md:w-1/2 bg-gradient-to-br from-teal-700 via-teal-800 to-teal-950 text-white relative overflow-hidden items-center justify-center p-12">
-
           <div className="absolute -top-20 -right-20 w-60 h-60 rounded-full bg-white/5" />
           <div className="absolute -bottom-24 -left-20 w-72 h-72 rounded-full bg-white/5" />
 
           <div className="relative z-10 text-center max-w-sm">
-              <div className="w-32 h-32 mx-auto mb-7 rounded-full overflow-hidden border-2 border-white/30 bg-white flex items-center justify-center">
-                <img
-                  src={logo}
-                  alt="ASTU Muslim Students Jemea"
-                  className="w-full h-full object-cover"
-                />
-              </div>
+            <div className="w-32 h-32 mx-auto mb-7 rounded-full overflow-hidden border-2 border-white/30 bg-white flex items-center justify-center">
+              <img
+                src={logo}
+                alt="ASTU Muslim Students Jemea"
+                className="w-full h-full object-cover"
+              />
+            </div>
 
             <p
               className="text-4xl leading-relaxed font-serif mb-4"
@@ -329,9 +314,7 @@ const Register = () => {
               "And say: My Lord, increase me in knowledge."
             </p>
 
-            <h3 className="text-2xl font-bold mb-3">
-              Learn. Build. Grow.
-            </h3>
+            <h3 className="text-2xl font-bold mb-3">Learn. Build. Grow.</h3>
 
             <p className="text-sm text-teal-100">
               Join the ASTU MSJ Bootcamp community.
