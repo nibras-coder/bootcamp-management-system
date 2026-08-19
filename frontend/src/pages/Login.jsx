@@ -1,118 +1,129 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import API from '../api/axios';
-import Button from "../components/Button";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import calligraphy from "../assets/calligraphy.jpg";
 import logo from "../assets/logo.png";
 
-
-const Login = () => {
-  const [formData, setFormData] = useState({ email: '', password: '' });
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+function Login() {
   const navigate = useNavigate();
-
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-
-    try {
-      const response = await API.post('/auth/login', formData);
-
-      if (response.data.token) {
-        localStorage.setItem('token', response.data.token);
-      }
-
-      navigate('/dashboard');
-    } catch (err) {
-      setError(err.response?.data?.message || 'Invalid email or password');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-      <div className="bg-white shadow-xl rounded-2xl overflow-hidden flex w-full max-w-4xl">
-        {/* Left Form Panel */}
-        <div className="w-full md:w-1/2 p-8 flex flex-col justify-center">
-          <div className="mb-6 flex items-center gap-3">
-            <img src={logo} alt="ASTU MSJ Logo" className="w-12 h-12 object-contain" />
-            <div>
-              <h1 className="text-lg font-bold text-gray-800">ASTU MSJ</h1>
-              <p className="text-xs text-gray-500">Bootcamp System</p>
-            </div>
-          </div>
+    <main className="auth-page">
+      <div className="auth-shell">
 
-          <h2 className="text-2xl font-bold text-gray-800 mb-1">Welcome Back!</h2>
-          <p className="text-xs text-gray-500 mb-6">Login to continue to your account</p>
+        <div className="auth-main">
+          <h1>Welcome back</h1>
 
-          {error && <div className="mb-4 text-xs text-red-600 bg-red-50 p-3 rounded-lg">{error}</div>}
+          <p className="auth-subtitle">
+            Log in to continue your bootcamp journey.
+          </p>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-xs font-semibold uppercase text-gray-600 mb-1">Email</label>
+          <form
+            className="auth-form"
+            onSubmit={(e) => {
+              e.preventDefault();
+
+              // We will connect this to the backend later.
+              console.log("Login submitted");
+            }}
+          >
+            <label className="field">
+              <span>Email</span>
+
               <input
                 type="email"
-                name="email"
                 required
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="Enter your email"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600 text-sm"
+                placeholder="you@example.com"
               />
-            </div>
+            </label>
 
-            <div>
-              <label className="block text-xs font-semibold uppercase text-gray-600 mb-1">Password</label>
-              <input
-                type="password"
-                name="password"
-                required
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="Enter your password"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600 text-sm"
-              />
-            </div>
+            <label className="field">
+              <span>Password</span>
 
-            <div className="flex items-center justify-between text-xs">
-              <label className="flex items-center text-gray-600">
-                <input type="checkbox" className="mr-2 rounded border-gray-300 text-teal-600 focus:ring-teal-500" />
+              <div className="password">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  required
+                  placeholder="Enter your password"
+                />
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setShowPassword((value) => !value)
+                  }
+                >
+                  {showPassword ? "Hide" : "Show"}
+                </button>
+              </div>
+            </label>
+
+            <div className="form-options">
+              <label>
+                <input type="checkbox" />
                 Remember me
               </label>
-              <a href="#forgot" className="text-teal-600 hover:underline">Forgot password?</a>
+
+              <button
+                type="button"
+                className="text-button"
+                onClick={() => navigate("/forgot-password")}
+              >
+                Forgot password?
+              </button>
             </div>
 
-            <Button type="submit" disabled={loading}>
-              {loading ? 'Logging in...' : 'Login'}
-            </Button>
+            <button className="btn primary" type="submit">
+              Login
+            </button>
+
+            <p className="auth-switch">
+              Don't have an account?{" "}
+
+              <button
+                type="button"
+                className="link-button"
+                onClick={() => navigate("/register")}
+              >
+                Register here
+              </button>
+            </p>
           </form>
-
-          <p className="mt-6 text-center text-xs text-gray-500">
-            Don't have an account? <Link to="/register" className="text-teal-600 font-medium hover:underline">Register here</Link>
-          </p>
         </div>
 
-        {/* Right Calligraphy & Branding Panel */}
-        <div className="hidden md:flex md:w-1/2 bg-gradient-to-br from-teal-700 to-teal-900 text-white p-8 flex-col items-center justify-center text-center">
-          <div className="w-28 h-28 mb-6 rounded-full overflow-hidden border-2 border-white/30 bg-white flex items-center justify-center p-0.002">
-            <img
-              src={logo}
-              alt="ASTU MSJ Calligraphy"
-              className="w-full h-full object-contain rounded-full"
-            />
+        <div className="auth-art">
+          <img
+            src={calligraphy}
+            alt=""
+          />
+
+          <div className="art-overlay"></div>
+
+          <div className="auth-brand">
+            <button
+              className="logo"
+              type="button"
+              onClick={() => navigate("/")}
+            >
+              <img
+                src={logo}
+                alt="ASTU MSJ logo"
+              />
+
+              <span>
+                ASTU MSJ <b>Bootcamp</b>
+              </span>
+            </button>
+
+            <span className="auth-home-hint">
+              Back to home
+            </span>
           </div>
-          <h3 className="text-xl font-bold mb-2">Empowering Future Developers</h3>
-          <p className="text-xs text-teal-200">Learn. Build. Grow.</p>
         </div>
+
       </div>
-    </div>
+    </main>
   );
-};
+}
 
 export default Login;
