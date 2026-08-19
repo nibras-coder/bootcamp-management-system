@@ -216,51 +216,154 @@ function LoginPage() {
 }
 
 function RegisterPage() {
-  const [show,setShow]=useState(false);
-  const [name,setName]=useState("");
-  const [email,setEmail]=useState("");
-  const [password,setPassword]=useState("");
-  const [confirmPassword,setConfirmPassword]=useState("");
-  const [track,setTrack]=useState("");
-  const [agreed,setAgreed]=useState(false);
-  const [error,setError]=useState("");
-  const [loading,setLoading]=useState(false);
+  const [show, setShow] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [agreed, setAgreed] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   async function submit(e) {
     e.preventDefault();
     setError("");
-    if (password !== confirmPassword) { setError("Passwords do not match."); return; }
-    if (!agreed) { setError("Please agree to the Terms and Conditions."); return; }
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    if (!agreed) {
+      setError("Please agree to the Terms and Conditions.");
+      return;
+    }
+
     setLoading(true);
+
     try {
-      const {data}=await API.post("/auth/register",{
-        name,email,role:"student",password,confirmPassword,track
+      const { data } = await API.post("/auth/register", {
+        name,
+        email,
+        role: "student",
+        password,
+        confirmPassword
       });
-      localStorage.setItem("token",data.token);
-      localStorage.setItem("user",JSON.stringify(data.user));
+
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+
       go("/");
     } catch (err) {
-      setError(err.response?.data?.message || "Unable to create your account.");
+      setError(
+        err.response?.data?.message ||
+        "Unable to create your account."
+      );
     } finally {
       setLoading(false);
     }
   }
 
-  return <AuthShell title="Create your account" subtitle="Join the bootcamp today and start your track.">
-    <form className="auth-form" onSubmit={submit}>
-      <Field label="Full name"><input required value={name} onChange={e=>setName(e.target.value)} placeholder="Enter your full name"/></Field>
-      <Field label="Email"><input required type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@example.com"/></Field>
-      <div className="two-inputs">
-        <Field label="Password"><div className="password"><input required minLength="6" type={show?"text":"password"} value={password} onChange={e=>setPassword(e.target.value)} placeholder="Create a password"/><button type="button" onClick={()=>setShow(v=>!v)}>{show?"Hide":"Show"}</button></div></Field>
-        <Field label="Confirm password"><input required minLength="6" type="password" value={confirmPassword} onChange={e=>setConfirmPassword(e.target.value)} placeholder="Confirm your password"/></Field>
-      </div>
-      <Field label="Track"><select required value={track} onChange={e=>setTrack(e.target.value)}><option value="" disabled>Select your track</option>{tracks.map(t=><option value={t.slug} key={t.slug}>{t.name}</option>)}</select></Field>
-      <label className="terms"><input type="checkbox" checked={agreed} onChange={e=>setAgreed(e.target.checked)}/> <span>I agree to the <b>Terms and Conditions</b></span></label>
-      {error && <p className="auth-error">{error}</p>}
-      <Button>{loading ? "Creating account..." : "Register"}</Button>
-      <p className="auth-switch">Already have an account? <a href="/login" onClick={e=>{e.preventDefault();go('/login')}}>Login here</a></p>
-    </form>
-  </AuthShell>;
+  return (
+    <AuthShell
+      title="Create your account"
+      subtitle="Join the bootcamp today and start your journey."
+    >
+      <form className="auth-form" onSubmit={submit}>
+
+        <Field label="Full name">
+          <input
+            required
+            value={name}
+            onChange={e => setName(e.target.value)}
+            placeholder="Enter your full name"
+          />
+        </Field>
+
+        <Field label="Email">
+          <input
+            required
+            type="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            placeholder="you@example.com"
+          />
+        </Field>
+
+        <div className="two-inputs">
+
+          <Field label="Password">
+            <div className="password">
+              <input
+                required
+                minLength="6"
+                type={show ? "text" : "password"}
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder="Create a password"
+              />
+
+              <button
+                type="button"
+                onClick={() => setShow(v => !v)}
+              >
+                {show ? "Hide" : "Show"}
+              </button>
+            </div>
+          </Field>
+
+          <Field label="Confirm password">
+            <input
+              required
+              minLength="6"
+              type="password"
+              value={confirmPassword}
+              onChange={e => setConfirmPassword(e.target.value)}
+              placeholder="Confirm your password"
+            />
+          </Field>
+
+        </div>
+
+        <label className="terms">
+          <input
+            type="checkbox"
+            checked={agreed}
+            onChange={e => setAgreed(e.target.checked)}
+          />
+
+          <span>
+            I agree to the <b>Terms and Conditions</b>
+          </span>
+        </label>
+
+        {error && (
+          <p className="auth-error">
+            {error}
+          </p>
+        )}
+
+        <Button>
+          {loading ? "Creating account..." : "Register"}
+        </Button>
+
+        <p className="auth-switch">
+          Already have an account?{" "}
+
+          <a
+            href="/login"
+            onClick={e => {
+              e.preventDefault();
+              go("/login");
+            }}
+          >
+            Login here
+          </a>
+        </p>
+
+      </form>
+    </AuthShell>
+  );
 }
 
 function ForgotPage() {
