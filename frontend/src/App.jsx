@@ -1,8 +1,24 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useState, useEffect } from "react";
+import { BrowserRouter, Routes, Route, Navigate, Outlet, useNavigate, useLocation } from "react-router-dom";
 import "./style.css";
 import API from "./api/axios";
-import AdminDashboard from "./pages/AdminDashboard";
 
+// Page Imports
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import AdminLayout from "./layouts/AdminLayout";
+import AdminDashboard from "./pages/AdminDashboard";
+import BatchesPage from "./pages/BatchesPage";
+import MentorsPage from "./pages/MentorsPage";
+import StudentsPage from "./pages/StudentsPage";
+import AttendancePage from "./pages/AttendancePage";
+import AssignmentsPage from "./pages/AssignmentsPage";
+import AnnouncementsPage from "./pages/AnnouncementsPage";
+import ReportsPage from "./pages/ReportsPage";
+import SettingsPage from "./pages/SettingsPage";
+import AdminRoute from "./components/AdminRoute";
+
+// --- DATA ARRAYS ---
 const tracks = [
   { slug: "web", icon: "</>", name: "Web Development", desc: "HTML, CSS, JavaScript, React and Node.js.", details: "Build real web apps from static pages to full stack projects, with weekly code reviews.", weeks: 3, level: "Beginner friendly" },
   { slug: "mobile", icon: "▣", name: "Mobile Development", desc: "Flutter, Dart and modern mobile tools.", details: "Ship your first Android app: layouts, state, APIs and publishing basics.", weeks: 3, level: "Beginner friendly" },
@@ -45,35 +61,43 @@ const faqs = [
 
 const navItems = [["/", "Home"], ["/tracks", "Tracks"], ["/mentors", "Mentors"], ["/about", "About"], ["/contact", "Contact"]];
 
-function go(path) {
-  window.history.pushState({}, "", path);
-  window.dispatchEvent(new PopStateEvent("popstate"));
-  window.scrollTo({ top: 0, behavior: "instant" });
-}
-
+// --- REUSABLE COMPONENTS ---
 function Logo({ size = 42 }) {
-  return <button className="logo" onClick={() => go("/")} aria-label="ASTU MSJ Bootcamp home">
-    <img src="/assets/msj-logo.jpg" alt="ASTU Muslim Students Jemea logo" style={{ width: size, height: size }} />
-    <span>ASTU MSJ <b>Bootcamp</b></span>
-  </button>;
+  const navigate = useNavigate();
+  return (
+    <button className="logo" onClick={() => navigate("/")} aria-label="ASTU MSJ Bootcamp home">
+      <img src="/assets/msj-logo.jpg" alt="ASTU Muslim Students Jemea logo" style={{ width: size, height: size }} />
+      <span>ASTU MSJ <b>Bootcamp</b></span>
+    </button>
+  );
 }
 
 function Header() {
   const [open, setOpen] = useState(false);
-  useEffect(() => { const close = () => setOpen(false); window.addEventListener("popstate", close); return () => window.removeEventListener("popstate", close); }, []);
-  return <header className="header">
-    <div className="nav container">
-      <Logo />
-      <nav className={open ? "nav-links open" : "nav-links"}>
-        {navItems.map(([path, label]) => <a key={path} href={path} className={window.location.pathname === path ? "active" : ""} onClick={(e) => { e.preventDefault(); go(path); setOpen(false); }}>{label}</a>)}
-      </nav>
-      <div className="nav-actions">
-        <button className="ghost-btn" onClick={() => go("/login")}>Login</button>
-        <button className="small-btn" onClick={() => go("/register")}>Register</button>
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => { setOpen(false); }, [location.pathname]);
+
+  return (
+    <header className="header">
+      <div className="nav container">
+        <Logo />
+        <nav className={open ? "nav-links open" : "nav-links"}>
+          {navItems.map(([path, label]) => (
+            <a key={path} href={path} className={location.pathname === path ? "active" : ""} onClick={(e) => { e.preventDefault(); navigate(path); }}>
+              {label}
+            </a>
+          ))}
+        </nav>
+        <div className="nav-actions">
+          <button className="ghost-btn" onClick={() => navigate("/login")}>Login</button>
+          <button className="small-btn" onClick={() => navigate("/register")}>Register</button>
+        </div>
+        <button className="mobile-toggle" onClick={() => setOpen(v => !v)} aria-label="Toggle navigation">{open ? "×" : "☰"}</button>
       </div>
-      <button className="mobile-toggle" onClick={() => setOpen(v => !v)} aria-label="Toggle navigation">{open ? "×" : "☰"}</button>
-    </div>
-  </header>;
+    </header>
+  );
 }
 
 function SocialIcon({ type }) {
@@ -97,53 +121,63 @@ function Footer() {
     ["youtube", "YouTube", "https://youtube.com/@astumsj"],
     ["x", "X", "https://x.com/astumsj"],
   ];
-  return <footer className="footer">
-    <div className="container footer-grid">
-      <div className="footer-main"><Logo size={44}/><p>A centralized platform to manage bootcamp activities, track progress and grow together — run by Adama Science and Technology University Muslim Students Jemea.</p><div className="socials">{socials.map(([type,label,url]) => <a className={`social social-${type}`} href={url} target="_blank" rel="noreferrer" aria-label={label} key={type}><SocialIcon type={type}/></a>)}</div></div>
-      <div><h4>Explore</h4><a href="/tracks">Tracks</a><a href="/mentors">Mentors</a><a href="/about">About us</a><a href="/contact">Contact</a></div>
-      <div><h4>Account</h4><a href="/login">Member login</a><a href="/register">Create account</a><a href="/forgot-password">Reset password</a></div>
-      <div><h4>Contact</h4><p>hello@astumsj.org</p><p>ASTU, Adama, Ethiopia</p><p>Telegram: @astumsj</p></div>
-    </div>
-    <div className="container footer-bottom"><span>Made by Nibras Coders</span><span>ASTU MSJ Bootcamp — Learn. Build. Grow Together.</span></div>
-  </footer>;
+  return (
+    <footer className="footer">
+      <div className="container footer-grid">
+        <div className="footer-main">
+          <Logo size={44}/>
+          <p>A centralized platform to manage bootcamp activities, track progress and grow together — run by Adama Science and Technology University Muslim Students Jemea.</p>
+          <div className="socials">{socials.map(([type,label,url]) => <a className={`social social-${type}`} href={url} target="_blank" rel="noreferrer" aria-label={label} key={type}><SocialIcon type={type}/></a>)}</div>
+        </div>
+        <div><h4>Explore</h4><a href="/tracks">Tracks</a><a href="/mentors">Mentors</a><a href="/about">About us</a><a href="/contact">Contact</a></div>
+        <div><h4>Account</h4><a href="/login">Member login</a><a href="/register">Create account</a><a href="/forgot-password">Reset password</a></div>
+        <div><h4>Contact</h4><p>hello@astumsj.org</p><p>ASTU, Adama, Ethiopia</p><p>Telegram: @astumsj</p></div>
+      </div>
+      <div className="container footer-bottom"><span>Made by Nibras Coders</span><span>ASTU MSJ Bootcamp — Learn. Build. Grow Together.</span></div>
+    </footer>
+  );
 }
 
 function Button({ children, variant = "primary", onClick, href }) {
-  if (href) return <a className={`btn ${variant}`} href={href} onClick={(e) => { e.preventDefault(); go(href); }}>{children}</a>;
+  const navigate = useNavigate();
+  if (href) return <a className={`btn ${variant}`} href={href} onClick={(e) => { e.preventDefault(); navigate(href); }}>{children}</a>;
   return <button className={`btn ${variant}`} onClick={onClick}>{children}</button>;
 }
 
+// --- PUBLIC PAGES ---
 function Home() {
   const [faqOpen, setFaqOpen] = useState(null);
-  return <>
-    <section className="hero">
-      <img className="hero-image" src="/assets/hero-classroom.png" alt="ASTU MSJ students studying together" />
-      <div className="hero-fade" />
-      <div className="container hero-inner">
-        <div className="hero-copy">
-          <div className="arabic">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
-          <div className="arabic-rule"><span></span>۞<span></span></div>
-          <h1>Learn. Build.<br/><strong>Grow Together</strong></h1>
-          <p>A centralized platform to manage bootcamp activities, track your progress and achieve success together with your brothers and sisters.</p>
-          <div className="hero-buttons"><Button href="/register">Join the next cohort</Button><Button href="/tracks" variant="outline">Explore tracks</Button></div>
+  return (
+    <>
+      <section className="hero">
+        <img className="hero-image" src="/assets/hero-classroom.png" alt="ASTU MSJ students studying together" />
+        <div className="hero-fade" />
+        <div className="container hero-inner">
+          <div className="hero-copy">
+            <div className="arabic">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
+            <div className="arabic-rule"><span></span>۞<span></span></div>
+            <h1>Learn. Build.<br/><strong>Grow Together</strong></h1>
+            <p>A centralized platform to manage bootcamp activities, track your progress and achieve success together with your brothers and sisters.</p>
+            <div className="hero-buttons"><Button href="/register">Join the next cohort</Button><Button href="/tracks" variant="outline">Explore tracks</Button></div>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <section className="stats"><div className="container stats-grid">{[["4","Learning tracks"],["3 weeks","Per cohort"],["6+","Active mentors"],["Free","For MSJ members"]].map(([k,v]) => <div key={v}><b>{k}</b><span>{v}</span></div>)}</div></section>
+      <section className="stats"><div className="container stats-grid">{[["4","Learning tracks"],["3 weeks","Per cohort"],["6+","Active mentors"],["Free","For MSJ members"]].map(([k,v]) => <div key={v}><b>{k}</b><span>{v}</span></div>)}</div></section>
 
-    <section id="tracks" className="section container"><SectionTitle title="Our tracks" text="Choose one path and go deep. Every track is mentor-led and project-based."/><div className="track-grid">{tracks.map(t => <article className="card track-card" key={t.slug}><div className="icon">{t.icon}</div><h3>{t.name}</h3><p>{t.desc}</p></article>)}</div></section>
+      <section id="tracks" className="section container"><SectionTitle title="Our tracks" text="Choose one path and go deep. Every track is mentor-led and project-based."/><div className="track-grid">{tracks.map(t => <article className="card track-card" key={t.slug}><div className="icon">{t.icon}</div><h3>{t.name}</h3><p>{t.desc}</p></article>)}</div></section>
 
-    <section id="how" className="section container"><div className="how-card"><h2>How it works</h2><div className="steps">{steps.map(([n,t,d]) => <div className="step" key={n}><span>{n}</span><h3>{t}</h3><p>{d}</p></div>)}</div></div></section>
+      <section id="how" className="section container"><div className="how-card"><h2>How it works</h2><div className="steps">{steps.map(([n,t,d]) => <div className="step" key={n}><span>{n}</span><h3>{t}</h3><p>{d}</p></div>)}</div></div></section>
 
-    <section className="section container"><SectionTitle title="What you get"/><div className="feature-grid">{features.map(([icon,t,d]) => <article className="feature-card" key={t}><div className="icon">{icon}</div><h3>{t}</h3><p>{d}</p></article>)}</div></section>
+      <section className="section container"><SectionTitle title="What you get"/><div className="feature-grid">{features.map(([icon,t,d]) => <article className="feature-card" key={t}><div className="icon">{icon}</div><h3>{t}</h3><p>{d}</p></article>)}</div></section>
 
-    <section className="section container"><div className="section-head row"><SectionTitle title="Meet a few mentors" text="Brothers and sisters guiding every batch."/><Button href="/mentors" variant="outline">See all mentors</Button></div><div className="mentor-grid">{mentors.slice(0,3).map(m => <MentorCard key={m[1]} m={m}/>)}</div></section>
+      <section className="section container"><div className="section-head row"><SectionTitle title="Meet a few mentors" text="Brothers and sisters guiding every batch."/><Button href="/mentors" variant="outline">See all mentors</Button></div><div className="mentor-grid">{mentors.slice(0,3).map(m => <MentorCard key={m[1]} m={m}/>)}</div></section>
 
-    <section className="section container faq-section"><SectionTitle title="Questions"/><div className="faq">{faqs.map(([q,a],i) => <div className="faq-item" key={q}><button onClick={() => setFaqOpen(faqOpen === i ? null : i)}><span>{q}</span><b>{faqOpen === i ? "−" : "+"}</b></button>{faqOpen === i && <p>{a}</p>}</div>)}</div></section>
+      <section className="section container faq-section"><SectionTitle title="Questions"/><div className="faq">{faqs.map(([q,a],i) => <div className="faq-item" key={q}><button onClick={() => setFaqOpen(faqOpen === i ? null : i)}><span>{q}</span><b>{faqOpen === i ? "−" : "+"}</b></button>{faqOpen === i && <p>{a}</p>}</div>)}</div></section>
 
-    <section className="container cta"><div><h2>Ready to start your track?</h2><p>Registration for the next cohort is open now.</p></div><Button variant="light" href="/register">Create your account</Button></section>
-  </>;
+      <section className="container cta"><div><h2>Ready to start your track?</h2><p>Registration for the next cohort is open now.</p></div><Button variant="light" href="/register">Create your account</Button></section>
+    </>
+  );
 }
 
 function SectionTitle({ title, text }) { return <div className="section-title"><h2>{title}</h2>{text && <p>{text}</p>}</div>; }
@@ -161,244 +195,94 @@ function ContactPage() { const [sent,setSent]=useState(false); return <PageShell
 function Field({label,children}) { return <label className="field"><span>{label}</span>{children}</label>; }
 
 function AuthShell({title,subtitle,children}) {
-  return <main className="auth-page">
-    <div className="auth-shell">
-      <div className="auth-main">
-        <h1>{title}</h1>
-        <p className="auth-subtitle">{subtitle}</p>
-        {children}
-      </div>
-      <div className="auth-art">
-        <img src="/assets/calligraphy.png" alt="" />
-        <div className="art-overlay"></div>
-        <div className="auth-brand">
-          <Logo size={36}/>
-          <span className="auth-home-hint">Back to home</span>
-        </div>
-      </div>
-    </div>
-  </main>;
-}
-
-function LoginPage() {
-  const [show,setShow]=useState(false);
-  const [email,setEmail]=useState("");
-  const [password,setPassword]=useState("");
-  const [error,setError]=useState("");
-  const [loading,setLoading]=useState(false);
-
-  async function submit(e) {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-    try {
-      const {data}=await API.post("/auth/login",{email,password});
-      localStorage.setItem("token",data.token);
-      localStorage.setItem("user",JSON.stringify(data.user));
-      go(data.user?.role === "admin" ? "/dashboard" : "/");
-    } catch (err) {
-      setError(err.response?.data?.message || "Unable to log in. Please check your details.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  return <AuthShell title="Welcome back" subtitle="Log in to continue your bootcamp journey.">
-    <form className="auth-form" onSubmit={submit}>
-      <Field label="Email"><input type="email" required value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@example.com"/></Field>
-      <Field label="Password"><div className="password"><input type={show?"text":"password"} required value={password} onChange={e=>setPassword(e.target.value)} placeholder="Enter your password"/><button type="button" onClick={()=>setShow(v=>!v)}>{show?"Hide":"Show"}</button></div></Field>
-      <div className="form-options"><label><input type="checkbox"/> Remember me</label><a href="/forgot-password" onClick={e=>{e.preventDefault();go('/forgot-password')}}>Forgot password?</a></div>
-      {error && <p className="auth-error">{error}</p>}
-      <Button>{loading ? "Logging in..." : "Login"}</Button>
-      <p className="auth-switch">Don't have an account? <a href="/register" onClick={e=>{e.preventDefault();go('/register')}}>Register here</a></p>
-    </form>
-  </AuthShell>;
-}
-
-function RegisterPage() {
-  const [show, setShow] = useState(false);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [agreed, setAgreed] = useState(false);
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  async function submit(e) {
-    e.preventDefault();
-    setError("");
-
-    if (password !== confirmPassword) {
-      setError("Passwords do not match.");
-      return;
-    }
-
-    if (!agreed) {
-      setError("Please agree to the Terms and Conditions.");
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const { data } = await API.post("/auth/register", {
-        name,
-        email,
-        role: "student",
-        password,
-        confirmPassword
-      });
-
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
-
-      go("/");
-    } catch (err) {
-      setError(
-        err.response?.data?.message ||
-        "Unable to create your account."
-      );
-    } finally {
-      setLoading(false);
-    }
-  }
-
+  const navigate = useNavigate();
   return (
-    <AuthShell
-      title="Create your account"
-      subtitle="Join the bootcamp today and start your journey."
-    >
-      <form className="auth-form" onSubmit={submit}>
-
-        <Field label="Full name">
-          <input
-            required
-            value={name}
-            onChange={e => setName(e.target.value)}
-            placeholder="Enter your full name"
-          />
-        </Field>
-
-        <Field label="Email">
-          <input
-            required
-            type="email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            placeholder="you@example.com"
-          />
-        </Field>
-
-        <div className="two-inputs">
-
-          <Field label="Password">
-            <div className="password">
-              <input
-                required
-                minLength="6"
-                type={show ? "text" : "password"}
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                placeholder="Create a password"
-              />
-
-              <button
-                type="button"
-                onClick={() => setShow(v => !v)}
-              >
-                {show ? "Hide" : "Show"}
-              </button>
-            </div>
-          </Field>
-
-          <Field label="Confirm password">
-            <input
-              required
-              minLength="6"
-              type="password"
-              value={confirmPassword}
-              onChange={e => setConfirmPassword(e.target.value)}
-              placeholder="Confirm your password"
-            />
-          </Field>
-
+    <main className="auth-page">
+      <div className="auth-shell">
+        <div className="auth-main">
+          <h1>{title}</h1>
+          <p className="auth-subtitle">{subtitle}</p>
+          {children}
         </div>
-
-        <label className="terms">
-          <input
-            type="checkbox"
-            checked={agreed}
-            onChange={e => setAgreed(e.target.checked)}
-          />
-
-          <span>
-            I agree to the <b>Terms and Conditions</b>
-          </span>
-        </label>
-
-        {error && (
-          <p className="auth-error">
-            {error}
-          </p>
-        )}
-
-        <Button>
-          {loading ? "Creating account..." : "Register"}
-        </Button>
-
-        <p className="auth-switch">
-          Already have an account?{" "}
-
-          <a
-            href="/login"
-            onClick={e => {
-              e.preventDefault();
-              go("/login");
-            }}
-          >
-            Login here
-          </a>
-        </p>
-
-      </form>
-    </AuthShell>
+        <div className="auth-art">
+          <img src="/assets/calligraphy.png" alt="" />
+          <div className="art-overlay"></div>
+          <div className="auth-brand">
+            <Logo size={36}/>
+            <span className="auth-home-hint">Back to home</span>
+          </div>
+        </div>
+      </div>
+    </main>
   );
 }
 
 function ForgotPage() {
   const [sent,setSent]=useState(false);
   const [email,setEmail]=useState("");
-  return <AuthShell title={sent?"Check your inbox":"Forgot your password?"} subtitle={sent?"If an account exists for that email, a reset link is on its way.":"Enter the email you registered with and we will send you a reset link."}>
-    {sent ? <div className="sent-box"><h2>Reset link sent</h2><p>We sent instructions to <b>{email}</b>. Check your inbox and spam folder.</p><div className="button-row"><Button href="/login">Back to login</Button><Button variant="outline" onClick={()=>setSent(false)}>Use a different email</Button></div></div>
-    : <form className="auth-form" onSubmit={e=>{e.preventDefault();if(email.trim())setSent(true)}}><Field label="Email"><input required type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@example.com"/></Field><Button>Send reset link</Button><p className="auth-switch">Remembered it? <a href="/login" onClick={e=>{e.preventDefault();go('/login')}}>Back to login</a></p></form>}
-  </AuthShell>;
+  const navigate = useNavigate();
+  return (
+    <AuthShell title={sent?"Check your inbox":"Forgot your password?"} subtitle={sent?"If an account exists for that email, a reset link is on its way.":"Enter the email you registered with and we will send you a reset link."}>
+      {sent ? <div className="sent-box"><h2>Reset link sent</h2><p>We sent instructions to <b>{email}</b>. Check your inbox and spam folder.</p><div className="button-row"><Button href="/login">Back to login</Button><Button variant="outline" onClick={()=>setSent(false)}>Use a different email</Button></div></div>
+      : <form className="auth-form" onSubmit={e=>{e.preventDefault();if(email.trim())setSent(true)}}><Field label="Email"><input required type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@example.com"/></Field><Button>Send reset link</Button><p className="auth-switch">Remembered it? <a href="/login" onClick={e=>{e.preventDefault();navigate('/login')}}>Back to login</a></p></form>}
+    </AuthShell>
+  );
 }
 
+// --- APP & ROUTING ---
+// Layout wrapper for pages that should show the public Header and Footer
+function PublicLayout() {
+  return (
+    <div className="app">
+      <Header />
+      <Outlet />
+      <Footer />
+    </div>
+  );
+}
 
 function App() {
-  const [path,setPath]=useState(window.location.pathname);
-  useEffect(()=>{const update=()=>setPath(window.location.pathname);window.addEventListener('popstate',update);return()=>window.removeEventListener('popstate',update)},[]);
-  const page=useMemo(()=>{
-    switch(path){
-      case '/tracks': return <TracksPage/>;
-      case '/mentors': return <MentorsPage/>;
-      case '/about': return <AboutPage/>;
-      case '/contact': return <ContactPage/>;
-      case '/login': return <LoginPage/>;
-      case '/register': return <RegisterPage/>;
-      case '/forgot-password': return <ForgotPage/>;
-      case '/dashboard': return <AdminDashboard/>;
-      default: return <Home/>;
-    }
-  },[path]);
-  const auth=path==='/login'||path==='/register'||path==='/forgot-password';
-  const dashboard=path==='/dashboard';
-  return <div className="app">
-    {!auth && !dashboard && <Header/>}
-    {page}
-    {!auth && !dashboard && <Footer/>}
-  </div>;
+  return (
+    <BrowserRouter>
+      <Routes>
+        {/* Public Landing Pages wrapped with Header & Footer */}
+        <Route element={<PublicLayout />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/tracks" element={<TracksPage />} />
+          <Route path="/mentors" element={<MentorsPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/contact" element={<ContactPage />} />
+        </Route>
+
+        {/* Auth Routes (No Header/Footer, utilizing your Custom CSS) */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPage />} />
+
+        {/* Protected Admin Routes */}
+        <Route path="/admin" element={<AdminRoute />}>
+          <Route element={<AdminLayout />}>
+            <Route index element={<Navigate to="/admin/dashboard" replace />} />
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="batches" element={<BatchesPage />} />
+            <Route path="mentors" element={<MentorsPage />} />
+            <Route path="students" element={<StudentsPage />} />
+            <Route path="attendance" element={<AttendancePage />} />
+            <Route path="assignments" element={<AssignmentsPage />} />
+            <Route path="announcements" element={<AnnouncementsPage />} />
+            <Route path="reports" element={<ReportsPage />} />
+            <Route path="settings" element={<SettingsPage />} />
+          </Route>
+        </Route>
+
+        {/* Redirect old dashboard to admin/dashboard */}
+        <Route path="/dashboard" element={<Navigate to="/admin/dashboard" replace />} />
+
+        {/* Any unknown URL goes back to Login */}
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
 export default App;

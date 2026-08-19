@@ -34,7 +34,7 @@ const register = async (req, res) => {
         message: "Password must be at least 6 characters",
       });
     }
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email }).select("+password");
 
     if (existingUser) {
       return res.status(400).json({
@@ -79,7 +79,7 @@ const login = async (req, res) => {
         message: "Email and password are required",
       });
     }
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).select("+password");
 
     if (!user) {
       return res.status(401).json({

@@ -1,6 +1,6 @@
 import React from "react";
+import { Link, useNavigate } from "react-router-dom"; // Added for routing
 import logo from "../assets/logo.png";
-// Import modern icons from the Lucide set within react-icons
 import {
   LuLayoutDashboard,
   LuUsers,
@@ -10,6 +10,14 @@ import {
 } from "react-icons/lu";
 
 const AdminLayout = ({ children }) => {
+  const navigate = useNavigate(); // Hook to programmatically navigate
+
+  const handleLogout = () => {
+    // Later, you will clear the JWT token here
+    // localStorage.removeItem("token");
+    navigate("/login"); // Redirects the user to the login page
+  };
+
   return (
     <div className="flex h-screen bg-bootcamp-background font-sans">
       {/* Sidebar */}
@@ -33,47 +41,48 @@ const AdminLayout = ({ children }) => {
           </div>
         </div>
 
-        {/* Navigation - Emojis replaced with React Icons */}
+        {/* Navigation - Replaced <a> with <Link> */}
         <nav className="flex-1 px-5 py-8 space-y-3">
-          <a
-            href="#"
-            className="flex items-center gap-4 p-4 rounded-xl bg-bootcamp-primary text-white text-lg font-semibold shadow-md transition-transform hover:scale-[1.02]"
+          <Link
+            to="/admin/dashboard"
+            className="flex items-center gap-4 p-4 rounded-xl hover:bg-white/10 text-gray-300 hover:text-white text-lg font-medium transition-all"
           >
             <LuLayoutDashboard className="text-2xl" />
             <span>Dashboard</span>
-          </a>
-          <a
-            href="#"
+          </Link>
+          <Link
+            to="/admin/users"
             className="flex items-center gap-4 p-4 rounded-xl hover:bg-white/10 text-gray-300 hover:text-white text-lg font-medium transition-all"
           >
             <LuUsers className="text-2xl" />
             <span>Users</span>
-          </a>
-          <a
-            href="#"
+          </Link>
+          <Link
+            to="/admin/batches"
             className="flex items-center gap-4 p-4 rounded-xl hover:bg-white/10 text-gray-300 hover:text-white text-lg font-medium transition-all"
           >
             <LuBookOpen className="text-2xl" />
             <span>Batches</span>
-          </a>
-          <a
-            href="#"
+          </Link>
+          <Link
+            to="/admin/announcements"
             className="flex items-center gap-4 p-4 rounded-xl hover:bg-white/10 text-gray-300 hover:text-white text-lg font-medium transition-all"
           >
             <LuMegaphone className="text-2xl" />
             <span>Announcements</span>
-          </a>
+          </Link>
         </nav>
 
-        {/* Logout */}
+        {/* Logout - Changed to a button with an onClick handler */}
         <div className="p-5 border-t border-white/10 mb-2">
-          <a
-            href="#"
-            className="flex items-center gap-4 p-4 rounded-xl hover:bg-red-500/20 text-gray-300 hover:text-red-400 text-lg font-medium transition-all"
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-red-500/20 text-gray-300 hover:text-red-400 text-lg font-medium transition-all"
           >
             <LuLogOut className="text-2xl" />
+
             <span>Logout</span>
-          </a>
+          </button>
         </div>
       </aside>
 
