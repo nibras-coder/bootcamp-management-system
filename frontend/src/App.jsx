@@ -13,39 +13,41 @@ import AssignmentsPage from "./pages/AssignmentsPage";
 import AnnouncementsPage from "./pages/AnnouncementsPage";
 import ReportsPage from "./pages/ReportsPage";
 import SettingsPage from "./pages/SettingsPage";
+import AdminRoute from "./components/AdminRoute";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-
-        {/* Login page */}
+        {/* Public Routes */}
         <Route path="/" element={<Login />} />
         <Route path="/login" element={<Login />} />
-
-        {/* Register page */}
         <Route path="/register" element={<Register />} />
 
-        {/* Admin Dashboard */}
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<Navigate to="/admin/dashboard" replace />} />
-          <Route path="dashboard" element={<AdminDashboard />} />
-          <Route path="batches" element={<BatchesPage />} />
-          <Route path="mentors" element={<MentorsPage />} />
-          <Route path="students" element={<StudentsPage />} />
-          <Route path="attendance" element={<AttendancePage />} />
-          <Route path="assignments" element={<AssignmentsPage />} />
-          <Route path="announcements" element={<AnnouncementsPage />} />
-          <Route path="reports" element={<ReportsPage />} />
-          <Route path="settings" element={<SettingsPage />} />
+        {/* Protected Admin Routes */}
+        <Route path="/admin" element={<AdminRoute />}>
+          <Route element={<AdminLayout />}>
+            <Route index element={<Navigate to="/admin/dashboard" replace />} />
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="batches" element={<BatchesPage />} />
+            <Route path="mentors" element={<MentorsPage />} />
+            <Route path="students" element={<StudentsPage />} />
+            <Route path="attendance" element={<AttendancePage />} />
+            <Route path="assignments" element={<AssignmentsPage />} />
+            <Route path="announcements" element={<AnnouncementsPage />} />
+            <Route path="reports" element={<ReportsPage />} />
+            <Route path="settings" element={<SettingsPage />} />
+          </Route>
         </Route>
 
         {/* Redirect old dashboard to admin/dashboard */}
-        <Route path="/dashboard" element={<Navigate to="/admin/dashboard" replace />} />
+        <Route
+          path="/dashboard"
+          element={<Navigate to="/admin/dashboard" replace />}
+        />
 
         {/* Any unknown URL goes back to Login */}
         <Route path="*" element={<Navigate to="/" replace />} />
-
       </Routes>
     </BrowserRouter>
   );

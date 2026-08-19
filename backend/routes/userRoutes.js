@@ -7,8 +7,7 @@ const {
   updateUser,
   deleteUser,
 } = require("../controllers/userController");
-const { protect } = require("../middleware/auth");
-const { authorize } = require("../middleware/role");
+const { protect, authorize } = require("../middleware/authMiddleware");
 
 router.use(protect, authorize("admin"));
 

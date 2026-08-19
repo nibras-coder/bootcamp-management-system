@@ -32,6 +32,10 @@ const userSchema = new mongoose.Schema(
       ref: "Batch",
       default: null,
     },
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
   },
   {
     timestamps: true,

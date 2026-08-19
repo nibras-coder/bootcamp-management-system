@@ -23,10 +23,22 @@ const Login = () => {
       const response = await API.post("/auth/login", formData);
 
       if (response.data.token) {
+        // 1. Save BOTH the token and the user data
         localStorage.setItem("token", response.data.token);
-      }
 
-      navigate("/dashboard");
+        // Ensure we actually have user data before saving it to avoid JSON errors
+        if (response.data.user) {
+          localStorage.setItem("user", JSON.stringify(response.data.user));
+        }
+
+        // 2. Redirect them to the correct dashboard based on their role
+        if (response.data.user?.role === "admin") {
+          navigate("/admin/dashboard");
+        } else {
+          // Send students and mentors to the standard dashboard
+          navigate("/dashboard");
+        }
+      }
     } catch (err) {
       setError(err.response?.data?.message || "Invalid email or password");
     } finally {
