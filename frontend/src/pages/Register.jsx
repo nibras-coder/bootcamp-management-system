@@ -6,15 +6,15 @@ import logo from "../assets/logo.png";
 
 function Register() {
   const navigate = useNavigate();
-  
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
     confirmPassword: "",
-    role: "", 
+    role: "",
   });
-  
+
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -31,7 +31,7 @@ function Register() {
   };
 
   const isValidASTUEmail = (email) => {
-    return /^[^\s@]+@astu\.edu\.et$/i.test(email);
+    return /^[^\s@]+@gmail\.com$/i.test(email);
   };
 
   const handleSubmit = async (e) => {
@@ -51,7 +51,7 @@ function Register() {
     }
 
     if (!isValidASTUEmail(email)) {
-      setError("Please use your ASTU university email (@astu.edu.et).");
+      setError("Please use a valid email.");
       return;
     }
 
@@ -72,11 +72,13 @@ function Register() {
         name,
         email,
         password,
+        confirmPassword,
         role,
       });
 
       setSuccess(
-        response.data?.message || "Registration successful! You can now log in."
+        response.data?.message ||
+          "Registration successful! You can now log in.",
       );
 
       setFormData({
@@ -91,7 +93,8 @@ function Register() {
         navigate("/login");
       }, 1500);
     } catch (err) {
-      const backendMessage = err.response?.data?.message || err.response?.data?.error;
+      const backendMessage =
+        err.response?.data?.message || err.response?.data?.error;
       if (err.response?.status === 400) {
         setError(backendMessage || "Invalid registration information.");
       } else if (err.response?.status === 409) {
@@ -114,8 +117,28 @@ function Register() {
           </p>
 
           {/* Error and Success Messages */}
-          {error && <div style={{ color: "#dc2626", marginBottom: "1rem", fontSize: "0.875rem" }}>{error}</div>}
-          {success && <div style={{ color: "#16a34a", marginBottom: "1rem", fontSize: "0.875rem" }}>{success}</div>}
+          {error && (
+            <div
+              style={{
+                color: "#dc2626",
+                marginBottom: "1rem",
+                fontSize: "0.875rem",
+              }}
+            >
+              {error}
+            </div>
+          )}
+          {success && (
+            <div
+              style={{
+                color: "#16a34a",
+                marginBottom: "1rem",
+                fontSize: "0.875rem",
+              }}
+            >
+              {success}
+            </div>
+          )}
 
           <form className="auth-form" onSubmit={handleSubmit}>
             <label className="field">
@@ -138,7 +161,7 @@ function Register() {
                 required
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="you@astu.edu.et"
+                placeholder="you@gmil.com"
               />
             </label>
 
@@ -176,7 +199,12 @@ function Register() {
 
             <label className="field">
               <span>Role</span>
-              <select name="role" required value={formData.role} onChange={handleChange}>
+              <select
+                name="role"
+                required
+                value={formData.role}
+                onChange={handleChange}
+              >
                 <option value="" disabled>
                   Select your role
                 </option>
@@ -187,9 +215,7 @@ function Register() {
 
             <label className="terms">
               <input type="checkbox" required />
-              <span>
-                I agree to the Terms and Conditions
-              </span>
+              <span>I agree to the Terms and Conditions</span>
             </label>
 
             <button className="btn primary" type="submit" disabled={loading}>

@@ -57,7 +57,13 @@ function Login() {
 
           {/* Error Message */}
           {error && (
-            <div style={{ color: "#dc2626", marginBottom: "1rem", fontSize: "0.875rem" }}>
+            <div
+              style={{
+                color: "#dc2626",
+                marginBottom: "1rem",
+                fontSize: "0.875rem",
+              }}
+            >
               {error}
             </div>
           )}
@@ -71,7 +77,7 @@ function Login() {
                 required
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="you@astu.edu.et"
+                placeholder="you@gmail.com"
               />
             </label>
 

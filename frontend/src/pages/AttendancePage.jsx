@@ -93,7 +93,7 @@ const AttendancePage = () => {
             />
           </div>
           <select className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-teal-500 focus:border-teal-500">
-            <option>All Batches (3x/Week Sessions)</option>
+            <option>All Tracks (3x/Week Sessions)</option>
             <option>Web Dev Bootcamp</option>
             <option>DSA & CP</option>
           </select>
