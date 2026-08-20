@@ -21,11 +21,24 @@ const userSchema = new mongoose.Schema(
       enum: ["admin", "mentor", "student"],
       default: "student",
     },
-
+    batch: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Batch",
+      default: null
+    },
     password: {
       type: String,
       required: true,
       minlength: 6,
+    },
+    resetPasswordToken: {
+      type: String,
+      default: null,
+    },
+    
+    resetPasswordExpires: {
+      type: Date,
+      default: null,
     },
   },
   {
