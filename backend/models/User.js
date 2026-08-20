@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs");
 
 const userSchema = new mongoose.Schema(
   {
@@ -15,14 +14,6 @@ const userSchema = new mongoose.Schema(
       unique: true,
       lowercase: true,
       trim: true,
-      match: [/^\S+@\S+\.\S+$/, "Please provide a valid email"],
-    },
-
-    password: {
-      type: String,
-      required: true,
-      minlength: 6,
-      select: false,
     },
 
     role: {
@@ -30,11 +21,44 @@ const userSchema = new mongoose.Schema(
       enum: ["admin", "mentor", "student"],
       default: "student",
     },
-
     batch: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Batch",
+      default: null
+    },
+    password: {
+      type: String,
+      required: true,
+      minlength: 6,
+    },
+    resetPasswordToken: {
+      type: String,
       default: null,
+    },
+    
+    resetPasswordExpires: {
+      type: Date,
+      default: null,
+    },
+    profilePhoto: {
+      type: String,
+      default: null,
+    },
+    settings: {
+      emailNotifications: {
+        type: Boolean,
+        default: true,
+      },
+    
+      announcementNotifications: {
+        type: Boolean,
+        default: true,
+      },
+    
+      assignmentNotifications: {
+        type: Boolean,
+        default: true,
+      },
     },
   },
   {
@@ -42,19 +66,5 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-// Hash password before saving
-userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
-
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-
-  next();
-});
-
-// Compare password during login
-userSchema.methods.comparePassword = async function (candidatePassword) {
-  return bcrypt.compare(candidatePassword, this.password);
-};
 
 module.exports = mongoose.model("User", userSchema);
