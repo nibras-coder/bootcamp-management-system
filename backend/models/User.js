@@ -3,12 +3,11 @@ const bcrypt = require("bcryptjs");
 
 const userSchema = new mongoose.Schema(
   {
-    name: {
+    fullName: {
       type: String,
       required: true,
       trim: true,
     },
-
     email: {
       type: String,
       required: true,
@@ -17,23 +16,33 @@ const userSchema = new mongoose.Schema(
       trim: true,
       match: [/^\S+@\S+\.\S+$/, "Please provide a valid email"],
     },
-
     password: {
       type: String,
       required: true,
       minlength: 6,
       select: false,
     },
-
     role: {
       type: String,
       enum: ["admin", "mentor", "student"],
       default: "student",
     },
-
     batch: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Batch",
+      default: null,
+    },
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+    resetPasswordToken: {
+      type: String,
+      default: null,
+    },
+    
+    resetPasswordExpires: {
+      type: Date,
       default: null,
     },
   },
@@ -43,13 +52,15 @@ const userSchema = new mongoose.Schema(
 );
 
 // Hash password before saving
-userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
-
+userSchema.pre("save", async function () {
+  // If the password wasn't changed, skip this whole function
+  if (!this.isModified("password")) {
+    return;
+  }
+  
+  // Scramble the password
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
-
-  next();
 });
 
 // Compare password during login
