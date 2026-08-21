@@ -105,10 +105,7 @@ const faqs = [
     "How long is each cohort?",
     "Each cohort runs for approximately three weeks.",
   ],
-  [
-    "Is the bootcamp free?",
-    "Yes. The bootcamp is free for MSJ members.",
-  ],
+  ["Is the bootcamp free?", "Yes. The bootcamp is free for MSJ members."],
   [
     "Do I need previous experience?",
     "No. Beginners can join and learn from the foundations.",
@@ -133,14 +130,10 @@ function Home() {
 
         <div className="container hero-inner">
           <div className="hero-copy">
-            <div className="arabic">
-              بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
-            </div>
+            <div className="arabic">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
 
             <div className="arabic-rule">
-              <span></span>
-              ۞
-              <span></span>
+              <span></span>۞<span></span>
             </div>
 
             <h1>
@@ -150,9 +143,9 @@ function Home() {
             </h1>
 
             <p>
-              A centralized platform to manage bootcamp activities,
-              track your progress and achieve success together with
-              your brothers and sisters.
+              A centralized platform to manage bootcamp activities, track your
+              progress and achieve success together with your brothers and
+              sisters.
             </p>
 
             <div className="hero-buttons">
@@ -201,17 +194,14 @@ function Home() {
           <h2>Our tracks</h2>
 
           <p>
-            Choose one path and go deep. Every track is mentor-led
-            and project-based.
+            Choose one path and go deep. Every track is mentor-led and
+            project-based.
           </p>
         </div>
 
         <div className="track-grid">
           {tracks.map((track) => (
-            <article
-              className="card track-card"
-              key={track.slug}
-            >
+            <article className="card track-card" key={track.slug}>
               <div className="icon">{track.icon}</div>
 
               <h3>{track.name}</h3>
@@ -249,10 +239,7 @@ function Home() {
 
         <div className="feature-grid">
           {features.map(([icon, title, description]) => (
-            <article
-              className="feature-card"
-              key={title}
-            >
+            <article className="feature-card" key={title}>
               <div className="icon">{icon}</div>
 
               <h3>{title}</h3>
@@ -269,18 +256,13 @@ function Home() {
           <div className="section-title">
             <h2>Meet a few mentors</h2>
 
-            <p>
-              Brothers and sisters guiding every batch.
-            </p>
+            <p>Brothers and sisters guiding every Track.</p>
           </div>
         </div>
 
         <div className="mentor-grid">
           {mentors.slice(0, 3).map((mentor) => (
-            <article
-              className="card mentor-card"
-              key={mentor[1]}
-            >
+            <article className="card mentor-card" key={mentor[1]}>
               <div className="initials">{mentor[0]}</div>
 
               <h3>{mentor[1]}</h3>
@@ -301,28 +283,17 @@ function Home() {
 
         <div className="faq">
           {faqs.map(([question, answer], index) => (
-            <div
-              className="faq-item"
-              key={question}
-            >
+            <div className="faq-item" key={question}>
               <button
                 type="button"
-                onClick={() =>
-                  setFaqOpen(
-                    faqOpen === index ? null : index
-                  )
-                }
+                onClick={() => setFaqOpen(faqOpen === index ? null : index)}
               >
                 <span>{question}</span>
 
-                <b>
-                  {faqOpen === index ? "−" : "+"}
-                </b>
+                <b>{faqOpen === index ? "−" : "+"}</b>
               </button>
 
-              {faqOpen === index && (
-                <p>{answer}</p>
-              )}
+              {faqOpen === index && <p>{answer}</p>}
             </div>
           ))}
         </div>
@@ -333,15 +304,10 @@ function Home() {
         <div>
           <h2>Ready to start your track?</h2>
 
-          <p>
-            Registration for the next cohort is open now.
-          </p>
+          <p>Registration for the next cohort is open now.</p>
         </div>
 
-        <button
-          className="btn light"
-          onClick={() => navigate("/register")}
-        >
+        <button className="btn light" onClick={() => navigate("/register")}>
           Create your account
         </button>
       </section>

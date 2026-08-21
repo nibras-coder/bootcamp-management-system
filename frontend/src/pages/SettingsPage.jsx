@@ -152,7 +152,7 @@ const SettingsPage = () => {
                     New Enrollments
                   </p>
                   <p className="text-xs text-gray-500">
-                    Notify when a new student joins a batch
+                    Notify when a new student joins a track
                   </p>
                 </div>
               </label>

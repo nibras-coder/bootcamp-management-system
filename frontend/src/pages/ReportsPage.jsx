@@ -162,7 +162,7 @@ const ReportsPage = () => {
         {/* Bar Chart */}
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
           <h3 className="font-bold text-gray-800 mb-6">
-            Average DSA Contest Scores by Batch
+            Average DSA Contest Scores by Track
           </h3>
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">

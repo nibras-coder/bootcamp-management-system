@@ -83,7 +83,7 @@ const AdminDashboard = () => {
         {/* Card 3 */}
         <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex items-start justify-between">
           <div>
-            <p className="text-sm font-medium text-gray-500">Active Batches</p>
+            <p className="text-sm font-medium text-gray-500">Active Tracks</p>
             <h3 className="text-2xl font-bold text-gray-800 mt-1">6</h3>
             <p className="text-xs font-medium text-gray-400 mt-2">No change</p>
           </div>
@@ -177,7 +177,7 @@ const AdminDashboard = () => {
         {/* Doughnut Chart */}
         <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex flex-col">
           <h3 className="text-base font-semibold text-gray-800 mb-2">
-            Students by Batch
+            Students by Track
           </h3>
           <div className="flex-1 flex flex-col justify-center">
             <div className="h-48 relative">
@@ -336,7 +336,7 @@ const AdminDashboard = () => {
               <thead>
                 <tr className="bg-gray-50 text-xs text-gray-500 font-medium border-b border-gray-100">
                   <th className="py-3 px-5">Title</th>
-                  <th className="py-3 px-5">Batch</th>
+                  <th className="py-3 px-5">Track</th>
                   <th className="py-3 px-5">Submissions</th>
                   <th className="py-3 px-5">Status</th>
                 </tr>

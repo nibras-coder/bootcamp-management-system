@@ -164,7 +164,7 @@ const StudentsPage = () => {
                   Student Details
                 </th>
                 <th className="px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Batch
+                  Trach
                 </th>
                 <th className="px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">
                   Score
@@ -303,7 +303,7 @@ const StudentsPage = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Batch
+                    Track
                   </label>
                   <select
                     required

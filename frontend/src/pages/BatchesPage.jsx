@@ -89,7 +89,7 @@ const BatchesPage = () => {
           className="flex items-center space-x-2 bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors"
         >
           <Plus size={20} />
-          <span>New Batch</span>
+          <span>New Trach</span>
         </button>
       </div>
 
