@@ -9,6 +9,7 @@ import {
   useLocation,
 } from "react-router-dom";
 import "./style.css";
+import "./pages/student-dashboard.css";
 import API from "./api/axios";
 
 import Home from "./pages/Home";
@@ -111,7 +112,7 @@ const features = [
   [
     "♧",
     "Mentors beside you",
-    "Small tracks with a dedicated mentor reviewing your work.",
+    "Small batches with a dedicated mentor reviewing your work.",
   ],
   [
     "▥",
@@ -183,7 +184,10 @@ const faqs = [
     "How long does the program run?",
     "Each cohort runs for three weeks of intensive sessions, followed by a capstone project reviewed by your mentor.",
   ],
-  ["Is there any fee?", "No. The bootcamp is completely free for MSJ members."],
+  [
+    "Is there any fee?",
+    "No. The bootcamp is completely free for MSJ members.",
+  ],
   [
     "How is attendance tracked?",
     "Mentors mark attendance in each session and you can follow your own record from your student dashboard.",
@@ -202,9 +206,7 @@ const navItems = [
   ["/contact", "Contact"],
 ];
 
-// --- REUSABLE COMPONENTS ---
 function Logo({ size = 42 }) {
-  const navigate = useNavigate();
   return (
     <button
       className="logo"
@@ -225,8 +227,6 @@ function Logo({ size = 42 }) {
 
 function Header() {
   const [open, setOpen] = useState(false);
-  const navigate = useNavigate();
-  const location = useLocation();
 
   useEffect(() => {
     setOpen(false);
@@ -236,6 +236,7 @@ function Header() {
     <header className="header">
       <div className="nav container">
         <Logo />
+
         <nav className={open ? "nav-links open" : "nav-links"}>
           {navItems.map(([path, label]) => (
             <a
@@ -251,6 +252,7 @@ function Header() {
             </a>
           ))}
         </nav>
+
         <div className="nav-actions">
           <button className="ghost-btn" onClick={() => navigate("/login")}>
             Login
@@ -312,6 +314,7 @@ function Footer() {
     ["youtube", "YouTube", "https://youtube.com/@astumsj"],
     ["x", "X", "https://x.com/astumsj"],
   ];
+
   return (
     <footer className="footer">
       <div className="container footer-grid">
@@ -387,9 +390,9 @@ function Button({ children, variant = "primary", onClick, href }) {
   );
 }
 
-// --- PUBLIC PAGES ---
 function Home() {
   const [faqOpen, setFaqOpen] = useState(null);
+
   return (
     <>
       <section className="hero">
@@ -399,6 +402,7 @@ function Home() {
           alt="ASTU MSJ students studying together"
         />
         <div className="hero-fade" />
+
         <div className="container hero-inner">
           <div className="hero-copy">
             <div className="arabic">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
@@ -716,6 +720,7 @@ function ContactPage() {
               >
                 <SocialIcon type="telegram" />
               </a>
+
               <a
                 className="social social-instagram"
                 href="https://instagram.com/astumsj"
@@ -725,6 +730,7 @@ function ContactPage() {
               >
                 <SocialIcon type="instagram" />
               </a>
+
               <a
                 className="social social-facebook"
                 href="https://facebook.com/astumsj"
@@ -734,6 +740,7 @@ function ContactPage() {
               >
                 <SocialIcon type="facebook" />
               </a>
+
               <a
                 className="social social-youtube"
                 href="https://youtube.com/@astumsj"
@@ -743,6 +750,7 @@ function ContactPage() {
               >
                 <SocialIcon type="youtube" />
               </a>
+
               <a
                 className="social social-tiktok"
                 href="https://www.tiktok.com/@astumsj"
@@ -752,6 +760,7 @@ function ContactPage() {
               >
                 <SocialIcon type="tiktok" />
               </a>
+
               <a
                 className="social social-x"
                 href="https://x.com/astumsj"
@@ -788,9 +797,11 @@ function AuthShell({ title, subtitle, children }) {
           <p className="auth-subtitle">{subtitle}</p>
           {children}
         </div>
+
         <div className="auth-art">
           <img src="/assets/calligraphy.png" alt="" />
           <div className="art-overlay"></div>
+
           <div className="auth-brand">
             <Logo size={36} />
             <span className="auth-home-hint">Back to home</span>
@@ -864,19 +875,319 @@ function ForgotPage() {
   );
 }
 
-// --- APP & ROUTING ---
-// Layout wrapper for pages that should show the public Header and Footer
-function PublicLayout() {
+function RegisterPage() {
+  const [show, setShow] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [agreed, setAgreed] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function submit(e) {
+    e.preventDefault();
+
+    setError("");
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    if (!agreed) {
+      setError("Please agree to the Terms and Conditions.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const { data } = await API.post("/auth/register", {
+        name,
+        email,
+        role: "student",
+        password,
+        confirmPassword,
+      });
+
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+
+      go("/");
+    } catch (err) {
+      setError(
+        err.response?.data?.message ||
+          "Unable to create your account."
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
-    <div className="app">
-      <Header />
-      <Outlet />
-      <Footer />
-    </div>
+    <AuthShell
+      title="Create your account"
+      subtitle="Join the bootcamp today and start your journey."
+    >
+      <form className="auth-form" onSubmit={submit}>
+        <Field label="Full name">
+          <input
+            required
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Enter your full name"
+          />
+        </Field>
+
+        <Field label="Email">
+          <input
+            required
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@gmail.com"
+          />
+        </Field>
+
+        <div className="two-inputs">
+          <Field label="Password">
+            <div className="password">
+              <input
+                required
+                minLength="6"
+                type={show ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Create a password"
+              />
+
+              <button
+                type="button"
+                onClick={() => setShow((v) => !v)}
+              >
+                {show ? "Hide" : "Show"}
+              </button>
+            </div>
+          </Field>
+
+          <Field label="Confirm password">
+            <input
+              required
+              minLength="6"
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="Confirm your password"
+            />
+          </Field>
+        </div>
+
+        <label className="terms">
+          <input
+            type="checkbox"
+            checked={agreed}
+            onChange={(e) => setAgreed(e.target.checked)}
+          />
+
+          <span>
+            I agree to the <b>Terms and Conditions</b>
+          </span>
+        </label>
+
+        {error && <p className="auth-error">{error}</p>}
+
+        <Button>
+          {loading ? "Creating account..." : "Register"}
+        </Button>
+
+        <p className="auth-switch">
+          Already have an account?{" "}
+          <a
+            href="/login"
+            onClick={(e) => {
+              e.preventDefault();
+              go("/login");
+            }}
+          >
+            Login here
+          </a>
+        </p>
+      </form>
+    </AuthShell>
   );
 }
 
+function ForgotPage() {
+  const [sent, setSent] = useState(false);
+  const [email, setEmail] = useState("");
+
+  return (
+    <AuthShell
+      title={sent ? "Check your inbox" : "Forgot your password?"}
+      subtitle={
+        sent
+          ? "If an account exists for that email, a reset link is on its way."
+          : "Enter the email you registered with and we will send you a reset link."
+      }
+    >
+      {sent ? (
+        <div className="sent-box">
+          <h2>Reset link sent</h2>
+
+          <p>
+            We sent instructions to <b>{email}</b>. Check your inbox and
+            spam folder.
+          </p>
+
+          <div className="button-row">
+            <Button href="/login">Back to login</Button>
+
+            <Button
+              variant="outline"
+              onClick={() => setSent(false)}
+            >
+              Use a different email
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <form
+          className="auth-form"
+          onSubmit={(e) => {
+            e.preventDefault();
+
+            if (email.trim()) {
+              setSent(true);
+            }
+          }}
+        >
+          <Field label="Email">
+            <input
+              required
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@gmail.com"
+            />
+          </Field>
+
+          <Button>Send reset link</Button>
+
+          <p className="auth-switch">
+            Remembered it?{" "}
+            <a
+              href="/login"
+              onClick={(e) => {
+                e.preventDefault();
+                go("/login");
+              }}
+            >
+              Back to login
+            </a>
+          </p>
+        </form>
+      )}
+    </AuthShell>
+  );
+}
+
+/* =========================================================
+   APP ROUTING
+   ========================================================= */
+
 function App() {
+  const [path, setPath] = useState(window.location.pathname);
+
+  useEffect(() => {
+    const update = () => {
+      setPath(window.location.pathname);
+    };
+
+    window.addEventListener("popstate", update);
+
+    return () => {
+      window.removeEventListener("popstate", update);
+    };
+  }, []);
+
+  const page = useMemo(() => {
+    switch (path) {
+      /* =========================
+         LANDING PAGE
+      ========================= */
+      case "/":
+        return <Home />;
+
+      /* =========================
+         PUBLIC PAGES
+      ========================= */
+      case "/tracks":
+        return <TracksPage />;
+
+      case "/mentors":
+        return <MentorsPage />;
+
+      case "/about":
+        return <AboutPage />;
+
+      case "/contact":
+        return <ContactPage />;
+
+      /* =========================
+         AUTH PAGES
+      ========================= */
+      case "/login":
+        return <LoginPage />;
+
+      case "/register":
+        return <RegisterPage />;
+
+      case "/forgot-password":
+        return <ForgotPage />;
+
+      /* =========================
+         ADMIN DASHBOARD
+      ========================= */
+      case "/dashboard":
+        return <AdminDashboard />;
+
+      /* =========================
+         STUDENT DASHBOARD
+      ========================= */
+
+      case "/student-dashboard":
+      case "/student-dashboard/schedule":
+      case "/student-dashboard/attendance":
+      case "/student-dashboard/progress":
+      case "/student-dashboard/assignments":
+      case "/student-dashboard/grades":
+      case "/student-dashboard/announcements":
+      case "/student-dashboard/achievements":
+      case "/student-dashboard/resources":
+      case "/student-dashboard/profile":
+      case "/student-dashboard/settings":
+        return <StudentDashboard />;
+
+      /* =========================
+         UNKNOWN URL
+      ========================= */
+      default:
+        return <Home />;
+    }
+  }, [path]);
+
+  const auth =
+    path === "/login" ||
+    path === "/register" ||
+    path === "/forgot-password";
+
+  const dashboard =
+    path === "/dashboard";
+
+  const studentDashboard =
+    path.startsWith("/student-dashboard");
+
   return (
     <BrowserRouter>
       <Routes>
