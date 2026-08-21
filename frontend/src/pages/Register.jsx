@@ -5,7 +5,106 @@ import logo from "../assets/logo.png";
 
 function Register() {
   const navigate = useNavigate();
+
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    role: "",
+  });
+
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+    setError("");
+    setSuccess("");
+  };
+
+  const isValidASTUEmail = (email) => {
+    return /^[^\s@]+@gmail\.com$/i.test(email);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+
+    const name = formData.name.trim();
+    const email = formData.email.trim();
+    const password = formData.password;
+    const confirmPassword = formData.confirmPassword;
+    const role = formData.role;
+
+    if (!name || !email || !password || !confirmPassword || !role) {
+      setError("Please fill in all fields, including your role.");
+      return;
+    }
+
+    if (!isValidASTUEmail(email)) {
+      setError("Please use a valid email.");
+      return;
+    }
+
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters long.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await API.post("/auth/register", {
+        name,
+        email,
+        password,
+        confirmPassword,
+        role,
+      });
+
+      setSuccess(
+        response.data?.message ||
+          "Registration successful! You can now log in.",
+      );
+
+      setFormData({
+        name: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+        role: "",
+      });
+
+      setTimeout(() => {
+        navigate("/login");
+      }, 1500);
+    } catch (err) {
+      const backendMessage =
+        err.response?.data?.message || err.response?.data?.error;
+      if (err.response?.status === 400) {
+        setError(backendMessage || "Invalid registration information.");
+      } else if (err.response?.status === 409) {
+        setError("An account with this email already exists.");
+      } else {
+        setError(backendMessage || "Registration failed. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <main className="auth-page">
@@ -18,10 +117,29 @@ function Register() {
             Join the bootcamp today and start your journey.
           </p>
 
-          <form
-            className="auth-form"
-            onSubmit={(e) => {
-              e.preventDefault();
+          {/* Error and Success Messages */}
+          {error && (
+            <div
+              style={{
+                color: "#dc2626",
+                marginBottom: "1rem",
+                fontSize: "0.875rem",
+              }}
+            >
+              {error}
+            </div>
+          )}
+          {success && (
+            <div
+              style={{
+                color: "#16a34a",
+                marginBottom: "1rem",
+                fontSize: "0.875rem",
+              }}
+            >
+              {success}
+            </div>
+          )}
 
               // We will connect registration to the backend later.
               console.log("Registration submitted");
@@ -43,7 +161,9 @@ function Register() {
               <input
                 type="email"
                 required
-                placeholder="you@gmail.com"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="you@gmil.com"
               />
             </label>
 
@@ -80,8 +200,12 @@ function Register() {
 
             <label className="field">
               <span>Role</span>
-
-              <select required defaultValue="">
+              <select
+                name="role"
+                required
+                value={formData.role}
+                onChange={handleChange}
+              >
                 <option value="" disabled>
                   Select your role
                 </option>
@@ -93,10 +217,7 @@ function Register() {
 
             <label className="terms">
               <input type="checkbox" required />
-
-              <span>
-                I agree to the Terms and Conditions
-              </span>
+              <span>I agree to the Terms and Conditions</span>
             </label>
 
             <button

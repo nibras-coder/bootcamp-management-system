@@ -1,4 +1,13 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useState, useEffect } from "react";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  Outlet,
+  useNavigate,
+  useLocation,
+} from "react-router-dom";
 import "./style.css";
 import "./pages/student-dashboard.css";
 import API from "./api/axios";
@@ -174,17 +183,11 @@ const navItems = [
   ["/contact", "Contact"],
 ];
 
-function go(path) {
-  window.history.pushState({}, "", path);
-  window.dispatchEvent(new PopStateEvent("popstate"));
-  window.scrollTo({ top: 0, behavior: "instant" });
-}
-
 function Logo({ size = 42 }) {
   return (
     <button
       className="logo"
-      onClick={() => go("/")}
+      onClick={() => navigate("/")}
       aria-label="ASTU MSJ Bootcamp home"
     >
       <img
@@ -203,14 +206,8 @@ function Header() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    const close = () => setOpen(false);
-
-    window.addEventListener("popstate", close);
-
-    return () => {
-      window.removeEventListener("popstate", close);
-    };
-  }, []);
+    setOpen(false);
+  }, [location.pathname]);
 
   return (
     <header className="header">
@@ -222,13 +219,10 @@ function Header() {
             <a
               key={path}
               href={path}
-              className={
-                window.location.pathname === path ? "active" : ""
-              }
+              className={location.pathname === path ? "active" : ""}
               onClick={(e) => {
                 e.preventDefault();
-                go(path);
-                setOpen(false);
+                navigate(path);
               }}
             >
               {label}
@@ -237,15 +231,13 @@ function Header() {
         </nav>
 
         <div className="nav-actions">
-          <button className="ghost-btn" onClick={() => go("/login")}>
+          <button className="ghost-btn" onClick={() => navigate("/login")}>
             Login
           </button>
-
-          <button className="small-btn" onClick={() => go("/register")}>
+          <button className="small-btn" onClick={() => navigate("/register")}>
             Register
           </button>
         </div>
-
         <button
           className="mobile-toggle"
           onClick={() => setOpen((v) => !v)}
@@ -283,7 +275,6 @@ function SocialIcon({ type }) {
       <path d="M18.9 2H22l-6.8 7.8L23.1 22h-6.2l-4.8-6.3L6.6 22H3.5l7.2-8.2L2.9 2h6.4l4.3 5.7L18.9 2Zm-1.1 17.8h1.7L8.3 4.1H6.5l11.3 15.7Z" />
     ),
   };
-
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
       {paths[type]}
@@ -306,13 +297,11 @@ function Footer() {
       <div className="container footer-grid">
         <div className="footer-main">
           <Logo size={44} />
-
           <p>
-            A centralized platform to manage bootcamp activities, track
-            progress and grow together — run by Adama Science and Technology
-            University Muslim Students Jemea.
+            A centralized platform to manage bootcamp activities, track progress
+            and grow together — run by Adama Science and Technology University
+            Muslim Students Jemea.
           </p>
-
           <div className="socials">
             {socials.map(([type, label, url]) => (
               <a
@@ -328,7 +317,6 @@ function Footer() {
             ))}
           </div>
         </div>
-
         <div>
           <h4>Explore</h4>
           <a href="/tracks">Tracks</a>
@@ -336,14 +324,12 @@ function Footer() {
           <a href="/about">About us</a>
           <a href="/contact">Contact</a>
         </div>
-
         <div>
           <h4>Account</h4>
           <a href="/login">Member login</a>
           <a href="/register">Create account</a>
           <a href="/forgot-password">Reset password</a>
         </div>
-
         <div>
           <h4>Contact</h4>
           <p>hello@astumsj.org</p>
@@ -351,7 +337,6 @@ function Footer() {
           <p>Telegram: @astumsj</p>
         </div>
       </div>
-
       <div className="container footer-bottom">
         <span>Made by Nibras Coders</span>
         <span>ASTU MSJ Bootcamp — Learn. Build. Grow Together.</span>
@@ -361,21 +346,20 @@ function Footer() {
 }
 
 function Button({ children, variant = "primary", onClick, href }) {
-  if (href) {
+  const navigate = useNavigate();
+  if (href)
     return (
       <a
         className={`btn ${variant}`}
         href={href}
         onClick={(e) => {
           e.preventDefault();
-          go(href);
+          navigate(href);
         }}
       >
         {children}
       </a>
     );
-  }
-
   return (
     <button className={`btn ${variant}`} onClick={onClick}>
       {children}
@@ -394,31 +378,24 @@ function Home() {
           src="/assets/hero-classroom.png"
           alt="ASTU MSJ students studying together"
         />
-
         <div className="hero-fade" />
 
         <div className="container hero-inner">
           <div className="hero-copy">
-            <div className="arabic">
-              بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
-            </div>
-
+            <div className="arabic">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
             <div className="arabic-rule">
               <span></span>۞<span></span>
             </div>
-
             <h1>
               Learn. Build.
               <br />
               <strong>Grow Together</strong>
             </h1>
-
             <p>
               A centralized platform to manage bootcamp activities, track your
               progress and achieve success together with your brothers and
               sisters.
             </p>
-
             <div className="hero-buttons">
               <Button href="/register">Join the next cohort</Button>
               <Button href="/tracks" variant="outline">
@@ -450,7 +427,6 @@ function Home() {
           title="Our tracks"
           text="Choose one path and go deep. Every track is mentor-led and project-based."
         />
-
         <div className="track-grid">
           {tracks.map((t) => (
             <article className="card track-card" key={t.slug}>
@@ -465,7 +441,6 @@ function Home() {
       <section id="how" className="section container">
         <div className="how-card">
           <h2>How it works</h2>
-
           <div className="steps">
             {steps.map(([n, t, d]) => (
               <div className="step" key={n}>
@@ -480,7 +455,6 @@ function Home() {
 
       <section className="section container">
         <SectionTitle title="What you get" />
-
         <div className="feature-grid">
           {features.map(([icon, t, d]) => (
             <article className="feature-card" key={t}>
@@ -498,12 +472,10 @@ function Home() {
             title="Meet a few mentors"
             text="Brothers and sisters guiding every batch."
           />
-
           <Button href="/mentors" variant="outline">
             See all mentors
           </Button>
         </div>
-
         <div className="mentor-grid">
           {mentors.slice(0, 3).map((m) => (
             <MentorCard key={m[1]} m={m} />
@@ -513,19 +485,13 @@ function Home() {
 
       <section className="section container faq-section">
         <SectionTitle title="Questions" />
-
         <div className="faq">
           {faqs.map(([q, a], i) => (
             <div className="faq-item" key={q}>
-              <button
-                onClick={() =>
-                  setFaqOpen(faqOpen === i ? null : i)
-                }
-              >
+              <button onClick={() => setFaqOpen(faqOpen === i ? null : i)}>
                 <span>{q}</span>
                 <b>{faqOpen === i ? "−" : "+"}</b>
               </button>
-
               {faqOpen === i && <p>{a}</p>}
             </div>
           ))}
@@ -537,7 +503,6 @@ function Home() {
           <h2>Ready to start your track?</h2>
           <p>Registration for the next cohort is open now.</p>
         </div>
-
         <Button variant="light" href="/register">
           Create your account
         </Button>
@@ -554,7 +519,6 @@ function SectionTitle({ title, text }) {
     </div>
   );
 }
-
 function MentorCard({ m }) {
   return (
     <article className="card mentor-card">
@@ -590,43 +554,14 @@ function TracksPage() {
             <div className="icon">{t.icon}</div>
             <h2>{t.name}</h2>
             <p>{t.details}</p>
-
             <div className="pills">
               <span>{t.weeks} weeks</span>
               <span>{t.level}</span>
               <span>Capstone project</span>
             </div>
-
-            <Button href="/register">
-              Register for this track
-            </Button>
+            <Button href="/register">Register for this track</Button>
           </article>
         ))}
-      </div>
-    </PageShell>
-  );
-}
-
-function MentorsPage() {
-  return (
-    <PageShell
-      title="Our mentors"
-      intro="Every batch is led by a mentor who reviews your work, marks attendance and keeps you moving. Mentors are volunteers from the MSJ community and the wider ASTU tech circle."
-    >
-      <div className="mentor-grid six">
-        {mentors.map((m) => (
-          <MentorCard key={m[1]} m={m} />
-        ))}
-      </div>
-
-      <div className="soft-cta">
-        <h2>Want to mentor?</h2>
-        <p>
-          If you have experience in any of our tracks and can give a few hours
-          a week, we would love to have you with us.
-        </p>
-
-        <Button href="/contact">Apply as a mentor</Button>
       </div>
     </PageShell>
   );
@@ -644,14 +579,13 @@ function AboutPage() {
     ],
     [
       "Brotherhood and sisterhood",
-      "Small batches, separate arrangements where needed, and mentors who genuinely care.",
+      "Small tracks, separate arrangements where needed, and mentors who genuinely care.",
     ],
     [
       "Build real things",
       "Every track ends with a capstone project you can show to employers.",
     ],
   ];
-
   return (
     <PageShell
       title="About the bootcamp"
@@ -667,19 +601,16 @@ function AboutPage() {
             charge.
           </p>
         </article>
-
         <article className="info-card">
           <h2>Our vision</h2>
           <p>
-            A generation of Muslim students from ASTU who build useful
-            software, serve their community and lead with excellence in the
-            technology industry.
+            A generation of Muslim students from ASTU who build useful software,
+            serve their community and lead with excellence in the technology
+            industry.
           </p>
         </article>
       </div>
-
       <h2 className="subheading">What we stand for</h2>
-
       <div className="two-col">
         {values.map((v) => (
           <article className="soft-card" key={v[0]}>
@@ -688,9 +619,7 @@ function AboutPage() {
           </article>
         ))}
       </div>
-
       <h2 className="subheading">How a cohort runs</h2>
-
       <div className="steps light-steps">
         {steps.map((s) => (
           <div className="step" key={s[0]}>
@@ -700,7 +629,6 @@ function AboutPage() {
           </div>
         ))}
       </div>
-
       <div className="button-row">
         <Button href="/register">Join the next cohort</Button>
         <Button href="/mentors" variant="outline">
@@ -713,7 +641,6 @@ function AboutPage() {
 
 function ContactPage() {
   const [sent, setSent] = useState(false);
-
   return (
     <PageShell
       title="Contact us"
@@ -727,11 +654,7 @@ function ContactPage() {
               Jazakallahu khayran. We received your message and will reply by
               email soon.
             </p>
-
-            <Button
-              variant="outline"
-              onClick={() => setSent(false)}
-            >
+            <Button variant="outline" onClick={() => setSent(false)}>
               Send another message
             </Button>
           </div>
@@ -746,27 +669,15 @@ function ContactPage() {
             <Field label="Full name">
               <input required placeholder="Enter your full name" />
             </Field>
-
             <Field label="Email">
-              <input
-                required
-                type="email"
-                placeholder="you@gmail.com"
-              />
+              <input required type="email" placeholder="you@gmail.com" />
             </Field>
-
             <Field label="Message">
-              <textarea
-                required
-                rows="6"
-                placeholder="How can we help?"
-              />
+              <textarea required rows="6" placeholder="How can we help?" />
             </Field>
-
             <Button>Send message</Button>
           </form>
         )}
-
         <div className="side-stack">
           <div className="soft-card">
             <h2>Reach us directly</h2>
@@ -774,10 +685,8 @@ function ContactPage() {
             <p>⌖ ASTU Main Campus, Adama, Ethiopia</p>
             <p>➤ Telegram: @astumsj</p>
           </div>
-
           <div className="soft-card">
             <h2>Follow us</h2>
-
             <div className="socials contact-socials">
               <a
                 className="social social-telegram"
@@ -856,6 +765,7 @@ function Field({ label, children }) {
 }
 
 function AuthShell({ title, subtitle, children }) {
+  const navigate = useNavigate();
   return (
     <main className="auth-page">
       <div className="auth-shell">
@@ -879,115 +789,65 @@ function AuthShell({ title, subtitle, children }) {
   );
 }
 
-function LoginPage() {
-  const [show, setShow] = useState(false);
+function ForgotPage() {
+  const [sent, setSent] = useState(false);
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  async function submit(e) {
-    e.preventDefault();
-
-    setError("");
-    setLoading(true);
-
-    try {
-      const { data } = await API.post("/auth/login", {
-        email,
-        password,
-      });
-
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
-
-      if (data.user?.role === "admin") {
-        go("/dashboard");
-      } else if (data.user?.role === "student") {
-        go("/student-dashboard");
-      } else {
-        go("/");
-      }
-    } catch (err) {
-      setError(
-        err.response?.data?.message ||
-          "Unable to log in. Please check your details."
-      );
-    } finally {
-      setLoading(false);
-    }
-  }
-
+  const navigate = useNavigate();
   return (
     <AuthShell
-      title="Welcome back"
-      subtitle="Log in to continue your bootcamp journey."
+      title={sent ? "Check your inbox" : "Forgot your password?"}
+      subtitle={
+        sent
+          ? "If an account exists for that email, a reset link is on its way."
+          : "Enter the email you registered with and we will send you a reset link."
+      }
     >
-      <form className="auth-form" onSubmit={submit}>
-        <Field label="Email">
-          <input
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@gmail.com"
-          />
-        </Field>
-
-        <Field label="Password">
-          <div className="password">
-            <input
-              type={show ? "text" : "password"}
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
-            />
-
-            <button
-              type="button"
-              onClick={() => setShow((v) => !v)}
-            >
-              {show ? "Hide" : "Show"}
-            </button>
+      {sent ? (
+        <div className="sent-box">
+          <h2>Reset link sent</h2>
+          <p>
+            We sent instructions to <b>{email}</b>. Check your inbox and spam
+            folder.
+          </p>
+          <div className="button-row">
+            <Button href="/login">Back to login</Button>
+            <Button variant="outline" onClick={() => setSent(false)}>
+              Use a different email
+            </Button>
           </div>
-        </Field>
-
-        <div className="form-options">
-          <label>
-            <input type="checkbox" /> Remember me
-          </label>
-
-          <a
-            href="/forgot-password"
-            onClick={(e) => {
-              e.preventDefault();
-              go("/forgot-password");
-            }}
-          >
-            Forgot password?
-          </a>
         </div>
-
-        {error && <p className="auth-error">{error}</p>}
-
-        <Button>
-          {loading ? "Logging in..." : "Login"}
-        </Button>
-
-        <p className="auth-switch">
-          Don't have an account?{" "}
-          <a
-            href="/register"
-            onClick={(e) => {
-              e.preventDefault();
-              go("/register");
-            }}
-          >
-            Register here
-          </a>
-        </p>
-      </form>
+      ) : (
+        <form
+          className="auth-form"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (email.trim()) setSent(true);
+          }}
+        >
+          <Field label="Email">
+            <input
+              required
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@gmail.com"
+            />
+          </Field>
+          <Button>Send reset link</Button>
+          <p className="auth-switch">
+            Remembered it?{" "}
+            <a
+              href="/login"
+              onClick={(e) => {
+                e.preventDefault();
+                navigate("/login");
+              }}
+            >
+              Back to login
+            </a>
+          </p>
+        </form>
+      )}
     </AuthShell>
   );
 }
@@ -1306,13 +1166,48 @@ function App() {
     path.startsWith("/student-dashboard");
 
   return (
-    <div className="app">
-      {!auth && !dashboard && !studentDashboard && <Header />}
+    <BrowserRouter>
+      <Routes>
+        {/* Public Landing Pages wrapped with Header & Footer */}
+        <Route element={<PublicLayout />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/tracks" element={<TracksPage />} />
+          <Route path="/mentors" element={<MentorsPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/contact" element={<ContactPage />} />
+        </Route>
 
-      {page}
+        {/* Auth Routes (No Header/Footer, utilizing your Custom CSS) */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPage />} />
 
-      {!auth && !dashboard && !studentDashboard && <Footer />}
-    </div>
+        {/* Protected Admin Routes */}
+        <Route path="/admin" element={<AdminRoute />}>
+          <Route element={<AdminLayout />}>
+            <Route index element={<Navigate to="/admin/dashboard" replace />} />
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="batches" element={<BatchesPage />} />
+            <Route path="mentors" element={<MentorsPage />} />
+            <Route path="students" element={<StudentsPage />} />
+            <Route path="attendance" element={<AttendancePage />} />
+            <Route path="assignments" element={<AssignmentsPage />} />
+            <Route path="announcements" element={<AnnouncementsPage />} />
+            <Route path="reports" element={<ReportsPage />} />
+            <Route path="settings" element={<SettingsPage />} />
+          </Route>
+        </Route>
+
+        {/* Redirect old dashboard to admin/dashboard */}
+        <Route
+          path="/dashboard"
+          element={<Navigate to="/admin/dashboard" replace />}
+        />
+
+        {/* Any unknown URL goes back to Login */}
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 

@@ -146,7 +146,7 @@ const BatchesPage = () => {
         )}
       </div>
 
-      {/* Add Batch Modal */}
+      {/* Add Track Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-xl">
@@ -232,7 +232,7 @@ const BatchesPage = () => {
                   type="submit"
                   className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700"
                 >
-                  Add Batch
+                  Add Track
                 </button>
               </div>
             </form>

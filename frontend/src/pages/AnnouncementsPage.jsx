@@ -9,7 +9,7 @@ const initialAnnouncements = [
       "We are excited to have you all here. Please check your emails for the introductory materials.",
     date: "2026-05-09",
     author: "Admin User",
-    target: "All Batches",
+    target: "All Tracks",
   },
   {
     id: 2,
@@ -18,7 +18,7 @@ const initialAnnouncements = [
       "Guest speaker from Google joining us this Friday to share insights on system design.",
     date: "2026-08-10",
     author: "Admin User",
-    target: "All Batches",
+    target: "All Tracks",
   },
   {
     id: 3,
@@ -37,7 +37,7 @@ const AnnouncementsPage = () => {
   const [newAnnouncement, setNewAnnouncement] = useState({
     title: "",
     content: "",
-    target: "All Batches",
+    target: "All Tracks",
   });
 
   const handleAdd = (e) => {
@@ -48,7 +48,7 @@ const AnnouncementsPage = () => {
       ...announcements,
     ]);
     setIsModalOpen(false);
-    setNewAnnouncement({ title: "", content: "", target: "All Batches" });
+    setNewAnnouncement({ title: "", content: "", target: "All Tracks" });
   };
 
   const handleDelete = (id) => {
@@ -164,7 +164,7 @@ const AnnouncementsPage = () => {
                   }
                   className="w-full px-3 py-2 border rounded-lg focus:ring-teal-500"
                 >
-                  <option value="All Batches">All Batches</option>
+                  <option value="All Tracks">All Tracks</option>
                   <option value="Web Dev Bootcamp">Web Dev Bootcamp</option>
                   <option value="DSA & CP">
                     DSA & Competitive Programming

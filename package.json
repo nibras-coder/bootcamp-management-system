@@ -1,0 +1,9 @@
+{
+  "name": "bootcamp-management-system",
+  "version": "1.0.0",
+  "description": "Root package.json for managing frontend and backend tasks",
+  "scripts": {
+    "build": "npm run build --prefix frontend",
+    "install:all": "npm install --prefix frontend && npm install --prefix backend"
+  }
+}

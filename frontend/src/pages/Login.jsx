@@ -18,10 +18,18 @@ function Login() {
             Log in to continue your bootcamp journey.
           </p>
 
-          <form
-            className="auth-form"
-            onSubmit={(e) => {
-              e.preventDefault();
+          {/* Error Message */}
+          {error && (
+            <div
+              style={{
+                color: "#dc2626",
+                marginBottom: "1rem",
+                fontSize: "0.875rem",
+              }}
+            >
+              {error}
+            </div>
+          )}
 
               // We will connect this to the backend later.
               console.log("Login submitted");
@@ -33,6 +41,8 @@ function Login() {
               <input
                 type="email"
                 required
+                value={formData.email}
+                onChange={handleChange}
                 placeholder="you@gmail.com"
               />
             </label>

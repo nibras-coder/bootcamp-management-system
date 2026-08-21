@@ -1,4 +1,8 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display&family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display&family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
   --bg: #fbfcfb;
@@ -11,9 +15,11 @@
   --border: #d9e5e3;
   --sand: #f1eee6;
   --shadow: 0 18px 42px -24px rgba(24, 62, 65, 0.28);
-  --display: 'DM Serif Display', Georgia, serif;
-  --body: 'DM Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --arabic: 'Noto Naskh Arabic', serif;
+  --display: "DM Serif Display", Georgia, serif;
+  --body:
+    "DM Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  --arabic: "Noto Naskh Arabic", serif;
 }
 
 * {
@@ -232,15 +238,14 @@ h3 {
   position: absolute;
   inset: 0;
   z-index: 1;
-  background:
-    linear-gradient(
-      90deg,
-      #fbfcfb 0%,
-      rgba(251, 252, 251, 0.94) 24%,
-      rgba(251, 252, 251, 0.66) 42%,
-      rgba(251, 252, 251, 0.18) 62%,
-      rgba(251, 252, 251, 0) 78%
-    );
+  background: linear-gradient(
+    90deg,
+    #fbfcfb 0%,
+    rgba(251, 252, 251, 0.94) 24%,
+    rgba(251, 252, 251, 0.66) 42%,
+    rgba(251, 252, 251, 0.18) 62%,
+    rgba(251, 252, 251, 0) 78%
+  );
 }
 
 .hero-inner {
@@ -647,7 +652,10 @@ h3 {
   background: #fff !important;
   color: #286d69 !important;
   box-shadow: 0 8px 22px -16px rgba(19, 64, 66, 0.5) !important;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease !important;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease !important;
 }
 
 .social span {
@@ -665,12 +673,24 @@ h3 {
   background: #f7fbfa !important;
 }
 
-.social-telegram { color: #229ed9 !important; }
-.social-instagram { color: #c13584 !important; }
-.social-facebook { color: #1877f2 !important; }
-.social-tiktok { color: #111 !important; }
-.social-youtube { color: #ff0000 !important; }
-.social-x { color: #111 !important; }
+.social-telegram {
+  color: #229ed9 !important;
+}
+.social-instagram {
+  color: #c13584 !important;
+}
+.social-facebook {
+  color: #1877f2 !important;
+}
+.social-tiktok {
+  color: #111 !important;
+}
+.social-youtube {
+  color: #ff0000 !important;
+}
+.social-x {
+  color: #111 !important;
+}
 
 .footer-bottom {
   border-top: 1px solid #d7e3e1;
@@ -1237,15 +1257,14 @@ h3 {
   }
 
   .hero-fade {
-    background:
-      linear-gradient(
-        90deg,
-        #fbfcfb 0%,
-        rgba(251, 252, 251, 0.9) 25%,
-        rgba(251, 252, 251, 0.5) 47%,
-        rgba(251, 252, 251, 0.05) 72%,
-        rgba(251, 252, 251, 0) 100%
-      );
+    background: linear-gradient(
+      90deg,
+      #fbfcfb 0%,
+      rgba(251, 252, 251, 0.9) 25%,
+      rgba(251, 252, 251, 0.5) 47%,
+      rgba(251, 252, 251, 0.05) 72%,
+      rgba(251, 252, 251, 0) 100%
+    );
   }
 
   .hero-copy {

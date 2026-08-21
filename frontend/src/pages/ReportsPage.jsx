@@ -137,7 +137,7 @@ const ReportsPage = () => {
             {mockReports.completionRate}%
           </p>
           <p className="text-xs text-gray-500 mt-2">
-            Overall across all batches
+            Overall across all tracks
           </p>
         </div>
 
