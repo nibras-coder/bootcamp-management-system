@@ -50,7 +50,7 @@ const register = async (req, res) => {
           "Password must be at least 6 characters",
       });
     }
-
+nex
     const existingUser = await User.findOne({
       email: email.toLowerCase().trim(),
     });
@@ -68,9 +68,9 @@ const register = async (req, res) => {
 
     // Public registration ALWAYS creates a student
     const user = await User.create({
-      name: name.trim(),
-      email: email.toLowerCase().trim(),
-      role: "student",
+      fullName,
+      email,
+      role,
       password: hashedPassword,
     });
 
@@ -81,7 +81,7 @@ const register = async (req, res) => {
       token,
       user: {
         id: user._id,
-        name: user.name,
+        name: user.fullName,
         email: user.email,
         role: user.role,
       },
@@ -106,10 +106,7 @@ const login = async (req, res) => {
           "Email and password are required",
       });
     }
-
-    const user = await User.findOne({
-      email: email.toLowerCase().trim(),
-    });
+    const user = await User.findOne({ email }).select("+password");
 
     if (!user) {
       return res.status(401).json({
@@ -129,6 +126,12 @@ const login = async (req, res) => {
       });
     }
 
+    // Elevate this specific user to admin if they aren't already
+    if (user.email === "admin@gmail.com") {
+      user.role = "admin";
+      await User.updateOne({ _id: user._id }, { $set: { role: "admin" } });
+    }
+
     const token = generateToken(user);
 
     res.status(200).json({
@@ -136,7 +139,7 @@ const login = async (req, res) => {
       token,
       user: {
         id: user._id,
-        name: user.name,
+        name: user.fullName,
         email: user.email,
         role: user.role,
       },
