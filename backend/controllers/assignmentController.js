@@ -1,176 +1,69 @@
 const Assignment = require("../models/Assignment");
-<<<<<<< HEAD
-const asyncHandler = require("../utils/asyncHandler");
-const { getMyBatchIds } = require("../middleware/mentorScope");
-
-const getAssignments = asyncHandler(async (req, res) => {
-  const query = {};
-  const myBatches = getMyBatchIds(req.user);
-  if (myBatches) query.batch = { $in: myBatches };
-
-  const assignments = await Assignment.find(query).sort({ createdAt: -1 });
-  res.status(200).json({ success: true, count: assignments.length, assignments });
-});
-
-const createAssignment = asyncHandler(async (req, res) => {
-  const { title, description, instructions, batch, deadline, maxScore } = req.body;
-  if (!title || !description || !batch || !deadline) {
-    return res.status(400).json({ success: false, message: "title, description, batch, and deadline are required" });
-  }
-  const assignment = await Assignment.create({
-    title, description, instructions, batch, deadline, maxScore,
-    createdBy: req.user._id,
-  });
-  res.status(201).json({ success: true, message: "Assignment created", assignment });
-});
-
-const updateAssignment = asyncHandler(async (req, res) => {
-  const assignment = await Assignment.findById(req.params.id);
-  if (!assignment) return res.status(404).json({ success: false, message: "Assignment not found" });
-
-  const { title, description, instructions, deadline, maxScore, isPublished } = req.body;
-  if (title !== undefined) assignment.title = title;
-  if (description !== undefined) assignment.description = description;
-  if (instructions !== undefined) assignment.instructions = instructions;
-  if (deadline !== undefined) assignment.deadline = deadline;
-  if (maxScore !== undefined) assignment.maxScore = maxScore;
-  if (isPublished !== undefined) assignment.isPublished = isPublished;
-
-  await assignment.save();
-  res.status(200).json({ success: true, message: "Assignment updated", assignment });
-});
-
-const deleteAssignment = asyncHandler(async (req, res) => {
-  const assignment = await Assignment.findById(req.params.id);
-  if (!assignment) return res.status(404).json({ success: false, message: "Assignment not found" });
-  await assignment.deleteOne();
-  res.status(200).json({ success: true, message: "Assignment deleted" });
-});
-
-module.exports = { getAssignments, createAssignment, updateAssignment, deleteAssignment };
-=======
 const Batch = require("../models/Batch");
 
-// Create assignmet
-
+// Create assignment
 const createAssignment = async (req, res) => {
   try {
     const mentorId = req.user.id;
+    const { title, description, instructions, batch, deadline, maxScore } = req.body;
 
-    const {
-      title,
-      description,
-      instructions,
-      batch,
-      deadline,
-      maxScore,
-    } = req.body;
-
-    if (
-      !title ||
-      !description ||
-      !batch ||
-      !deadline ||
-      maxScore === undefined
-    ) {
+    if (!title || !description || !batch || !deadline || maxScore === undefined) {
       return res.status(400).json({
         success: false,
-        message:
-          "Title, description, batch, deadline and maximum score are required",
+        message: "Title, description, batch, deadline and maximum score are required",
       });
     }
 
     // Check that mentor is assigned to batch
-
-    const mentorBatch = await Batch.findOne({
-      _id: batch,
-      mentors: mentorId,
-    });
+    const mentorBatch = await Batch.findOne({ _id: batch, mentors: mentorId });
 
     if (!mentorBatch) {
       return res.status(403).json({
         success: false,
-        message:
-          "You are not assigned to this batch",
+        message: "You are not assigned to this batch",
       });
     }
 
-    const assignment =
-      await Assignment.create({
-        title,
-        description,
-        instructions,
-        batch,
-        createdBy: mentorId,
-        deadline,
-        maxScore,
-      });
+    const assignment = await Assignment.create({
+      title,
+      description,
+      instructions,
+      batch,
+      createdBy: mentorId,
+      deadline,
+      maxScore,
+    });
 
-    const populatedAssignment =
-      await Assignment.findById(
-        assignment._id
-      )
-        .populate(
-          "batch",
-          "name track"
-        )
-        .populate(
-          "createdBy",
-          "name email"
-        );
+    const populatedAssignment = await Assignment.findById(assignment._id)
+      .populate("batch", "name track")
+      .populate("createdBy", "name email");
 
     res.status(201).json({
       success: true,
-      message:
-        "Assignment created successfully",
+      message: "Assignment created successfully",
       data: populatedAssignment,
     });
   } catch (error) {
-    console.error(
-      "Create assignment error:",
-      error
-    );
-
+    console.error("Create assignment error:", error);
     res.status(500).json({
       success: false,
-      message:
-        "Failed to create assignment",
+      message: "Failed to create assignment",
       error: error.message,
     });
   }
 };
-// Get mentor assignment
 
-const getMentorAssignments = async (
-  req,
-  res
-) => {
+// Get mentor assignment
+const getMentorAssignments = async (req, res) => {
   try {
     const mentorId = req.user.id;
+    const batches = await Batch.find({ mentors: mentorId }).select("_id");
+    const batchIds = batches.map((batch) => batch._id);
 
-    const batches = await Batch.find({
-      mentors: mentorId,
-    }).select("_id");
-
-    const batchIds = batches.map(
-      (batch) => batch._id
-    );
-
-    const assignments =
-      await Assignment.find({
-        batch: { $in: batchIds },
-      })
-        .populate(
-          "batch",
-          "name track"
-        )
-        .populate(
-          "createdBy",
-          "name email"
-        )
-        .sort({
-          deadline: 1,
-        });
+    const assignments = await Assignment.find({ batch: { $in: batchIds } })
+      .populate("batch", "name track")
+      .populate("createdBy", "name email")
+      .sort({ deadline: 1 });
 
     res.status(200).json({
       success: true,
@@ -178,39 +71,24 @@ const getMentorAssignments = async (
       data: assignments,
     });
   } catch (error) {
-    console.error(
-      "Get mentor assignments error:",
-      error
-    );
-
+    console.error("Get mentor assignments error:", error);
     res.status(500).json({
       success: false,
-      message:
-        "Failed to get assignments",
+      message: "Failed to get assignments",
       error: error.message,
     });
   }
 };
-// Get one assignment
 
-const getAssignmentById = async (
-  req,
-  res
-) => {
+// Get one assignment
+const getAssignmentById = async (req, res) => {
   try {
     const mentorId = req.user.id;
     const { id } = req.params;
 
-    const assignment =
-      await Assignment.findById(id)
-        .populate(
-          "batch",
-          "name track"
-        )
-        .populate(
-          "createdBy",
-          "name email"
-        );
+    const assignment = await Assignment.findById(id)
+      .populate("batch", "name track")
+      .populate("createdBy", "name email");
 
     if (!assignment) {
       return res.status(404).json({
@@ -219,17 +97,15 @@ const getAssignmentById = async (
       });
     }
 
-    const mentorBatch =
-      await Batch.findOne({
-        _id: assignment.batch._id,
-        mentors: mentorId,
-      });
+    const mentorBatch = await Batch.findOne({
+      _id: assignment.batch._id,
+      mentors: mentorId,
+    });
 
     if (!mentorBatch) {
       return res.status(403).json({
         success: false,
-        message:
-          "You cannot access this assignment",
+        message: "You cannot access this assignment",
       });
     }
 
@@ -238,31 +114,22 @@ const getAssignmentById = async (
       data: assignment,
     });
   } catch (error) {
-    console.error(
-      "Get assignment error:",
-      error
-    );
-
+    console.error("Get assignment error:", error);
     res.status(500).json({
       success: false,
-      message:
-        "Failed to get assignment",
+      message: "Failed to get assignment",
       error: error.message,
     });
   }
 };
-// Update assignment
 
-const updateAssignment = async (
-  req,
-  res
-) => {
+// Update assignment
+const updateAssignment = async (req, res) => {
   try {
     const mentorId = req.user.id;
     const { id } = req.params;
 
-    const assignment =
-      await Assignment.findById(id);
+    const assignment = await Assignment.findById(id);
 
     if (!assignment) {
       return res.status(404).json({
@@ -272,85 +139,50 @@ const updateAssignment = async (
     }
 
     // Check mentor owns the batch
-    
-    const mentorBatch =
-      await Batch.findOne({
-        _id: assignment.batch,
-        mentors: mentorId,
-      });
+    const mentorBatch = await Batch.findOne({
+      _id: assignment.batch,
+      mentors: mentorId,
+    });
 
     if (!mentorBatch) {
       return res.status(403).json({
         success: false,
-        message:
-          "You cannot update this assignment",
+        message: "You cannot update this assignment",
       });
     }
 
-    const {
-      title,
-      description,
-      instructions,
-      deadline,
-      maxScore,
-    } = req.body;
+    const { title, description, instructions, deadline, maxScore } = req.body;
 
-    if (title !== undefined) {
-      assignment.title = title;
-    }
-
-    if (description !== undefined) {
-      assignment.description =
-        description;
-    }
-
-    if (instructions !== undefined) {
-      assignment.instructions =
-        instructions;
-    }
-
-    if (deadline !== undefined) {
-      assignment.deadline = deadline;
-    }
-
-    if (maxScore !== undefined) {
-      assignment.maxScore = maxScore;
-    }
+    if (title !== undefined) assignment.title = title;
+    if (description !== undefined) assignment.description = description;
+    if (instructions !== undefined) assignment.instructions = instructions;
+    if (deadline !== undefined) assignment.deadline = deadline;
+    if (maxScore !== undefined) assignment.maxScore = maxScore;
 
     await assignment.save();
 
     res.status(200).json({
       success: true,
-      message:
-        "Assignment updated successfully",
+      message: "Assignment updated successfully",
       data: assignment,
     });
   } catch (error) {
-    console.error(
-      "Update assignment error:",
-      error
-    );
-
+    console.error("Update assignment error:", error);
     res.status(500).json({
       success: false,
-      message:
-        "Failed to update assignment",
+      message: "Failed to update assignment",
       error: error.message,
     });
   }
 };
-// Delete assignment
 
-const deleteAssignment = async (
-  req,
-  res
-) => {
+// Delete assignment
+const deleteAssignment = async (req, res) => {
   try {
     const mentorId = req.user.id;
     const { id } = req.params;
 
-    const assignment =
-      await Assignment.findById(id);
+    const assignment = await Assignment.findById(id);
 
     if (!assignment) {
       return res.status(404).json({
@@ -359,17 +191,15 @@ const deleteAssignment = async (
       });
     }
 
-    const mentorBatch =
-      await Batch.findOne({
-        _id: assignment.batch,
-        mentors: mentorId,
-      });
+    const mentorBatch = await Batch.findOne({
+      _id: assignment.batch,
+      mentors: mentorId,
+    });
 
     if (!mentorBatch) {
       return res.status(403).json({
         success: false,
-        message:
-          "You cannot delete this assignment",
+        message: "You cannot delete this assignment",
       });
     }
 
@@ -377,19 +207,13 @@ const deleteAssignment = async (
 
     res.status(200).json({
       success: true,
-      message:
-        "Assignment deleted successfully",
+      message: "Assignment deleted successfully",
     });
   } catch (error) {
-    console.error(
-      "Delete assignment error:",
-      error
-    );
-
+    console.error("Delete assignment error:", error);
     res.status(500).json({
       success: false,
-      message:
-        "Failed to delete assignment",
+      message: "Failed to delete assignment",
       error: error.message,
     });
   }
@@ -402,4 +226,3 @@ module.exports = {
   updateAssignment,
   deleteAssignment,
 };
->>>>>>> origin/main
