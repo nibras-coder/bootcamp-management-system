@@ -4,7 +4,7 @@ import { Search, Plus, Mail, Phone, Trash2, X, Filter } from "lucide-react";
 const initialMentors = [
   {
     id: 1,
-    name: "Yasmin ALi",
+    name: "Yasmin Ali",
     gender: "Female",
     email: "jazmin@gmail.com",
     phone: "+1 234 567 8900",

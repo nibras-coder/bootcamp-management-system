@@ -15,16 +15,27 @@ import API from "./api/axios";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import AdminLayout from "./layouts/AdminLayout";
-import AdminDashboard from "./pages/AdminDashboard";
-import BatchesPage from "./pages/BatchesPage";
-import MentorsPage from "./pages/MentorsPage";
-import StudentsPage from "./pages/StudentsPage";
-import AttendancePage from "./pages/AttendancePage";
-import AssignmentsPage from "./pages/AssignmentsPage";
-import AnnouncementsPage from "./pages/AnnouncementsPage";
-import ReportsPage from "./pages/ReportsPage";
-import SettingsPage from "./pages/SettingsPage";
-import AdminRoute from "./components/AdminRoute";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import MentorDashboard from "./pages/MentorDashboard";
+import MyStudents from "./pages/MyStudents";
+import Attendance from "./pages/Attendance";
+import Progress from "./pages/Progress";
+import Assignments from "./pages/Assignments";
+import Grading from "./pages/Grading";
+import Announcements from "./pages/Announcements";
+import Profile from "./pages/Profile";
+import Settings from "./pages/Settings";
+import BatchesPage from "./pages/admin/BatchesPage";
+import MentorsPage from "./pages/admin/MentorsPage";
+import StudentsPage from "./pages/admin/StudentsPage";
+import AttendancePage from "./pages/admin/AttendancePage";
+import AssignmentsPage from "./pages/admin/AssignmentsPage";
+import AnnouncementsPage from "./pages/admin/AnnouncementsPage";
+import ReportsPage from "./pages/admin/ReportsPage";
+import SettingsPage from "./pages/admin/SettingsPage";
+import ResourcesPage from "./pages/admin/ResourcesPage";
+import ProtectedRoute from "./components/ProtectedRoute";
+import StudentDashboard from "./pages/StudentDashboard";
 
 // --- DATA ARRAYS ---
 const tracks = [
@@ -78,8 +89,8 @@ const steps = [
   ],
   [
     "02",
-    "Get placed in a batch",
-    "You are matched with a mentor and a learning batch.",
+    "Get placed in a track",
+    "You are matched with a mentor and a learning track.",
   ],
   [
     "03",
@@ -127,42 +138,24 @@ const features = [
 ];
 
 const mentors = [
-  [
-    "AN",
-    "Ahmed Nasir",
-    "Lead Mentor — Web Development",
-    "Full stack developer focused on React and Node.js, mentoring beginners into their first deployed project.",
-  ],
-  [
-    "FY",
-    "Fatima Yusuf",
-    "Mentor — UI/UX Design",
-    "Product designer working in Figma, teaching research, design systems and accessible interfaces.",
-  ],
-  [
-    "BK",
-    "Bilal Kedir",
-    "Mentor — Mobile Development",
-    "Flutter developer who has shipped several Android apps and loves clean architecture.",
-  ],
-  [
-    "HA",
-    "Hafsa Abdurahman",
-    "Mentor — Data Science",
-    "Python and machine learning enthusiast guiding students through their first data projects.",
-  ],
-  [
-    "US",
-    "Umar Salah",
-    "Mentor — Web Development",
-    "Backend engineer covering APIs, databases and deployment for the web track.",
-  ],
-  [
-    "AM",
-    "Ayan Mohammed",
-    "Program Coordinator",
-    "Coordinates batches, schedules and attendance so every cohort runs smoothly.",
-  ],
+  {
+    id: 1,
+    name: "Yasmin Ali",
+    role: "Web Dev Mentor",
+    expertise: ["React", "Node.js", "MongoDB"],
+  },
+  {
+    id: 2,
+    name: "Ahmed Sani",
+    role: "CP Mentor",
+    expertise: ["C++", "Algorithms", "Codeforces"],
+  },
+  {
+    id: 3,
+    name: "Sara Seid",
+    role: "Backend Mentor",
+    expertise: ["Python", "Django", "PostgreSQL"],
+  },
 ];
 
 const faqs = [
@@ -255,7 +248,7 @@ function Header() {
           onClick={() => setOpen((v) => !v)}
           aria-label="Toggle navigation"
         >
-          {open ? "×" : "☰"}
+          {open ? "├ù" : "Γÿ░"}
         </button>
       </div>
     </header>
@@ -280,9 +273,6 @@ function SocialIcon({ type }) {
     youtube: (
       <path d="M21.7 7.2a3 3 0 0 0-2.1-2.1C17.9 4.6 12 4.6 12 4.6s-5.9 0-7.6.5a3 3 0 0 0-2.1 2.1C1.8 8.9 1.8 12 1.8 12s0 3.1.5 4.8a3 3 0 0 0 2.1 2.1c1.7.5 7.6.5 7.6.5s5.9 0 7.6-.5a3 3 0 0 0 2.1-2.1c.5-1.7.5-4.8.5-4.8s0-3.1-.5-4.8ZM10 15.7V8.3l6.2 3.7-6.2 3.7Z" />
     ),
-    tiktok: (
-      <path d="M14.2 3h3.2c.2 1.7 1.1 3.1 2.6 4v3.2c-1.4-.1-2.7-.5-3.8-1.2v6.2a5.3 5.3 0 1 1-4.7-5.2v3.3a2.2 2.2 0 1 0 1.5 2V3h1.2Z" />
-    ),
     x: (
       <path d="M18.9 2H22l-6.8 7.8L23.1 22h-6.2l-4.8-6.3L6.6 22H3.5l7.2-8.2L2.9 2h6.4l4.3 5.7L18.9 2Zm-1.1 17.8h1.7L8.3 4.1H6.5l11.3 15.7Z" />
     ),
@@ -299,7 +289,6 @@ function Footer() {
     ["telegram", "Telegram", "https://t.me/astumsj"],
     ["instagram", "Instagram", "https://instagram.com/astumsj"],
     ["facebook", "Facebook", "https://facebook.com/astumsj"],
-    ["tiktok", "TikTok", "https://www.tiktok.com/@astumsj"],
     ["youtube", "YouTube", "https://youtube.com/@astumsj"],
     ["x", "X", "https://x.com/astumsj"],
   ];
@@ -310,7 +299,7 @@ function Footer() {
           <Logo size={44} />
           <p>
             A centralized platform to manage bootcamp activities, track progress
-            and grow together — run by Adama Science and Technology University
+            and grow together ΓÇö run by Adama Science and Technology University
             Muslim Students Jemea.
           </p>
           <div className="socials">
@@ -350,7 +339,7 @@ function Footer() {
       </div>
       <div className="container footer-bottom">
         <span>Made by Nibras Coders</span>
-        <span>ASTU MSJ Bootcamp — Learn. Build. Grow Together.</span>
+        <span>ASTU MSJ Bootcamp ΓÇö Learn. Build. Grow Together.</span>
       </div>
     </footer>
   );
@@ -392,7 +381,7 @@ function Home() {
         <div className="hero-fade" />
         <div className="container hero-inner">
           <div className="hero-copy">
-            <div className="arabic">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
+            <div className="arabic text-gray-600">بسم الله الرحمن الرحيم</div>
             <div className="arabic-rule">
               <span></span>۞<span></span>
             </div>
@@ -480,7 +469,7 @@ function Home() {
         <div className="section-head row">
           <SectionTitle
             title="Meet a few mentors"
-            text="Brothers and sisters guiding every batch."
+            text="Brothers and sisters guiding every track."
           />
           <Button href="/mentors" variant="outline">
             See all mentors
@@ -488,7 +477,7 @@ function Home() {
         </div>
         <div className="mentor-grid">
           {mentors.slice(0, 3).map((m) => (
-            <MentorCard key={m[1]} m={m} />
+            <MentorCard key={m.id} m={m} />
           ))}
         </div>
       </section>
@@ -500,7 +489,7 @@ function Home() {
             <div className="faq-item" key={q}>
               <button onClick={() => setFaqOpen(faqOpen === i ? null : i)}>
                 <span>{q}</span>
-                <b>{faqOpen === i ? "−" : "+"}</b>
+                <b>{faqOpen === i ? "ΓêÆ" : "+"}</b>
               </button>
               {faqOpen === i && <p>{a}</p>}
             </div>
@@ -530,12 +519,29 @@ function SectionTitle({ title, text }) {
   );
 }
 function MentorCard({ m }) {
+  const getInitials = (name) => {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("");
+  };
   return (
-    <article className="card mentor-card">
-      <div className="initials">{m[0]}</div>
-      <h3>{m[1]}</h3>
-      <span>{m[2]}</span>
-      <p>{m[3]}</p>
+    <article className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm flex flex-col items-center text-center transition-transform hover:-translate-y-1 hover:shadow-md">
+      <div className="w-16 h-16 bg-teal-100 text-teal-700 rounded-full flex items-center justify-center text-xl font-bold mb-4">
+        {getInitials(m.name)}
+      </div>
+      <h3 className="text-lg font-bold text-gray-900 mb-1">{m.name}</h3>
+      <span className="text-sm font-medium text-teal-600 mb-4">{m.role}</span>
+      <div className="flex flex-wrap justify-center gap-2">
+        {m.expertise.map((skill, index) => (
+          <span
+            key={index}
+            className="inline-flex px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-600"
+          >
+            {skill}
+          </span>
+        ))}
+      </div>
     </article>
   );
 }
@@ -691,9 +697,9 @@ function ContactPage() {
         <div className="side-stack">
           <div className="soft-card">
             <h2>Reach us directly</h2>
-            <p>✉ hello@astumsj.org</p>
-            <p>⌖ ASTU Main Campus, Adama, Ethiopia</p>
-            <p>➤ Telegram: @astumsj</p>
+            <p>Γ£ë hello@astumsj.org</p>
+            <p>Γîû ASTU Main Campus, Adama, Ethiopia</p>
+            <p>Γ₧ñ Telegram: @astumsj</p>
           </div>
           <div className="soft-card">
             <h2>Follow us</h2>
@@ -733,15 +739,6 @@ function ContactPage() {
                 aria-label="YouTube"
               >
                 <SocialIcon type="youtube" />
-              </a>
-              <a
-                className="social social-tiktok"
-                href="https://www.tiktok.com/@astumsj"
-                target="_blank"
-                rel="noreferrer"
-                aria-label="TikTok"
-              >
-                <SocialIcon type="tiktok" />
               </a>
               <a
                 className="social social-x"
@@ -885,9 +882,23 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPage />} />
 
-        {/* Protected Admin Routes */}
-        <Route path="/admin" element={<AdminRoute />}>
-          <Route element={<AdminLayout />}>
+        {/* Student Dashboard */}
+        <Route path="/student-dashboard/*" element={<StudentDashboard />} />
+
+        {/* Dashboard */}
+        <Route path="/mentor-dashboard" element={<MentorDashboard />} />
+        {/* mystudents*/}
+        <Route path="/my-students" element={<MyStudents />} />
+        <Route path="/attendance" element={<Attendance />} />
+        <Route path="/progress" element={<Progress />} />
+        <Route path="/assignments" element={<Assignments />} />
+        <Route path="/grading" element={<Grading />} />
+        <Route path="/announcements" element={<Announcements />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/settings" element={<Settings />} />
+
+        {/* Admin Routes */}
+        <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<Navigate to="/admin/dashboard" replace />} />
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="batches" element={<BatchesPage />} />
@@ -896,15 +907,15 @@ function App() {
             <Route path="attendance" element={<AttendancePage />} />
             <Route path="assignments" element={<AssignmentsPage />} />
             <Route path="announcements" element={<AnnouncementsPage />} />
+            <Route path="resources" element={<ResourcesPage />} />
             <Route path="reports" element={<ReportsPage />} />
             <Route path="settings" element={<SettingsPage />} />
           </Route>
-        </Route>
 
         {/* Redirect old dashboard to admin/dashboard */}
         <Route
           path="/dashboard"
-          element={<Navigate to="/admin/dashboard" replace />}
+          element={<Navigate to="/admindashboard" replace />}
         />
 
         {/* Any unknown URL goes back to Login */}

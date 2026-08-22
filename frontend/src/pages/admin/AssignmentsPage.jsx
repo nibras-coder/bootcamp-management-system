@@ -218,7 +218,7 @@ const AssignmentsPage = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Due Date
+                  Deadline Date
                 </label>
                 <input
                   required
@@ -231,6 +231,35 @@ const AssignmentsPage = () => {
                     })
                   }
                   className="w-full px-3 py-2 border rounded-lg focus:ring-teal-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Attached File / Link (Optional)
+                </label>
+                <input
+                  type="url"
+                  placeholder="https://"
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-teal-500"
+                  value={newAssignment.link || ""}
+                  onChange={(e) =>
+                    setNewAssignment({ ...newAssignment, link: e.target.value })
+                  }
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Max Score / Points
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  placeholder="100"
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-teal-500"
+                  value={newAssignment.maxScore || ""}
+                  onChange={(e) =>
+                    setNewAssignment({ ...newAssignment, maxScore: e.target.value })
+                  }
                 />
               </div>
               <div className="flex justify-end space-x-3 mt-6">

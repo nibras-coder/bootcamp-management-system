@@ -65,7 +65,7 @@ const SettingsPage = () => {
                 <input
                   required
                   type="text"
-                  defaultValue="Admin User"
+                  defaultValue="Student"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500"
                 />
               </div>

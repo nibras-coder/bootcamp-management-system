@@ -3,7 +3,7 @@ const bcrypt = require("bcryptjs");
 
 const userSchema = new mongoose.Schema(
   {
-    fullName: {
+    name: {
       type: String,
       required: true,
       trim: true,
@@ -24,7 +24,7 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["admin", "mentor", "student"],
+      enum: ["student", "mentor", "admin"],
       default: "student",
     },
     batch: {
@@ -35,6 +35,15 @@ const userSchema = new mongoose.Schema(
     isActive: {
       type: Boolean,
       default: true,
+    },
+    resetPasswordToken: {
+      type: String,
+      default: null,
+    },
+    
+    resetPasswordExpires: {
+      type: Date,
+      default: null,
     },
   },
   {

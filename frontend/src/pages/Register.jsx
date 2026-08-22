@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import API from "../api/axios";
+import { useNavigate, Link } from "react-router-dom";
 import calligraphy from "../assets/calligraphy.jpg";
 import logo from "../assets/logo.png";
+import API from "../api/axios";
 
 function Register() {
   const navigate = useNavigate();
@@ -45,8 +45,8 @@ function Register() {
     const confirmPassword = formData.confirmPassword;
     const role = formData.role;
 
-    if (!name || !email || !password || !confirmPassword || !role) {
-      setError("Please fill in all fields, including your role.");
+    if (!name || !email || !password || !confirmPassword) {
+      setError("Please fill in all fields.");
       return;
     }
 
@@ -74,6 +74,7 @@ function Register() {
         password,
         confirmPassword,
         role,
+        track: formData.track,
       });
 
       setSuccess(
@@ -87,6 +88,7 @@ function Register() {
         password: "",
         confirmPassword: "",
         role: "",
+        track: "",
       });
 
       setTimeout(() => {
@@ -110,8 +112,10 @@ function Register() {
   return (
     <main className="auth-page">
       <div className="auth-shell">
+
         <div className="auth-main">
           <h1>Create your account</h1>
+
           <p className="auth-subtitle">
             Join the bootcamp today and start your journey.
           </p>
@@ -161,7 +165,7 @@ function Register() {
                 required
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="you@gmil.com"
+                placeholder="you@gmail.com"
               />
             </label>
 
@@ -198,24 +202,29 @@ function Register() {
             </label>
 
             <label className="field">
-              <span>Role</span>
+              <span>Choose Track</span>
               <select
-                name="role"
+                name="track"
                 required
-                value={formData.role}
+                value={formData.track || ""}
                 onChange={handleChange}
+                style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid #ddd', width: '100%' }}
               >
-                <option value="" disabled>
-                  Select your role
-                </option>
-                <option value="student">Student</option>
-                <option value="mentor">Mentor</option>
+                <option value="" disabled>Select a track</option>
+                <option value="Web Development">Web Development</option>
+                <option value="Mobile Development">Mobile Development</option>
+                <option value="UI/UX Design">UI/UX Design</option>
+                <option value="Data Science">Data Science</option>
               </select>
             </label>
 
             <label className="terms">
               <input type="checkbox" required />
-              <span>I agree to the Terms and Conditions</span>
+              <span>
+                I agree to the Terms and Conditions (
+                <Link to="/terms" style={{ color: '#0984e3', textDecoration: 'underline' }}>Read Terms</Link>
+                )
+              </span>
             </label>
 
             <button className="btn primary" type="submit" disabled={loading}>
@@ -224,34 +233,38 @@ function Register() {
 
             <p className="auth-switch">
               Already have an account?{" "}
-              <button
-                type="button"
-                className="link-button"
-                onClick={() => navigate("/login")}
-              >
+              <Link to="/login" className="link-button">
                 Login here
-              </button>
+              </Link>
             </p>
           </form>
         </div>
 
         <div className="auth-art">
-          <img src={calligraphy} alt="" />
+          <img
+            src={calligraphy}
+            alt=""
+          />
+
           <div className="art-overlay"></div>
+
           <div className="auth-brand">
-            <button
-              className="logo"
-              type="button"
-              onClick={() => navigate("/")}
-            >
-              <img src={logo} alt="ASTU MSJ logo" />
+            <Link to="/" className="logo">
+              <img
+                src={logo}
+                alt="ASTU MSJ logo"
+              />
               <span>
                 ASTU MSJ <b>Bootcamp</b>
               </span>
-            </button>
-            <span className="auth-home-hint">Back to home</span>
+            </Link>
+
+            <Link to="/" className="auth-home-hint">
+              Back to home
+            </Link>
           </div>
         </div>
+
       </div>
     </main>
   );

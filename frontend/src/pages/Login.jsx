@@ -1,14 +1,13 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import API from "../api/axios";
+import { useNavigate, Link } from "react-router-dom";
 import calligraphy from "../assets/calligraphy.jpg";
 import logo from "../assets/logo.png";
+import API from "../api/axios";
 
 function Login() {
   const navigate = useNavigate();
-
-  const [formData, setFormData] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
+  const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -20,27 +19,17 @@ function Login() {
     e.preventDefault();
     setError("");
     setLoading(true);
-
     try {
-      const response = await API.post("/auth/login", formData);
+      const { data } = await API.post("/auth/login", formData);
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
 
-      if (response.data.token) {
-        // Save token and user data
-        localStorage.setItem("token", response.data.token);
-
-        if (response.data.user) {
-          localStorage.setItem("user", JSON.stringify(response.data.user));
-        }
-
-        // Redirect based on role
-        if (response.data.user?.role === "admin") {
-          navigate("/admin/dashboard");
-        } else {
-          navigate("/dashboard");
-        }
-      }
+      const role = data.user.role;
+      if (role === "admin") navigate("/admin/dashboard");
+      else if (role === "mentor") navigate("/mentor-dashboard");
+      else navigate("/student-dashboard");
     } catch (err) {
-      setError(err.response?.data?.message || "Invalid email or password");
+      setError(err.response?.data?.message || "Login failed");
     } finally {
       setLoading(false);
     }
@@ -55,7 +44,6 @@ function Login() {
             Log in to continue your bootcamp journey.
           </p>
 
-          {/* Error Message */}
           {error && (
             <div
               style={{
@@ -121,33 +109,24 @@ function Login() {
             </button>
 
             <p className="auth-switch">
-              Don't have an account?{" "}
-              <button
-                type="button"
-                className="link-button"
-                onClick={() => navigate("/register")}
-              >
-                Register here
-              </button>
+              Don't have an account? <Link to="/register">Create one</Link>
             </p>
           </form>
         </div>
 
         <div className="auth-art">
-          <img src={calligraphy} alt="Calligraphy Art" />
+          <img src={calligraphy} alt="" />
           <div className="art-overlay"></div>
           <div className="auth-brand">
-            <button
-              className="logo"
-              type="button"
-              onClick={() => navigate("/")}
-            >
+            <Link to="/" className="logo">
               <img src={logo} alt="ASTU MSJ logo" />
               <span>
                 ASTU MSJ <b>Bootcamp</b>
               </span>
-            </button>
-            <span className="auth-home-hint">Back to home</span>
+            </Link>
+            <Link to="/" className="auth-home-hint">
+              Back to home
+            </Link>
           </div>
         </div>
       </div>

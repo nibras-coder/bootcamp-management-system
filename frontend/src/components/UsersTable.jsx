@@ -1,71 +1,129 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+import React from "react";
 
 const UsersTable = () => {
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        // Grab the admin token from local storage (saved during login)
-        const token = localStorage.getItem("token");
-
-        const config = {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        };
-
-        // Call the backend API you just built!
-        const response = await axios.get(
-          "http://localhost:5000/api/users",
-          config,
-        );
-
-        // Extract the users array from your teammate's response format
-        setUsers(response.data.users);
-        setLoading(false);
-      } catch (err) {
-        console.error("Failed to fetch users", err);
-        setError("Could not load users. Please check your connection.");
-        setLoading(false);
-      }
-    };
-
-    fetchUsers();
-  }, []);
-
-  if (loading) return <div className="p-4 text-gray-500">Loading users...</div>;
-  if (error) return <div className="p-4 text-red-500">{error}</div>;
+  // Placeholder data for your presentation
+  const mockUsers = [
+    {
+      id: 1,
+      name: "Hanan Mohammed",
+      email: "hayat@gmail.com",
+      role: "Student",
+      batch: "Web Dev Trach 2",
+      status: "Active",
+    },
+    {
+      id: 2,
+      name: "Ahmed Yassin",
+      email: "ahmed@gmail.com",
+      role: "Student",
+      batch: "UI/UX Track 1",
+      status: "Active",
+    },
+    {
+      id: 3,
+      name: "Sumeya Abdulfetah",
+      email: "sumeya@gmail.com",
+      role: "Mentor",
+      batch: "Web Dev Track 2",
+      status: "Active",
+    },
+    {
+      id: 4,
+      name: "Abdullah Isa",
+      email: "abdullah@gmail.com",
+      role: "Student",
+      batch: "Data Science 1",
+      status: "Inactive",
+    },
+  ];
 
   return (
-    <div className="overflow-x-auto bg-white rounded-lg shadow">
-      <table className="w-full text-left border-collapse">
-        <thead>
-          <tr className="bg-gray-100 border-b">
-            <th className="p-4 font-semibold text-gray-600">Full Name</th>
-            <th className="p-4 font-semibold text-gray-600">Email</th>
-            <th className="p-4 font-semibold text-gray-600">Role</th>
-            <th className="p-4 font-semibold text-gray-600">Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.map((user) => (
-            <tr key={user._id} className="border-b hover:bg-gray-50">
-              <td className="p-4">{user.fullName}</td>
-              <td className="p-4">{user.email}</td>
-              <td className="p-4 capitalize">{user.role}</td>
-              <td className="p-4">
-                <span className="px-2 py-1 text-sm text-green-700 bg-green-100 rounded-full">
-                  Active
-                </span>
-              </td>
+    <div className="bg-bootcamp-surface mt-8 rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      {/* Table Header Section */}
+      <div className="px-6 py-5 border-b border-gray-200 flex justify-between items-center bg-white">
+        <h2 className="text-xl font-bold text-bootcamp-textDark">
+          Recent Users
+        </h2>
+        <button className="bg-bootcamp-primary hover:bg-[#0f6c7a] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm">
+          + Add New User
+        </button>
+      </div>
+
+      {/* The Actual Table */}
+      <div className="overflow-x-auto">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="bg-bootcamp-background text-bootcamp-textLight text-sm uppercase tracking-wider border-b border-gray-200">
+              <th className="px-6 py-4 font-semibold">User</th>
+              <th className="px-6 py-4 font-semibold">Role</th>
+              <th className="px-6 py-4 font-semibold">Track</th>
+              <th className="px-6 py-4 font-semibold">Status</th>
+              <th className="px-6 py-4 font-semibold text-right">Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="divide-y divide-gray-100 bg-white">
+            {mockUsers.map((user) => (
+              <tr key={user.id} className="hover:bg-gray-50 transition-colors">
+                {/* User Info Column */}
+                <div className="px-6 py-4 flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-bootcamp-background text-bootcamp-primary flex items-center justify-center font-bold">
+                    {user.name.charAt(0)}
+                  </div>
+                  <div>
+                    <div className="font-semibold text-bootcamp-textDark">
+                      {user.name}
+                    </div>
+                    <div className="text-sm text-bootcamp-textLight">
+                      {user.email}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Role Column */}
+                <td className="px-6 py-4">
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-bold ${
+                      user.role === "Mentor"
+                        ? "bg-purple-100 text-purple-700"
+                        : "bg-blue-100 text-blue-700"
+                    }`}
+                  >
+                    {user.role}
+                  </span>
+                </td>
+
+                {/* Batch Column */}
+                <td className="px-6 py-4 text-bootcamp-textDark font-medium">
+                  {user.batch}
+                </td>
+
+                {/* Status Column */}
+                <td className="px-6 py-4">
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-bold ${
+                      user.status === "Active"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-red-100 text-red-700"
+                    }`}
+                  >
+                    {user.status}
+                  </span>
+                </td>
+
+                {/* Actions Column */}
+                <td className="px-6 py-4 text-right">
+                  <button className="text-bootcamp-primary hover:text-[#0f6c7a] font-medium text-sm mr-3">
+                    Edit
+                  </button>
+                  <button className="text-red-500 hover:text-red-700 font-medium text-sm">
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

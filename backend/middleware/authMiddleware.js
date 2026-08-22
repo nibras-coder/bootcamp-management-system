@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
-const protect = async (req, res, next) => {
+const verifyToken = async (req, res, next) => {
   try {
     let token;
 
@@ -49,6 +49,17 @@ const protect = async (req, res, next) => {
   }
 };
 
+const isAdmin = (req, res, next) => {
+  if (req.user && req.user.role === 'admin') {
+    next();
+  } else {
+    res.status(403).json({
+      success: false,
+      message: "Access denied. Admin only.",
+    });
+  }
+};
+
 const authorize = (...roles) => {
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {
@@ -62,6 +73,8 @@ const authorize = (...roles) => {
 };
 
 module.exports = {
-  protect,
+  verifyToken,
+  protect: verifyToken,
+  isAdmin,
   authorize,
 };

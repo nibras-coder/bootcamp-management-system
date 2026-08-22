@@ -1,132 +1,93 @@
 import React from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
-  LayoutDashboard,
-  Layers,
-  UserCircle,
-  GraduationCap,
-  CalendarCheck,
-  ClipboardList,
-  Megaphone,
-  BarChart3,
-  Settings,
-  LogOut,
-  User,
-} from "lucide-react";
+  FiLogOut,
+  FiGrid,
+  FiLayers,
+  FiUsers,
+  FiUser,
+  FiCheckSquare,
+  FiFileText,
+  FiBell,
+  FiBarChart2,
+  FiSettings,
+  FiBook,
+} from "react-icons/fi";
 import logo from "../assets/logo.png";
 
-const Sidebar = ({ userProfile = null }) => {
+const Sidebar = () => {
+  const location = useLocation();
   const navigate = useNavigate();
 
-  const navLinks = [
-    {
-      name: "Dashboard",
-      path: "/admin/dashboard",
-      icon: <LayoutDashboard size={20} />,
-    },
-    { name: "Batches", path: "/admin/batches", icon: <Layers size={20} /> },
-    { name: "Mentors", path: "/admin/mentors", icon: <UserCircle size={20} /> },
-    {
-      name: "Students",
-      path: "/admin/students",
-      icon: <GraduationCap size={20} />,
-    },
-    {
-      name: "Attendance",
-      path: "/admin/attendance",
-      icon: <CalendarCheck size={20} />,
-    },
-    {
-      name: "Assignments",
-      path: "/admin/assignments",
-      icon: <ClipboardList size={20} />,
-    },
-    {
-      name: "Announcements",
-      path: "/admin/announcements",
-      icon: <Megaphone size={20} />,
-    },
-    { name: "Reports", path: "/admin/reports", icon: <BarChart3 size={20} /> },
-    { name: "Settings", path: "/admin/settings", icon: <Settings size={20} /> },
+  const navItems = [
+    { label: "Dashboard", path: "/admin/dashboard", icon: FiGrid },
+    { label: "Tracks", path: "/admin/batches", icon: FiLayers },
+    { label: "Mentors", path: "/admin/mentors", icon: FiUser },
+    { label: "Students", path: "/admin/students", icon: FiUsers },
+    { label: "Attendance", path: "/admin/attendance", icon: FiCheckSquare },
+    { label: "Assignments", path: "/admin/assignments", icon: FiFileText },
+    { label: "Announcements", path: "/admin/announcements", icon: FiBell },
+    { label: "Resources", path: "/admin/resources", icon: FiBook },
+    { label: "Reports", path: "/admin/reports", icon: FiBarChart2 },
+    { label: "Settings", path: "/admin/settings", icon: FiSettings },
   ];
 
   const handleLogout = () => {
-    // Implement logout logic here
-    console.log("Logging out...");
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
     navigate("/login");
   };
 
   return (
-    <div className="w-64 h-screen bg-teal-900 text-white flex flex-col justify-between fixed top-0 left-0">
-      {/* Header */}
-      <div>
-        <div className="p-6 flex items-center space-x-4">
-          <div className="w-12 h-12 bg-white rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center border-2 border-teal-500 shadow-md">
-            <img
-              src={logo}
-              alt="ASTU MSJ Logo"
-              className="w-full h-full object-cover scale-150"
-            />
-          </div>
-          <div>
-            <h1 className="text-2xl font-serif font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-white to-teal-200 drop-shadow-sm">
-              ASTU MSJ
-            </h1>
-            <p className="text-[10px] text-teal-200 font-bold tracking-widest uppercase mt-0.5">
-              Bootcamp System
-            </p>
-          </div>
+    <div className="w-64 h-screen bg-teal-900 text-white shadow-md fixed flex flex-col justify-between">
+      <div className="p-6 border-b border-teal-800 flex items-center gap-3">
+        <img
+          src={logo}
+          alt="Logo"
+          className="w-10 h-10 object-cover rounded-full"
+        />
+        <div>
+          <h1 className="font-bold text-lg text-white">ASTU MSJ</h1>
+          <p className="text-xs text-teal-300">Admin Panel</p>
         </div>
-
-        {/* Navigation */}
-        <nav className="mt-4 px-4 space-y-1">
-          {navLinks.map((link) => (
-            <NavLink
-              key={link.name}
-              to={link.path}
-              className={({ isActive }) =>
-                `flex items-center space-x-3 px-4 py-2.5 rounded-lg transition-colors ${
-                  isActive
-                    ? "bg-teal-800 text-white"
-                    : "text-teal-100 hover:bg-teal-800 hover:text-white"
-                }`
-              }
-            >
-              {link.icon}
-              <span className="font-medium text-sm">{link.name}</span>
-            </NavLink>
-          ))}
-        </nav>
       </div>
-
-      {/* Footer Profile & Logout */}
-      <div className="p-4 border-t border-teal-800 space-y-4">
+      <nav className="flex-1 mt-6 px-4 space-y-1 overflow-y-auto">
+        {navItems.map((item) => (
+          <Link
+            key={item.path}
+            to={item.path}
+            className={`flex items-center gap-3 px-2 py-2 rounded text-sm transition-colors ${
+              location.pathname === item.path
+                ? "bg-teal-800 text-white font-semibold border-l-4 border-white"
+                : "text-teal-100 hover:bg-teal-800/50"
+            }`}
+          >
+            <item.icon
+              size={18}
+              className={
+                location.pathname === item.path ? "text-white" : "text-teal-300"
+              }
+            />
+            <span>{item.label}</span>
+          </Link>
+        ))}
+      </nav>
+      <div className="p-4 border-t border-teal-800">
         <button
           onClick={handleLogout}
-          className="flex items-center space-x-3 px-4 py-2.5 rounded-lg w-full text-teal-100 hover:bg-transparent hover:text-red-500 transition-colors"
+          className="w-full flex items-center gap-3 px-2 py-2 text-red-500 text-sm hover:bg-red-500/10 rounded font-medium transition-colors"
         >
-          <LogOut size={20} />
-          <span className="font-medium text-sm">Logout</span>
+          <FiLogOut size={18} />
+          <span>Logout</span>
         </button>
-        <div className="flex items-center space-x-3 px-2">
-          {userProfile?.imageUrl ? (
-            <img
-              src={userProfile.imageUrl}
-              alt="Admin User"
-              className="w-10 h-10 rounded-full bg-teal-800 object-cover"
-            />
-          ) : (
-            <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
-              <User size={24} />
-            </div>
-          )}
+        <div className="flex items-center gap-3 mt-3 px-2">
+          <FiUser
+            size={36}
+            className="text-teal-300 bg-teal-800 rounded-full p-1"
+          />
           <div>
-            <p className="text-sm font-semibold">
-              {userProfile?.name || "Admin User"}
-            </p>
-            <p className="text-xs text-teal-300">
-              {userProfile?.role || "Super Admin"}
-            </p>
+            <p className="text-sm font-medium text-white">Student</p>
+            <p className="text-xs text-teal-300">Administrator</p>
           </div>
         </div>
       </div>
