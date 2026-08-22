@@ -20,7 +20,7 @@ const Hero = () => {
       <div className="relative z-10 w-full max-w-7xl mx-auto px-6 lg:px-12 text-left text-white">
         <div className="max-w-2xl">
           <p className="text-lg md:text-xl mb-6 font-medium">
-            بسم الله الرحمن الرحيم
+             بسم الله الرحمن الرحيم
           </p>
 
           <h1 className="text-black md:text-6xl lg:text-7xl font-bold leading-tight">
