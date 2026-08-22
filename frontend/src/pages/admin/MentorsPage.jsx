@@ -1,5 +1,15 @@
 import React, { useState, useMemo } from "react";
-import { Search, Plus, Mail, Phone, Trash2, X, Filter } from "lucide-react";
+import {
+  Search,
+  Plus,
+  Mail,
+  Phone,
+  Trash2,
+  X,
+  Filter,
+  Edit,
+} from "lucide-react";
+import API from "../../api/axios";
 
 const initialMentors = [
   {
@@ -35,7 +45,7 @@ const initialMentors = [
 ];
 
 const MentorsPage = () => {
-  const [mentors, setMentors] = useState(initialMentors);
+  const [mentors, setMentors] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -43,10 +53,36 @@ const MentorsPage = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [genderFilter, setGenderFilter] = useState("All");
 
+  React.useEffect(() => {
+    const fetchMentors = async () => {
+      try {
+        const response = await API.get("/users?role=mentor");
+        if (response.data.success) {
+          // Map backend fields to frontend expected fields
+          const fetchedMentors = response.data.data.map((m) => ({
+            id: m._id,
+            name: m.name,
+            gender: m.gender || "Male",
+            email: m.email,
+            phone: m.phone || "",
+            role: m.mentorRole || "Mentor",
+            expertise: m.expertise || [],
+            status: m.isActive ? "Active" : "Inactive",
+          }));
+          setMentors(fetchedMentors);
+        }
+      } catch (error) {
+        console.error("Failed to fetch mentors:", error);
+      }
+    };
+    fetchMentors();
+  }, []);
+
   const [newMentor, setNewMentor] = useState({
     name: "",
     gender: "Male",
     email: "",
+    password: "",
     phone: "",
     role: "",
     expertise: "",
@@ -64,26 +100,51 @@ const MentorsPage = () => {
     });
   }, [mentors, searchTerm, genderFilter]);
 
-  const handleAddMentor = (e) => {
+  const handleAddMentor = async (e) => {
     e.preventDefault();
-    const expertiseArray = newMentor.expertise
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean);
-    setMentors([
-      ...mentors,
-      { ...newMentor, expertise: expertiseArray, id: Date.now() },
-    ]);
-    setIsModalOpen(false);
-    setNewMentor({
-      name: "",
-      gender: "Male",
-      email: "",
-      phone: "",
-      role: "",
-      expertise: "",
-      status: "Active",
-    });
+    try {
+      const expertiseArray = newMentor.expertise
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+
+      // Post to backend
+      const response = await API.post("/users", {
+        ...newMentor,
+        expertise: expertiseArray,
+      });
+
+      // Update local state with returned user
+      const m = response.data.data;
+      const addedMentor = m
+        ? {
+            id: m._id,
+            name: m.name,
+            gender: m.gender || "Male",
+            email: m.email,
+            phone: m.phone || "",
+            role: m.mentorRole || "Mentor",
+            expertise: m.expertise || [],
+            status: m.isActive ? "Active" : "Inactive",
+          }
+        : { ...newMentor, expertise: expertiseArray, id: Date.now() };
+
+      setMentors([...mentors, addedMentor]);
+      setIsModalOpen(false);
+      setNewMentor({
+        name: "",
+        gender: "Male",
+        email: "",
+        password: "",
+        phone: "",
+        role: "",
+        expertise: "",
+        status: "Active",
+      });
+    } catch (error) {
+      console.error("Failed to add mentor:", error);
+      alert(error.response?.data?.message || "Failed to add mentor");
+    }
   };
 
   const handleDelete = (id) => {
@@ -154,16 +215,16 @@ const MentorsPage = () => {
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200">
                 <th className="px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Mentor
+                  Profile
                 </th>
                 <th className="px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Contact Info
+                  Name
                 </th>
                 <th className="px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Expertise
+                  Email
                 </th>
                 <th className="px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Status
+                  Track/Expertise
                 </th>
                 <th className="px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider text-right">
                   Actions
@@ -171,80 +232,77 @@ const MentorsPage = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {filteredMentors.map((mentor) => (
-                <tr
-                  key={mentor.id}
-                  className="hover:bg-gray-50 transition-colors group"
-                >
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="h-10 w-10 flex-shrink-0 bg-teal-100 rounded-full flex items-center justify-center text-teal-700 font-bold">
-                        {mentor.name.charAt(0)}
-                      </div>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">
-                          {mentor.name}{" "}
-                          <span className="text-xs text-gray-400 ml-1">
-                            ({mentor.gender})
-                          </span>
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {mentor.role}
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900 flex items-center space-x-2">
-                      <Mail size={14} className="text-gray-400" />
-                      <span>{mentor.email}</span>
-                    </div>
-                    <div className="text-xs text-gray-500 flex items-center space-x-2 mt-1">
-                      <Phone size={14} className="text-gray-400" />
-                      <span>{mentor.phone}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex flex-wrap gap-1">
-                      {mentor.expertise.map((skill, index) => (
-                        <span
-                          key={index}
-                          className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800"
-                        >
-                          {skill}
-                        </span>
-                      ))}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        mentor.status === "Active"
-                          ? "bg-green-100 text-green-800"
-                          : "bg-yellow-100 text-yellow-800"
-                      }`}
-                    >
-                      {mentor.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button
-                      onClick={() => handleDelete(mentor.id)}
-                      className="text-gray-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <Trash2 size={18} />
-                    </button>
+              {filteredMentors.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan="5"
+                    className="px-6 py-8 text-center text-gray-500"
+                  >
+                    <p>No mentors found. Add a mentor to get started.</p>
                   </td>
                 </tr>
-              ))}
+              ) : (
+                filteredMentors.map((mentor) => (
+                  <tr
+                    key={mentor.id}
+                    className="hover:bg-gray-50 transition-colors group"
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="h-10 w-10 flex-shrink-0 bg-teal-100 rounded-full flex items-center justify-center text-teal-700 font-bold shadow-sm">
+                        {mentor.name.charAt(0)}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">
+                        {mentor.name}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {mentor.gender}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900 flex items-center space-x-2">
+                        <Mail size={14} className="text-gray-400" />
+                        <span>{mentor.email}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm text-gray-900 font-medium mb-1">
+                        {mentor.role}
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {mentor.expertise.map((skill, index) => (
+                          <span
+                            key={index}
+                            className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-600"
+                          >
+                            {skill}
+                          </span>
+                        ))}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex justify-end space-x-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          title="Edit Mentor"
+                          className="text-gray-400 hover:text-teal-600 transition-colors"
+                        >
+                          <Edit size={18} />
+                        </button>
+                        <button
+                          title="Delete Mentor"
+                          onClick={() => handleDelete(mentor.id)}
+                          className="text-gray-400 hover:text-red-600 transition-colors"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
-
-          {filteredMentors.length === 0 && (
-            <div className="p-8 text-center text-gray-500">
-              No mentors found matching your filters.
-            </div>
-          )}
         </div>
       </div>
 
@@ -311,6 +369,21 @@ const MentorsPage = () => {
                     }
                     className="w-full px-3 py-2 border rounded-lg focus:ring-teal-500"
                     placeholder="name@gmail.com"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Password
+                  </label>
+                  <input
+                    required
+                    type="password"
+                    value={newMentor.password}
+                    onChange={(e) =>
+                      setNewMentor({ ...newMentor, password: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border rounded-lg focus:ring-teal-500"
+                    placeholder="Set a password"
                   />
                 </div>
                 <div>

@@ -36,7 +36,7 @@ const Header = ({ title, subtitle, userProfile = null }) => {
   const handleNotificationClick = () => {
     setIsDropdownOpen(!isDropdownOpen);
     if (!isDropdownOpen) {
-      setUnreadCount(0); // Clear badge when opened
+      setUnreadCount(0);
     }
   };
 

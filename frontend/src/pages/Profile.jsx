@@ -2,8 +2,8 @@ import Sidebar from "../components/mentor/Sidebar";
 
 function Profile() {
   const formData = {
-    fullName: "Yonas Mekonnen",
-    email: "yonas@gmail.com",
+    fullName: "Yunus Hasen",
+    email: "yunas@gmail.com",
     phone: "0912345678",
   };
 
@@ -12,9 +12,7 @@ function Profile() {
       <Sidebar />
 
       <main className="flex-1 p-8 max-w-2xl">
-        <h1 className="text-2xl font-bold text-gray-900 mb-1">
-          Profile
-        </h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-1">Profile</h1>
 
         <p className="text-gray-500 text-sm mb-6">
           View your account information.
@@ -33,13 +31,9 @@ function Profile() {
             </div>
 
             <div>
-              <p className="font-semibold text-gray-800">
-                {formData.fullName}
-              </p>
+              <p className="font-semibold text-gray-800">{formData.fullName}</p>
 
-              <p className="text-sm text-gray-500">
-                Mentor
-              </p>
+              <p className="text-sm text-gray-500">Mentor</p>
             </div>
           </div>
 
@@ -59,9 +53,7 @@ function Profile() {
             </div>
 
             <div>
-              <label className="block text-sm text-gray-600 mb-1">
-                Email
-              </label>
+              <label className="block text-sm text-gray-600 mb-1">Email</label>
 
               <input
                 type="email"
@@ -72,9 +64,7 @@ function Profile() {
             </div>
 
             <div>
-              <label className="block text-sm text-gray-600 mb-1">
-                Phone
-              </label>
+              <label className="block text-sm text-gray-600 mb-1">Phone</label>
 
               <input
                 type="text"

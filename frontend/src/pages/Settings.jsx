@@ -29,7 +29,6 @@ function Settings() {
       return;
     }
 
-    // TODO: send { currentPassword, newPassword } to backend via PUT /api/auth/change-password
     setMessage("Password changed successfully.");
     setFormData({ currentPassword: "", newPassword: "", confirmPassword: "" });
   };
@@ -40,7 +39,9 @@ function Settings() {
 
       <main className="flex-1 p-8 max-w-md">
         <h1 className="text-2xl font-bold text-gray-900 mb-1">Settings</h1>
-        <p className="text-gray-500 text-sm mb-6">Change your account password.</p>
+        <p className="text-gray-500 text-sm mb-6">
+          Change your account password.
+        </p>
 
         <div className="bg-white rounded-xl shadow-sm p-6">
           {message && (
@@ -56,7 +57,9 @@ function Settings() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm text-gray-600 mb-1">Current Password</label>
+              <label className="block text-sm text-gray-600 mb-1">
+                Current Password
+              </label>
               <input
                 type="password"
                 name="currentPassword"
@@ -68,7 +71,9 @@ function Settings() {
             </div>
 
             <div>
-              <label className="block text-sm text-gray-600 mb-1">New Password</label>
+              <label className="block text-sm text-gray-600 mb-1">
+                New Password
+              </label>
               <input
                 type="password"
                 name="newPassword"
@@ -80,7 +85,9 @@ function Settings() {
             </div>
 
             <div>
-              <label className="block text-sm text-gray-600 mb-1">Confirm New Password</label>
+              <label className="block text-sm text-gray-600 mb-1">
+                Confirm New Password
+              </label>
               <input
                 type="password"
                 name="confirmPassword"

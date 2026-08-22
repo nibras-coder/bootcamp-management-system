@@ -21,8 +21,8 @@ const UsersTable = () => {
     },
     {
       id: 3,
-      name: "Sumeya Abdulfetah",
-      email: "sumeya@gmail.com",
+      name: "Samiya Fuad",
+      email: "samiya@gmail.com",
       role: "Mentor",
       batch: "Web Dev Track 2",
       status: "Active",

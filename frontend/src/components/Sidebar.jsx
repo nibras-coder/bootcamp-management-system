@@ -75,7 +75,7 @@ const Sidebar = () => {
       <div className="p-4 border-t border-teal-800">
         <button
           onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-2 py-2 text-red-500 text-sm hover:bg-red-500/10 rounded font-medium transition-colors"
+          className="w-full flex items-center gap-3 px-2 py-2 text-red-500 text-sm font-medium transition-colors"
         >
           <FiLogOut size={18} />
           <span>Logout</span>
@@ -86,7 +86,7 @@ const Sidebar = () => {
             className="text-teal-300 bg-teal-800 rounded-full p-1"
           />
           <div>
-            <p className="text-sm font-medium text-white">Student</p>
+            <p className="text-sm font-medium text-white">Admin</p>
             <p className="text-xs text-teal-300">Administrator</p>
           </div>
         </div>

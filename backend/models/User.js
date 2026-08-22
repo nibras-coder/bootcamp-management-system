@@ -32,6 +32,23 @@ const userSchema = new mongoose.Schema(
       ref: "Batch",
       default: null,
     },
+    gender: {
+      type: String,
+      enum: ["Male", "Female"],
+      default: "Male",
+    },
+    phone: {
+      type: String,
+      default: "",
+    },
+    expertise: {
+      type: [String],
+      default: [],
+    },
+    mentorRole: {
+      type: String,
+      default: "",
+    },
     isActive: {
       type: Boolean,
       default: true,
