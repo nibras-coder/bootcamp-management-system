@@ -54,7 +54,7 @@ const AdminLayout = ({ children }) => {
             className="flex items-center gap-4 p-4 rounded-xl hover:bg-white/10 text-gray-300 hover:text-white text-lg font-medium transition-all"
           >
             <LuBookOpen className="text-2xl" />
-            <span>Batches</span>
+            <span>Tracks</span>
           </a>
           <a
             href="#"

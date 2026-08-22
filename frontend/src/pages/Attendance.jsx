@@ -19,6 +19,7 @@ function Attendance() {
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState(null);
 
+<<<<<<< HEAD
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -43,6 +44,14 @@ function Attendance() {
 
   const handleStatusChange = (studentId, status) => {
     setAttendanceMap((prev) => ({ ...prev, [studentId]: status }));
+=======
+  const handleStatusChange = (id, newStatus) => {
+    setStudents((prev) =>
+      prev.map((student) =>
+        student.id === id ? { ...student, status: newStatus } : student,
+      ),
+    );
+>>>>>>> origin/main
   };
 
   const handleSave = async () => {
@@ -70,7 +79,13 @@ function Attendance() {
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Attendance</h1>
+<<<<<<< HEAD
             <p className="text-gray-500 text-sm">Mark attendance for your batch.</p>
+=======
+            <p className="text-gray-500 text-sm">
+              Mark today's attendance for your track.
+            </p>
+>>>>>>> origin/main
           </div>
           <input
             type="date"
@@ -82,11 +97,20 @@ function Attendance() {
 
         <div className="bg-white rounded-xl shadow-sm p-5 mb-6">
           <p className="text-sm text-gray-500">
+<<<<<<< HEAD
             Present: <span className="font-semibold text-teal-700">{presentCount}/{students.length}</span> ({attendancePercent}%)
+=======
+            Present today:{" "}
+            <span className="font-semibold text-teal-700">
+              {presentCount}/{students.length}
+            </span>{" "}
+            ({attendancePercent}%)
+>>>>>>> origin/main
           </p>
         </div>
 
         <div className="bg-white rounded-xl shadow-sm p-5">
+<<<<<<< HEAD
           {loading ? (
             <p className="text-gray-500 text-sm">Loading...</p>
           ) : (
@@ -95,6 +119,39 @@ function Attendance() {
                 <tr className="text-left text-gray-400 border-b border-gray-100">
                   <th className="pb-3 font-normal">Student</th>
                   <th className="pb-3 font-normal">Status</th>
+=======
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left text-gray-400 border-b border-gray-100">
+                <th className="pb-3 font-normal">Student</th>
+                <th className="pb-3 font-normal">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {students.map((student) => (
+                <tr
+                  key={student.id}
+                  className="border-b border-gray-50 last:border-0"
+                >
+                  <td className="py-3 text-gray-800">{student.name}</td>
+                  <td className="py-3">
+                    <div className="flex gap-2">
+                      {statusOptions.map((option) => (
+                        <button
+                          key={option}
+                          onClick={() => handleStatusChange(student.id, option)}
+                          className={`px-3 py-1 rounded-full text-xs capitalize ${
+                            student.status === option
+                              ? statusColors[option]
+                              : "bg-gray-50 text-gray-400 hover:bg-gray-100"
+                          }`}
+                        >
+                          {option}
+                        </button>
+                      ))}
+                    </div>
+                  </td>
+>>>>>>> origin/main
                 </tr>
               </thead>
               <tbody>

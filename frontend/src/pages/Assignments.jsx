@@ -40,6 +40,7 @@ function Assignments() {
       setToast({ type: "error", message: "Title and deadline are required" });
       return;
     }
+<<<<<<< HEAD
     try {
       const res = await api.post("/assignments", { ...formData, batch: myBatchId });
       setAssignments([res.data.assignment, ...assignments]);
@@ -49,6 +50,37 @@ function Assignments() {
     } catch (err) {
       setToast({ type: "error", message: err.response?.data?.message || "Failed to create assignment" });
     }
+=======
+
+    // This is what you'll send once file upload is ready on backend:
+    // const data = new FormData();
+    // data.append("title", formData.title);
+    // data.append("description", formData.description);
+    // data.append("instructions", formData.instructions);
+    // data.append("deadline", formData.deadline);
+    // data.append("maxScore", formData.maxScore);
+    // if (file) data.append("attachment", file);
+    // await axios.post("http://localhost:5000/api/assignments", data, {
+    //   headers: { "Content-Type": "multipart/form-data" },
+    // });
+
+    const newAssignment = {
+      id: Date.now(),
+      ...formData,
+      fileName: file ? file.name : null,
+    };
+
+    setAssignments([newAssignment, ...assignments]);
+    setFormData({
+      title: "",
+      description: "",
+      instructions: "",
+      deadline: "",
+      maxScore: 100,
+    });
+    setFile(null);
+    setShowForm(false);
+>>>>>>> origin/main
   };
 
   return (
@@ -59,7 +91,9 @@ function Assignments() {
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Assignments</h1>
-            <p className="text-gray-500 text-sm">Create and manage assignments for your batch.</p>
+            <p className="text-gray-500 text-sm">
+              Create and manage assignments for your .
+            </p>
           </div>
           <button
             onClick={() => setShowForm(true)}
@@ -71,6 +105,7 @@ function Assignments() {
         </div>
 
         <div className="bg-white rounded-xl shadow-sm p-5">
+<<<<<<< HEAD
           {loading ? (
             <p className="text-gray-500 text-sm">Loading...</p>
           ) : (
@@ -80,6 +115,36 @@ function Assignments() {
                   <th className="pb-3 font-normal">Title</th>
                   <th className="pb-3 font-normal">Deadline</th>
                   <th className="pb-3 font-normal">Max Score</th>
+=======
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left text-gray-400 border-b border-gray-100">
+                <th className="pb-3 font-normal">Title</th>
+                <th className="pb-3 font-normal">Deadline</th>
+                <th className="pb-3 font-normal">Max Score</th>
+                <th className="pb-3 font-normal">Attachment</th>
+              </tr>
+            </thead>
+            <tbody>
+              {assignments.map((item) => (
+                <tr
+                  key={item.id}
+                  className="border-b border-gray-50 last:border-0"
+                >
+                  <td className="py-3 text-gray-800">{item.title}</td>
+                  <td className="py-3 text-gray-600">{item.deadline}</td>
+                  <td className="py-3 text-gray-600">{item.maxScore}</td>
+                  <td className="py-3 text-gray-600">
+                    {item.fileName ? (
+                      <span className="flex items-center gap-1 text-teal-700">
+                        <Paperclip size={14} />
+                        {item.fileName}
+                      </span>
+                    ) : (
+                      <span className="text-gray-300">—</span>
+                    )}
+                  </td>
+>>>>>>> origin/main
                 </tr>
               </thead>
               <tbody>

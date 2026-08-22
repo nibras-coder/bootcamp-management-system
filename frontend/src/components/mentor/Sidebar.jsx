@@ -1,7 +1,16 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
-  LayoutDashboard, Users, Calendar, TrendingUp, FileText,
-  Award, Megaphone, User, Settings, LogOut, X
+  LayoutDashboard,
+  Users,
+  Calendar,
+  TrendingUp,
+  FileText,
+  Award,
+  Megaphone,
+  User,
+  Settings,
+  LogOut,
+  X,
 } from "lucide-react";
 
 const navItems = [
@@ -29,29 +38,50 @@ function Sidebar({ onClose }) {
     <aside className="w-64 bg-teal-900 text-white min-h-screen flex flex-col justify-between">
       <div>
         <div className="px-6 py-6 border-b border-teal-800 flex justify-between items-center">
+<<<<<<< HEAD
           <div>
             <h1 className="font-bold text-lg">ASTU MSJ</h1>
             <p className="text-teal-300 text-sm">Bootcamp System</p>
+=======
+          <div className="flex items-center gap-3">
+            <img
+              src={logo}
+              alt="ASTU MSJ Logo"
+              className="w-10 h-10 object-cover rounded-full"
+            />
+            <div>
+              <h1 className="font-bold text-lg text-white">ASTU MSJ</h1>
+              <p className="text-xs text-teal-300">Bootcamp System</p>
+            </div>
+>>>>>>> origin/main
           </div>
           {onClose && (
-            <button onClick={onClose} className="md:hidden text-teal-300 hover:text-white">
-              <X size={22} />
+            <button onClick={onClose} className="md:hidden text-white">
+              <X size={24} />
             </button>
           )}
         </div>
 
-        <nav className="mt-4">
+        <nav className="mt-6 px-4 space-y-1">
           {navItems.map((item) => (
             <Link
               key={item.label}
               to={item.path}
-              className={`w-full flex items-center gap-3 px-6 py-3 text-sm transition-colors ${
+              onClick={onClose}
+              className={`flex items-center gap-3 px-2 py-2 rounded text-sm transition-colors ${
                 location.pathname === item.path
-                  ? "bg-teal-800 text-white"
-                  : "text-teal-200 hover:bg-teal-800/50"
+                  ? "bg-teal-800 text-white font-semibold border-l-4 border-white"
+                  : "text-teal-100 hover:bg-teal-800/50"
               }`}
             >
-              <item.icon size={18} />
+              <item.icon
+                size={18}
+                className={
+                  location.pathname === item.path
+                    ? "text-white"
+                    : "text-teal-300"
+                }
+              />
               {item.label}
             </Link>
           ))}
@@ -61,7 +91,7 @@ function Sidebar({ onClose }) {
       <div className="p-4 border-t border-teal-800">
         <button
           onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-2 py-2 text-teal-200 text-sm hover:bg-teal-800/50 rounded"
+          className="w-full flex items-center gap-3 px-2 py-2 text-red-500 text-sm transition-colors"
         >
           <LogOut size={18} />
           Logout
