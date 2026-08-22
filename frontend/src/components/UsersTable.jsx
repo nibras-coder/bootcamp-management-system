@@ -1,12 +1,12 @@
 import React from "react";
 
 const UsersTable = () => {
-  // Placeholder data for your presentation
+  // Placeholder data for 
   const mockUsers = [
     {
       id: 1,
       name: "Hanan Mohammed",
-      email: "hayat@astu.edu.et",
+      email: "hayat@gmail.com",
       role: "Student",
       batch: "Web Dev Batch 2",
       status: "Active",
@@ -14,7 +14,7 @@ const UsersTable = () => {
     {
       id: 2,
       name: "Ahmed Yassin",
-      email: "ahmed@astu.edu.et",
+      email: "ahmed@gmail.com",
       role: "Student",
       batch: "UI/UX Batch 1",
       status: "Active",
@@ -22,7 +22,7 @@ const UsersTable = () => {
     {
       id: 3,
       name: "Sumeya Abdulfetah",
-      email: "sumeya@astu.edu.et",
+      email: "sumeya@gamil.com",
       role: "Mentor",
       batch: "Web Dev Batch 2",
       status: "Active",
@@ -30,7 +30,7 @@ const UsersTable = () => {
     {
       id: 4,
       name: "Abdullah Isa",
-      email: "abdullah@astu.edu.et",
+      email: "abdullah@gmail.com",
       role: "Student",
       batch: "Data Science 1",
       status: "Inactive",

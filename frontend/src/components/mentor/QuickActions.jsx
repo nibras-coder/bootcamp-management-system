@@ -1,12 +1,15 @@
+import { useNavigate } from "react-router-dom";
 import { Calendar, FileText, Megaphone } from "lucide-react";
 
 const actions = [
-  { label: "Mark Attendance", icon: Calendar },
-  { label: "Review Submissions", icon: FileText },
-  { label: "Create Announcement", icon: Megaphone },
+  { label: "Mark Attendance", icon: Calendar, path: "/attendance" },
+  { label: "Review Submissions", icon: FileText, path: "/grading" },
+  { label: "Create Announcement", icon: Megaphone, path: "/announcements" },
 ];
 
 function QuickActions() {
+  const navigate = useNavigate();
+
   return (
     <div className="bg-white rounded-xl p-5 shadow-sm">
       <h3 className="font-semibold text-gray-800 mb-4">Quick Actions</h3>
@@ -14,6 +17,7 @@ function QuickActions() {
         {actions.map((action) => (
           <button
             key={action.label}
+            onClick={() => navigate(action.path)}
             className="w-full flex items-center gap-3 border border-teal-100 bg-teal-50 text-teal-800 rounded-lg px-4 py-3 text-sm hover:bg-teal-100"
           >
             <action.icon size={16} />

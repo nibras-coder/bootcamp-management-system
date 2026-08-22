@@ -1,4 +1,3 @@
-import logo from "../../assets/logo.png";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, Users, Calendar, TrendingUp, FileText,
@@ -30,22 +29,10 @@ function Sidebar({ onClose }) {
     <aside className="w-64 bg-teal-900 text-white min-h-screen flex flex-col justify-between">
       <div>
         <div className="px-6 py-6 border-b border-teal-800 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <img
-              src={logo}
-              alt="ASTU MSJ Logo"
-              className="w-10 h-10 object-cover rounded-full"
-            />
           <div>
-            <h1 className="font-bold text-lg bg-gradient-to-r from-[#071A3D] via-[#3B245F] to-[#5ED6D0] bg-clip-text text-transparent">
-              ASTU MSJ
-            </h1>
-
-           <p className="text-sm bg-gradient-to-r from-[#071A3D] via-[#3B245F] to-[#5ED6D0] bg-clip-text text-transparent">
-              Bootcamp System
-           </p>
+            <h1 className="font-bold text-lg">ASTU MSJ</h1>
+            <p className="text-teal-300 text-sm">Bootcamp System</p>
           </div>
-         </div>
           {onClose && (
             <button onClick={onClose} className="md:hidden text-teal-300 hover:text-white">
               <X size={22} />
@@ -82,7 +69,7 @@ function Sidebar({ onClose }) {
         <div className="flex items-center gap-3 mt-3 px-2">
           <div className="w-9 h-9 rounded-full bg-teal-700" />
           <div>
-            <p className="text-sm font-medium">Yonas Mekonnen</p>
+            <p className="text-sm font-medium">Mentor</p>
             <p className="text-xs text-teal-300">Mentor</p>
           </div>
         </div>
