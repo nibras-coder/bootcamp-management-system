@@ -65,7 +65,7 @@ const SettingsPage = () => {
                 <input
                   required
                   type="text"
-                  defaultValue="Admin User"
+                  defaultValue="Student"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500"
                 />
               </div>
@@ -152,7 +152,7 @@ const SettingsPage = () => {
                     New Enrollments
                   </p>
                   <p className="text-xs text-gray-500">
-                    Notify when a new student joins a batch
+                    Notify when a new student joins a track
                   </p>
                 </div>
               </label>

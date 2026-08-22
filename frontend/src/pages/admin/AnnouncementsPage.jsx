@@ -189,6 +189,23 @@ const AnnouncementsPage = () => {
                   placeholder="Type message here..."
                 ></textarea>
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Link (Optional)
+                </label>
+                <input
+                  type="url"
+                  placeholder="https://"
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-teal-500"
+                  value={newAnnouncement.link || ""}
+                  onChange={(e) =>
+                    setNewAnnouncement({
+                      ...newAnnouncement,
+                      link: e.target.value,
+                    })
+                  }
+                />
+              </div>
               <div className="flex justify-end space-x-3 mt-6">
                 <button
                   type="button"

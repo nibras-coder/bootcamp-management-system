@@ -50,7 +50,7 @@ const register = async (req, res) => {
           "Password must be at least 6 characters",
       });
     }
-nex
+
     const existingUser = await User.findOne({
       email: email.toLowerCase().trim(),
     });
@@ -61,17 +61,10 @@ nex
       });
     }
 
-    const hashedPassword = await bcrypt.hash(
-      password,
-      10
-    );
-
-    // Public registration ALWAYS creates a student
     const user = await User.create({
-      fullName,
+      name,
       email,
-      role,
-      password: hashedPassword,
+      password,
     });
 
     const token = generateToken(user);
@@ -81,7 +74,7 @@ nex
       token,
       user: {
         id: user._id,
-        name: user.fullName,
+        name: user.name,
         email: user.email,
         role: user.role,
       },
@@ -139,7 +132,7 @@ const login = async (req, res) => {
       token,
       user: {
         id: user._id,
-        name: user.fullName,
+        name: user.name,
         email: user.email,
         role: user.role,
       },

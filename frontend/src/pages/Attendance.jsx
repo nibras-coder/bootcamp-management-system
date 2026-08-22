@@ -24,8 +24,8 @@ function Attendance() {
   const handleStatusChange = (id, newStatus) => {
     setStudents((prev) =>
       prev.map((student) =>
-        student.id === id ? { ...student, status: newStatus } : student
-      )
+        student.id === id ? { ...student, status: newStatus } : student,
+      ),
     );
   };
 
@@ -46,7 +46,9 @@ function Attendance() {
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Attendance</h1>
-            <p className="text-gray-500 text-sm">Mark today's attendance for your batch.</p>
+            <p className="text-gray-500 text-sm">
+              Mark today's attendance for your track.
+            </p>
           </div>
           <input
             type="date"
@@ -58,8 +60,11 @@ function Attendance() {
 
         <div className="bg-white rounded-xl shadow-sm p-5 mb-6">
           <p className="text-sm text-gray-500">
-            Present today: <span className="font-semibold text-teal-700">{presentCount}/{students.length}</span>
-            {" "}({attendancePercent}%)
+            Present today:{" "}
+            <span className="font-semibold text-teal-700">
+              {presentCount}/{students.length}
+            </span>{" "}
+            ({attendancePercent}%)
           </p>
         </div>
 
@@ -73,7 +78,10 @@ function Attendance() {
             </thead>
             <tbody>
               {students.map((student) => (
-                <tr key={student.id} className="border-b border-gray-50 last:border-0">
+                <tr
+                  key={student.id}
+                  className="border-b border-gray-50 last:border-0"
+                >
                   <td className="py-3 text-gray-800">{student.name}</td>
                   <td className="py-3">
                     <div className="flex gap-2">

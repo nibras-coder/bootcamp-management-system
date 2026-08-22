@@ -1,94 +1,98 @@
 import React, { useState, useMemo } from "react";
-import { Search, Plus, Mail, Phone, Trash2, X, Filter } from "lucide-react";
+import { Search, Plus, Filter, Download, Trash2, X } from "lucide-react";
 
-const initialMentors = [
+const initialStudents = [
   {
-    id: 1,
-    name: "Yasmin ALi",
+    id: 101,
+    name: "Eman Abdu",
     gender: "Female",
-    email: "jazmin@gmail.com",
-    phone: "+1 234 567 8900",
-    role: "Web Dev Mentor",
-    expertise: ["React", "Node.js", "MongoDB"],
-    status: "Active",
+    email: "eman@gmail.com",
+    batch: "Web Dev Bootcamp",
+    score: 92,
+    status: "Excellent",
+    joinDate: "2026-05-10",
   },
   {
-    id: 2,
-    name: "Ahmed Sani",
+    id: 102,
+    name: "Liam Neeson",
     gender: "Male",
-    email: "ahmed.sani@gmail.com",
-    phone: "+1 234 567 8901",
-    role: "CP Mentor",
-    expertise: ["C++", "Algorithms", "Codeforces"],
-    status: "Active",
+    email: "liam@gmail.com",
+    batch: "Web Dev Bootcamp",
+    score: 78,
+    status: "Good",
+    joinDate: "2026-05-11",
   },
   {
-    id: 3,
-    name: "Sara Seid",
+    id: 103,
+    name: "Aya Fuad",
     gender: "Female",
-    email: "sara.seid@gmail.com",
-    phone: "+1 234 567 8902",
-    role: "Backend Mentor",
-    expertise: ["Python", "Django", "PostgreSQL"],
-    status: "On Leave",
+    email: "aya@gmail.com",
+    batch: "DSA & Competitive Programming",
+    score: 88,
+    status: "Very Good",
+    joinDate: "2026-09-01",
+  },
+  {
+    id: 104,
+    name: "Noah Ali",
+    gender: "Male",
+    email: "noah@gmail.com",
+    batch: "Backend Masterclass",
+    score: 65,
+    status: "Needs Improvement",
+    joinDate: "2025-10-15",
   },
 ];
 
-const MentorsPage = () => {
-  const [mentors, setMentors] = useState(initialMentors);
+const StudentsPage = () => {
+  const [students, setStudents] = useState(initialStudents);
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  // Filtering
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [genderFilter, setGenderFilter] = useState("All");
+  const [genderFilter, setGenderFilter] = useState("All"); // 'All', 'Male', 'Female'
 
-  const [newMentor, setNewMentor] = useState({
+  const [newStudent, setNewStudent] = useState({
     name: "",
     gender: "Male",
     email: "",
-    phone: "",
-    role: "",
-    expertise: "",
-    status: "Active",
+    batch: "",
+    score: 0,
+    status: "Good",
   });
 
-  const filteredMentors = useMemo(() => {
-    return mentors.filter((mentor) => {
-      const matchesSearch = mentor.name
+  // useMemo for active filtering
+  const filteredStudents = useMemo(() => {
+    return students.filter((student) => {
+      const matchesSearch = student.name
         .toLowerCase()
         .includes(searchTerm.toLowerCase());
       const matchesGender =
-        genderFilter === "All" || mentor.gender === genderFilter;
+        genderFilter === "All" || student.gender === genderFilter;
       return matchesSearch && matchesGender;
     });
-  }, [mentors, searchTerm, genderFilter]);
+  }, [students, searchTerm, genderFilter]);
 
-  const handleAddMentor = (e) => {
+  const handleAddStudent = (e) => {
     e.preventDefault();
-    const expertiseArray = newMentor.expertise
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean);
-    setMentors([
-      ...mentors,
-      { ...newMentor, expertise: expertiseArray, id: Date.now() },
+    const date = new Date().toISOString().split("T")[0];
+    setStudents([
+      ...students,
+      { ...newStudent, id: Date.now(), joinDate: date },
     ]);
     setIsModalOpen(false);
-    setNewMentor({
+    setNewStudent({
       name: "",
       gender: "Male",
       email: "",
-      phone: "",
-      role: "",
-      expertise: "",
-      status: "Active",
+      batch: "",
+      score: 0,
+      status: "Good",
     });
   };
 
   const handleDelete = (id) => {
-    if (window.confirm("Are you sure you want to remove this mentor?")) {
-      setMentors(mentors.filter((m) => m.id !== id));
+    if (window.confirm("Are you sure you want to remove this student?")) {
+      setStudents(students.filter((s) => s.id !== id));
     }
   };
 
@@ -103,12 +107,11 @@ const MentorsPage = () => {
           <input
             type="text"
             className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500 text-sm"
-            placeholder="Search mentors by name..."
+            placeholder="Search students by name..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-
         <div className="flex items-center space-x-2">
           {/* Advanced Filter Dropdown */}
           <div className="relative">
@@ -137,12 +140,16 @@ const MentorsPage = () => {
             )}
           </div>
 
+          <button className="flex items-center space-x-2 bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors">
+            <Download size={18} />
+            <span>Export</span>
+          </button>
           <button
             onClick={() => setIsModalOpen(true)}
             className="flex items-center space-x-2 bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors"
           >
             <Plus size={20} />
-            <span>Add Mentor</span>
+            <span>Add Student</span>
           </button>
         </div>
       </div>
@@ -154,13 +161,13 @@ const MentorsPage = () => {
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200">
                 <th className="px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Mentor
+                  Student Details
                 </th>
                 <th className="px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Contact Info
+                  Trach
                 </th>
                 <th className="px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Expertise
+                  Score
                 </th>
                 <th className="px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">
                   Status
@@ -171,65 +178,66 @@ const MentorsPage = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {filteredMentors.map((mentor) => (
+              {filteredStudents.map((student) => (
                 <tr
-                  key={mentor.id}
+                  key={student.id}
                   className="hover:bg-gray-50 transition-colors group"
                 >
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
-                      <div className="h-10 w-10 flex-shrink-0 bg-teal-100 rounded-full flex items-center justify-center text-teal-700 font-bold">
-                        {mentor.name.charAt(0)}
+                      <div className="h-10 w-10 flex-shrink-0 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-bold">
+                        {student.name.charAt(0)}
                       </div>
                       <div className="ml-4">
                         <div className="text-sm font-medium text-gray-900">
-                          {mentor.name}{" "}
+                          {student.name}{" "}
                           <span className="text-xs text-gray-400 ml-1">
-                            ({mentor.gender})
+                            ({student.gender})
                           </span>
                         </div>
                         <div className="text-xs text-gray-500">
-                          {mentor.role}
+                          {student.email}
                         </div>
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900 flex items-center space-x-2">
-                      <Mail size={14} className="text-gray-400" />
-                      <span>{mentor.email}</span>
-                    </div>
-                    <div className="text-xs text-gray-500 flex items-center space-x-2 mt-1">
-                      <Phone size={14} className="text-gray-400" />
-                      <span>{mentor.phone}</span>
+                    <div className="text-sm text-gray-900">{student.batch}</div>
+                    <div className="text-xs text-gray-500">
+                      Joined {student.joinDate}
                     </div>
                   </td>
-                  <td className="px-6 py-4">
-                    <div className="flex flex-wrap gap-1">
-                      {mentor.expertise.map((skill, index) => (
-                        <span
-                          key={index}
-                          className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800"
-                        >
-                          {skill}
-                        </span>
-                      ))}
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center">
+                      <div className="w-full bg-gray-200 rounded-full h-2.5 mr-2 max-w-[4rem]">
+                        <div
+                          className={`h-2.5 rounded-full ${student.score >= 90 ? "bg-green-500" : student.score >= 75 ? "bg-blue-500" : "bg-yellow-500"}`}
+                          style={{ width: `${student.score}%` }}
+                        ></div>
+                      </div>
+                      <span className="text-sm text-gray-700">
+                        {student.score}%
+                      </span>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span
                       className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        mentor.status === "Active"
+                        student.status === "Excellent"
                           ? "bg-green-100 text-green-800"
-                          : "bg-yellow-100 text-yellow-800"
+                          : student.status === "Very Good"
+                            ? "bg-blue-100 text-blue-800"
+                            : student.status === "Good"
+                              ? "bg-indigo-100 text-indigo-800"
+                              : "bg-red-100 text-red-800"
                       }`}
                     >
-                      {mentor.status}
+                      {student.status}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button
-                      onClick={() => handleDelete(mentor.id)}
+                      onClick={() => handleDelete(student.id)}
                       className="text-gray-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
                     >
                       <Trash2 size={18} />
@@ -240,21 +248,21 @@ const MentorsPage = () => {
             </tbody>
           </table>
 
-          {filteredMentors.length === 0 && (
+          {filteredStudents.length === 0 && (
             <div className="p-8 text-center text-gray-500">
-              No mentors found matching your filters.
+              No students found matching your filters.
             </div>
           )}
         </div>
       </div>
 
-      {/* Add Mentor Modal */}
+      {/* Add Student Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-xl">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold text-gray-800">
-                Add New Mentor
+                Add New Student
               </h2>
               <button
                 onClick={() => setIsModalOpen(false)}
@@ -263,22 +271,57 @@ const MentorsPage = () => {
                 <X size={20} />
               </button>
             </div>
-            <form onSubmit={handleAddMentor} className="space-y-4">
+            <form onSubmit={handleAddStudent} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Full Name
+                </label>
+                <input
+                  required
+                  type="text"
+                  value={newStudent.name}
+                  onChange={(e) =>
+                    setNewStudent({ ...newStudent, name: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-teal-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email
+                </label>
+                <input
+                  required
+                  type="email"
+                  value={newStudent.email}
+                  onChange={(e) =>
+                    setNewStudent({ ...newStudent, email: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-teal-500"
+                />
+              </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Full Name
+                    Track
                   </label>
-                  <input
+                  <select
                     required
-                    type="text"
-                    value={newMentor.name}
+                    value={newStudent.batch}
                     onChange={(e) =>
-                      setNewMentor({ ...newMentor, name: e.target.value })
+                      setNewStudent({ ...newStudent, batch: e.target.value })
                     }
                     className="w-full px-3 py-2 border rounded-lg focus:ring-teal-500"
-                    placeholder="e.g. Abdullah Isa"
-                  />
+                  >
+                    <option value="">Select...</option>
+                    <option value="Web Dev Bootcamp">Web Dev Bootcamp</option>
+                    <option value="DSA & Competitive Programming">
+                      DSA & CP
+                    </option>
+                    <option value="Backend Masterclass">
+                      Backend Masterclass
+                    </option>
+                  </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -286,9 +329,9 @@ const MentorsPage = () => {
                   </label>
                   <select
                     required
-                    value={newMentor.gender}
+                    value={newStudent.gender}
                     onChange={(e) =>
-                      setNewMentor({ ...newMentor, gender: e.target.value })
+                      setNewStudent({ ...newStudent, gender: e.target.value })
                     }
                     className="w-full px-3 py-2 border rounded-lg focus:ring-teal-500"
                   >
@@ -296,68 +339,6 @@ const MentorsPage = () => {
                     <option value="Female">Female</option>
                   </select>
                 </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Email
-                  </label>
-                  <input
-                    required
-                    type="email"
-                    value={newMentor.email}
-                    onChange={(e) =>
-                      setNewMentor({ ...newMentor, email: e.target.value })
-                    }
-                    className="w-full px-3 py-2 border rounded-lg focus:ring-teal-500"
-                    placeholder="name@gmail.com"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Phone
-                  </label>
-                  <input
-                    required
-                    type="tel"
-                    value={newMentor.phone}
-                    onChange={(e) =>
-                      setNewMentor({ ...newMentor, phone: e.target.value })
-                    }
-                    className="w-full px-3 py-2 border rounded-lg focus:ring-teal-500"
-                    placeholder="+123..."
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Role
-                </label>
-                <input
-                  required
-                  type="text"
-                  value={newMentor.role}
-                  onChange={(e) =>
-                    setNewMentor({ ...newMentor, role: e.target.value })
-                  }
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-teal-500"
-                  placeholder="e.g. Web Dev Mentor"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Expertise (comma separated)
-                </label>
-                <input
-                  required
-                  type="text"
-                  value={newMentor.expertise}
-                  onChange={(e) =>
-                    setNewMentor({ ...newMentor, expertise: e.target.value })
-                  }
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-teal-500"
-                  placeholder="React, Node, MongoDB"
-                />
               </div>
               <div className="flex justify-end space-x-3 mt-6">
                 <button
@@ -371,7 +352,7 @@ const MentorsPage = () => {
                   type="submit"
                   className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700"
                 >
-                  Add Mentor
+                  Add Student
                 </button>
               </div>
             </form>
@@ -382,4 +363,4 @@ const MentorsPage = () => {
   );
 };
 
-export default MentorsPage;
+export default StudentsPage;

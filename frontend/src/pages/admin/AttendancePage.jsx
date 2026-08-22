@@ -167,7 +167,7 @@ const AttendancePage = () => {
                 Student
               </th>
               <th className="px-6 py-3 text-xs font-semibold text-gray-600 uppercase">
-                Batch
+                Track
               </th>
               <th className="px-6 py-3 text-xs font-semibold text-gray-600 uppercase">
                 Status
@@ -193,7 +193,9 @@ const AttendancePage = () => {
                         ? "bg-green-100 text-green-800"
                         : record.status === "Absent"
                           ? "bg-red-100 text-red-800"
-                          : "bg-yellow-100 text-yellow-800"
+                          : record.status === "Late"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : "bg-blue-100 text-blue-800"
                     }`}
                   >
                     {record.status}
@@ -210,6 +212,7 @@ const AttendancePage = () => {
                     <option value="Present">Present</option>
                     <option value="Absent">Absent</option>
                     <option value="Late">Late</option>
+                    <option value="Excuse">Excuse</option>
                   </select>
                 </td>
               </tr>

@@ -7,38 +7,47 @@ const assignmentSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+
     description: {
       type: String,
       required: true,
+      trim: true,
     },
+
     instructions: {
       type: String,
+      trim: true,
     },
+
     batch: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Batch",
       required: true,
     },
+
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
+
     deadline: {
       type: Date,
       required: true,
     },
+
     maxScore: {
       type: Number,
       required: true,
-      default: 100,
-    },
-    isPublished: {
-      type: Boolean,
-      default: true,
+      min: 0,
     },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
-module.exports = mongoose.model("Assignment", assignmentSchema);
+module.exports = mongoose.model(
+  "Assignment",
+  assignmentSchema
+);

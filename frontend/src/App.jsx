@@ -9,14 +9,13 @@ import {
   useLocation,
 } from "react-router-dom";
 import "./style.css";
-import "./pages/student-dashboard.css";
 import API from "./api/axios";
 
-import Home from "./pages/Home";
+// Page Imports
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import AdminLayout from "./layouts/AdminLayout";
-import AdminDashboard from "./pages/AdminDashboard";
+import AdminDashboard from "./pages/admin/AdminDashboard";
 import MentorDashboard from "./pages/MentorDashboard";
 import MyStudents from "./pages/MyStudents";
 import Attendance from "./pages/Attendance";
@@ -26,15 +25,17 @@ import Grading from "./pages/Grading";
 import Announcements from "./pages/Announcements";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
-import BatchesPage from "./pages/BatchesPage";
-import MentorsPage from "./pages/MentorsPage";
-import StudentsPage from "./pages/StudentsPage";
-import AttendancePage from "./pages/AttendancePage";
-import AssignmentsPage from "./pages/AssignmentsPage";
-import AnnouncementsPage from "./pages/AnnouncementsPage";
-import ReportsPage from "./pages/ReportsPage";
-import SettingsPage from "./pages/SettingsPage";
-import AdminRoute from "./components/AdminRoute";
+import BatchesPage from "./pages/admin/BatchesPage";
+import MentorsPage from "./pages/admin/MentorsPage";
+import StudentsPage from "./pages/admin/StudentsPage";
+import AttendancePage from "./pages/admin/AttendancePage";
+import AssignmentsPage from "./pages/admin/AssignmentsPage";
+import AnnouncementsPage from "./pages/admin/AnnouncementsPage";
+import ReportsPage from "./pages/admin/ReportsPage";
+import SettingsPage from "./pages/admin/SettingsPage";
+import ResourcesPage from "./pages/admin/ResourcesPage";
+import ProtectedRoute from "./components/ProtectedRoute";
+import StudentDashboard from "./pages/StudentDashboard";
 
 // --- DATA ARRAYS ---
 const tracks = [
@@ -88,8 +89,8 @@ const steps = [
   ],
   [
     "02",
-    "Get placed in a batch",
-    "You are matched with a mentor and a learning batch.",
+    "Get placed in a track",
+    "You are matched with a mentor and a learning track.",
   ],
   [
     "03",
@@ -112,7 +113,7 @@ const features = [
   [
     "♧",
     "Mentors beside you",
-    "Small batches with a dedicated mentor reviewing your work.",
+    "Small tracks with a dedicated mentor reviewing your work.",
   ],
   [
     "▥",
@@ -137,42 +138,24 @@ const features = [
 ];
 
 const mentors = [
-  [
-    "AN",
-    "Ahmed Nasir",
-    "Lead Mentor — Web Development",
-    "Full stack developer focused on React and Node.js, mentoring beginners into their first deployed project.",
-  ],
-  [
-    "FY",
-    "Fatima Yusuf",
-    "Mentor — UI/UX Design",
-    "Product designer working in Figma, teaching research, design systems and accessible interfaces.",
-  ],
-  [
-    "BK",
-    "Bilal Kedir",
-    "Mentor — Mobile Development",
-    "Flutter developer who has shipped several Android apps and loves clean architecture.",
-  ],
-  [
-    "HA",
-    "Hafsa Abdurahman",
-    "Mentor — Data Science",
-    "Python and machine learning enthusiast guiding students through their first data projects.",
-  ],
-  [
-    "US",
-    "Umar Salah",
-    "Mentor — Web Development",
-    "Backend engineer covering APIs, databases and deployment for the web track.",
-  ],
-  [
-    "AM",
-    "Ayan Mohammed",
-    "Program Coordinator",
-    "Coordinates batches, schedules and attendance so every cohort runs smoothly.",
-  ],
+  {
+    id: 1,
+    name: "Yasmin Ali",
+    role: "Web Dev Mentor",
+    expertise: ["React", "Node.js", "MongoDB"],
+  },
+  {
+    id: 2,
+    name: "Ahmed Sani",
+    role: "CP Mentor",
+    expertise: ["C++", "Algorithms", "Codeforces"],
+  },
+  {
+    id: 3,
+    name: "Sara Seid",
+    role: "Backend Mentor",
+    expertise: ["Python", "Django", "PostgreSQL"],
+  },
 ];
 
 const faqs = [
@@ -184,10 +167,7 @@ const faqs = [
     "How long does the program run?",
     "Each cohort runs for three weeks of intensive sessions, followed by a capstone project reviewed by your mentor.",
   ],
-  [
-    "Is there any fee?",
-    "No. The bootcamp is completely free for MSJ members.",
-  ],
+  ["Is there any fee?", "No. The bootcamp is completely free for MSJ members."],
   [
     "How is attendance tracked?",
     "Mentors mark attendance in each session and you can follow your own record from your student dashboard.",
@@ -206,7 +186,9 @@ const navItems = [
   ["/contact", "Contact"],
 ];
 
+// --- REUSABLE COMPONENTS ---
 function Logo({ size = 42 }) {
+  const navigate = useNavigate();
   return (
     <button
       className="logo"
@@ -227,6 +209,8 @@ function Logo({ size = 42 }) {
 
 function Header() {
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     setOpen(false);
@@ -236,7 +220,6 @@ function Header() {
     <header className="header">
       <div className="nav container">
         <Logo />
-
         <nav className={open ? "nav-links open" : "nav-links"}>
           {navItems.map(([path, label]) => (
             <a
@@ -252,7 +235,6 @@ function Header() {
             </a>
           ))}
         </nav>
-
         <div className="nav-actions">
           <button className="ghost-btn" onClick={() => navigate("/login")}>
             Login
@@ -266,7 +248,7 @@ function Header() {
           onClick={() => setOpen((v) => !v)}
           aria-label="Toggle navigation"
         >
-          {open ? "×" : "☰"}
+          {open ? "├ù" : "Γÿ░"}
         </button>
       </div>
     </header>
@@ -291,9 +273,6 @@ function SocialIcon({ type }) {
     youtube: (
       <path d="M21.7 7.2a3 3 0 0 0-2.1-2.1C17.9 4.6 12 4.6 12 4.6s-5.9 0-7.6.5a3 3 0 0 0-2.1 2.1C1.8 8.9 1.8 12 1.8 12s0 3.1.5 4.8a3 3 0 0 0 2.1 2.1c1.7.5 7.6.5 7.6.5s5.9 0 7.6-.5a3 3 0 0 0 2.1-2.1c.5-1.7.5-4.8.5-4.8s0-3.1-.5-4.8ZM10 15.7V8.3l6.2 3.7-6.2 3.7Z" />
     ),
-    tiktok: (
-      <path d="M14.2 3h3.2c.2 1.7 1.1 3.1 2.6 4v3.2c-1.4-.1-2.7-.5-3.8-1.2v6.2a5.3 5.3 0 1 1-4.7-5.2v3.3a2.2 2.2 0 1 0 1.5 2V3h1.2Z" />
-    ),
     x: (
       <path d="M18.9 2H22l-6.8 7.8L23.1 22h-6.2l-4.8-6.3L6.6 22H3.5l7.2-8.2L2.9 2h6.4l4.3 5.7L18.9 2Zm-1.1 17.8h1.7L8.3 4.1H6.5l11.3 15.7Z" />
     ),
@@ -310,11 +289,9 @@ function Footer() {
     ["telegram", "Telegram", "https://t.me/astumsj"],
     ["instagram", "Instagram", "https://instagram.com/astumsj"],
     ["facebook", "Facebook", "https://facebook.com/astumsj"],
-    ["tiktok", "TikTok", "https://www.tiktok.com/@astumsj"],
     ["youtube", "YouTube", "https://youtube.com/@astumsj"],
     ["x", "X", "https://x.com/astumsj"],
   ];
-
   return (
     <footer className="footer">
       <div className="container footer-grid">
@@ -322,7 +299,7 @@ function Footer() {
           <Logo size={44} />
           <p>
             A centralized platform to manage bootcamp activities, track progress
-            and grow together — run by Adama Science and Technology University
+            and grow together ΓÇö run by Adama Science and Technology University
             Muslim Students Jemea.
           </p>
           <div className="socials">
@@ -362,7 +339,7 @@ function Footer() {
       </div>
       <div className="container footer-bottom">
         <span>Made by Nibras Coders</span>
-        <span>ASTU MSJ Bootcamp — Learn. Build. Grow Together.</span>
+        <span>ASTU MSJ Bootcamp ΓÇö Learn. Build. Grow Together.</span>
       </div>
     </footer>
   );
@@ -390,9 +367,9 @@ function Button({ children, variant = "primary", onClick, href }) {
   );
 }
 
+// --- PUBLIC PAGES ---
 function Home() {
   const [faqOpen, setFaqOpen] = useState(null);
-
   return (
     <>
       <section className="hero">
@@ -402,10 +379,9 @@ function Home() {
           alt="ASTU MSJ students studying together"
         />
         <div className="hero-fade" />
-
         <div className="container hero-inner">
           <div className="hero-copy">
-            <div className="arabic">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
+            <div className="arabic text-gray-600">بسم الله الرحمن الرحيم</div>
             <div className="arabic-rule">
               <span></span>۞<span></span>
             </div>
@@ -493,7 +469,7 @@ function Home() {
         <div className="section-head row">
           <SectionTitle
             title="Meet a few mentors"
-            text="Brothers and sisters guiding every batch."
+            text="Brothers and sisters guiding every track."
           />
           <Button href="/mentors" variant="outline">
             See all mentors
@@ -501,7 +477,7 @@ function Home() {
         </div>
         <div className="mentor-grid">
           {mentors.slice(0, 3).map((m) => (
-            <MentorCard key={m[1]} m={m} />
+            <MentorCard key={m.id} m={m} />
           ))}
         </div>
       </section>
@@ -513,7 +489,7 @@ function Home() {
             <div className="faq-item" key={q}>
               <button onClick={() => setFaqOpen(faqOpen === i ? null : i)}>
                 <span>{q}</span>
-                <b>{faqOpen === i ? "−" : "+"}</b>
+                <b>{faqOpen === i ? "ΓêÆ" : "+"}</b>
               </button>
               {faqOpen === i && <p>{a}</p>}
             </div>
@@ -543,12 +519,29 @@ function SectionTitle({ title, text }) {
   );
 }
 function MentorCard({ m }) {
+  const getInitials = (name) => {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("");
+  };
   return (
-    <article className="card mentor-card">
-      <div className="initials">{m[0]}</div>
-      <h3>{m[1]}</h3>
-      <span>{m[2]}</span>
-      <p>{m[3]}</p>
+    <article className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm flex flex-col items-center text-center transition-transform hover:-translate-y-1 hover:shadow-md">
+      <div className="w-16 h-16 bg-teal-100 text-teal-700 rounded-full flex items-center justify-center text-xl font-bold mb-4">
+        {getInitials(m.name)}
+      </div>
+      <h3 className="text-lg font-bold text-gray-900 mb-1">{m.name}</h3>
+      <span className="text-sm font-medium text-teal-600 mb-4">{m.role}</span>
+      <div className="flex flex-wrap justify-center gap-2">
+        {m.expertise.map((skill, index) => (
+          <span
+            key={index}
+            className="inline-flex px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-600"
+          >
+            {skill}
+          </span>
+        ))}
+      </div>
     </article>
   );
 }
@@ -704,9 +697,9 @@ function ContactPage() {
         <div className="side-stack">
           <div className="soft-card">
             <h2>Reach us directly</h2>
-            <p>✉ hello@astumsj.org</p>
-            <p>⌖ ASTU Main Campus, Adama, Ethiopia</p>
-            <p>➤ Telegram: @astumsj</p>
+            <p>Γ£ë hello@astumsj.org</p>
+            <p>Γîû ASTU Main Campus, Adama, Ethiopia</p>
+            <p>Γ₧ñ Telegram: @astumsj</p>
           </div>
           <div className="soft-card">
             <h2>Follow us</h2>
@@ -720,7 +713,6 @@ function ContactPage() {
               >
                 <SocialIcon type="telegram" />
               </a>
-
               <a
                 className="social social-instagram"
                 href="https://instagram.com/astumsj"
@@ -730,7 +722,6 @@ function ContactPage() {
               >
                 <SocialIcon type="instagram" />
               </a>
-
               <a
                 className="social social-facebook"
                 href="https://facebook.com/astumsj"
@@ -740,7 +731,6 @@ function ContactPage() {
               >
                 <SocialIcon type="facebook" />
               </a>
-
               <a
                 className="social social-youtube"
                 href="https://youtube.com/@astumsj"
@@ -750,17 +740,6 @@ function ContactPage() {
               >
                 <SocialIcon type="youtube" />
               </a>
-
-              <a
-                className="social social-tiktok"
-                href="https://www.tiktok.com/@astumsj"
-                target="_blank"
-                rel="noreferrer"
-                aria-label="TikTok"
-              >
-                <SocialIcon type="tiktok" />
-              </a>
-
               <a
                 className="social social-x"
                 href="https://x.com/astumsj"
@@ -797,11 +776,9 @@ function AuthShell({ title, subtitle, children }) {
           <p className="auth-subtitle">{subtitle}</p>
           {children}
         </div>
-
         <div className="auth-art">
           <img src="/assets/calligraphy.png" alt="" />
           <div className="art-overlay"></div>
-
           <div className="auth-brand">
             <Logo size={36} />
             <span className="auth-home-hint">Back to home</span>
@@ -875,319 +852,19 @@ function ForgotPage() {
   );
 }
 
-function RegisterPage() {
-  const [show, setShow] = useState(false);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [agreed, setAgreed] = useState(false);
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  async function submit(e) {
-    e.preventDefault();
-
-    setError("");
-
-    if (password !== confirmPassword) {
-      setError("Passwords do not match.");
-      return;
-    }
-
-    if (!agreed) {
-      setError("Please agree to the Terms and Conditions.");
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const { data } = await API.post("/auth/register", {
-        name,
-        email,
-        role: "student",
-        password,
-        confirmPassword,
-      });
-
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
-
-      go("/");
-    } catch (err) {
-      setError(
-        err.response?.data?.message ||
-          "Unable to create your account."
-      );
-    } finally {
-      setLoading(false);
-    }
-  }
-
+// --- APP & ROUTING ---
+// Layout wrapper for pages that should show the public Header and Footer
+function PublicLayout() {
   return (
-    <AuthShell
-      title="Create your account"
-      subtitle="Join the bootcamp today and start your journey."
-    >
-      <form className="auth-form" onSubmit={submit}>
-        <Field label="Full name">
-          <input
-            required
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Enter your full name"
-          />
-        </Field>
-
-        <Field label="Email">
-          <input
-            required
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@gmail.com"
-          />
-        </Field>
-
-        <div className="two-inputs">
-          <Field label="Password">
-            <div className="password">
-              <input
-                required
-                minLength="6"
-                type={show ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Create a password"
-              />
-
-              <button
-                type="button"
-                onClick={() => setShow((v) => !v)}
-              >
-                {show ? "Hide" : "Show"}
-              </button>
-            </div>
-          </Field>
-
-          <Field label="Confirm password">
-            <input
-              required
-              minLength="6"
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Confirm your password"
-            />
-          </Field>
-        </div>
-
-        <label className="terms">
-          <input
-            type="checkbox"
-            checked={agreed}
-            onChange={(e) => setAgreed(e.target.checked)}
-          />
-
-          <span>
-            I agree to the <b>Terms and Conditions</b>
-          </span>
-        </label>
-
-        {error && <p className="auth-error">{error}</p>}
-
-        <Button>
-          {loading ? "Creating account..." : "Register"}
-        </Button>
-
-        <p className="auth-switch">
-          Already have an account?{" "}
-          <a
-            href="/login"
-            onClick={(e) => {
-              e.preventDefault();
-              go("/login");
-            }}
-          >
-            Login here
-          </a>
-        </p>
-      </form>
-    </AuthShell>
+    <div className="app">
+      <Header />
+      <Outlet />
+      <Footer />
+    </div>
   );
 }
-
-function ForgotPage() {
-  const [sent, setSent] = useState(false);
-  const [email, setEmail] = useState("");
-
-  return (
-    <AuthShell
-      title={sent ? "Check your inbox" : "Forgot your password?"}
-      subtitle={
-        sent
-          ? "If an account exists for that email, a reset link is on its way."
-          : "Enter the email you registered with and we will send you a reset link."
-      }
-    >
-      {sent ? (
-        <div className="sent-box">
-          <h2>Reset link sent</h2>
-
-          <p>
-            We sent instructions to <b>{email}</b>. Check your inbox and
-            spam folder.
-          </p>
-
-          <div className="button-row">
-            <Button href="/login">Back to login</Button>
-
-            <Button
-              variant="outline"
-              onClick={() => setSent(false)}
-            >
-              Use a different email
-            </Button>
-          </div>
-        </div>
-      ) : (
-        <form
-          className="auth-form"
-          onSubmit={(e) => {
-            e.preventDefault();
-
-            if (email.trim()) {
-              setSent(true);
-            }
-          }}
-        >
-          <Field label="Email">
-            <input
-              required
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@gmail.com"
-            />
-          </Field>
-
-          <Button>Send reset link</Button>
-
-          <p className="auth-switch">
-            Remembered it?{" "}
-            <a
-              href="/login"
-              onClick={(e) => {
-                e.preventDefault();
-                go("/login");
-              }}
-            >
-              Back to login
-            </a>
-          </p>
-        </form>
-      )}
-    </AuthShell>
-  );
-}
-
-/* =========================================================
-   APP ROUTING
-   ========================================================= */
 
 function App() {
-  const [path, setPath] = useState(window.location.pathname);
-
-  useEffect(() => {
-    const update = () => {
-      setPath(window.location.pathname);
-    };
-
-    window.addEventListener("popstate", update);
-
-    return () => {
-      window.removeEventListener("popstate", update);
-    };
-  }, []);
-
-  const page = useMemo(() => {
-    switch (path) {
-      /* =========================
-         LANDING PAGE
-      ========================= */
-      case "/":
-        return <Home />;
-
-      /* =========================
-         PUBLIC PAGES
-      ========================= */
-      case "/tracks":
-        return <TracksPage />;
-
-      case "/mentors":
-        return <MentorsPage />;
-
-      case "/about":
-        return <AboutPage />;
-
-      case "/contact":
-        return <ContactPage />;
-
-      /* =========================
-         AUTH PAGES
-      ========================= */
-      case "/login":
-        return <LoginPage />;
-
-      case "/register":
-        return <RegisterPage />;
-
-      case "/forgot-password":
-        return <ForgotPage />;
-
-      /* =========================
-         ADMIN DASHBOARD
-      ========================= */
-      case "/dashboard":
-        return <AdminDashboard />;
-
-      /* =========================
-         STUDENT DASHBOARD
-      ========================= */
-
-      case "/student-dashboard":
-      case "/student-dashboard/schedule":
-      case "/student-dashboard/attendance":
-      case "/student-dashboard/progress":
-      case "/student-dashboard/assignments":
-      case "/student-dashboard/grades":
-      case "/student-dashboard/announcements":
-      case "/student-dashboard/achievements":
-      case "/student-dashboard/resources":
-      case "/student-dashboard/profile":
-      case "/student-dashboard/settings":
-        return <StudentDashboard />;
-
-      /* =========================
-         UNKNOWN URL
-      ========================= */
-      default:
-        return <Home />;
-    }
-  }, [path]);
-
-  const auth =
-    path === "/login" ||
-    path === "/register" ||
-    path === "/forgot-password";
-
-  const dashboard =
-    path === "/dashboard";
-
-  const studentDashboard =
-    path.startsWith("/student-dashboard");
-
   return (
     <BrowserRouter>
       <Routes>
@@ -1205,22 +882,23 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPage />} />
 
+        {/* Student Dashboard */}
+        <Route path="/student-dashboard/*" element={<StudentDashboard />} />
+
         {/* Dashboard */}
-        <Route path="/dashboard" element={<AdminDashboard />} />
         <Route path="/mentor-dashboard" element={<MentorDashboard />} />
-        {/* mystudents*/}  
+        {/* mystudents*/}
         <Route path="/my-students" element={<MyStudents />} />
         <Route path="/attendance" element={<Attendance />} />
         <Route path="/progress" element={<Progress />} />
         <Route path="/assignments" element={<Assignments />} />
         <Route path="/grading" element={<Grading />} />
         <Route path="/announcements" element={<Announcements />} />
-
         <Route path="/profile" element={<Profile />} />
-        <Route path="/settings" element={<Settings />} /> 
-        {/* Protected Admin Routes */}
-        <Route path="/admin" element={<AdminRoute />}>
-          <Route element={<AdminLayout />}>
+        <Route path="/settings" element={<Settings />} />
+
+        {/* Admin Routes */}
+        <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<Navigate to="/admin/dashboard" replace />} />
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="batches" element={<BatchesPage />} />
@@ -1229,15 +907,15 @@ function App() {
             <Route path="attendance" element={<AttendancePage />} />
             <Route path="assignments" element={<AssignmentsPage />} />
             <Route path="announcements" element={<AnnouncementsPage />} />
+            <Route path="resources" element={<ResourcesPage />} />
             <Route path="reports" element={<ReportsPage />} />
             <Route path="settings" element={<SettingsPage />} />
           </Route>
-        </Route>
 
         {/* Redirect old dashboard to admin/dashboard */}
         <Route
           path="/dashboard"
-          element={<Navigate to="/admin/dashboard" replace />}
+          element={<Navigate to="/admindashboard" replace />}
         />
 
         {/* Any unknown URL goes back to Login */}

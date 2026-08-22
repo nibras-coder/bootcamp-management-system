@@ -16,9 +16,12 @@ function MentorDashboard() {
     const fetchDashboard = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("http://localhost:5000/api/mentor/dashboard", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await axios.get(
+          "http://localhost:5000/api/mentor/dashboard",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
+        );
         setStats(res.data);
       } catch (err) {
         console.error(err);
@@ -39,8 +42,12 @@ function MentorDashboard() {
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Mentor Dashboard</h1>
-            <p className="text-gray-500 text-sm">Welcome back, Yonas! Here's your batch overview.</p>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Mentor Dashboard
+            </h1>
+            <p className="text-gray-500 text-sm">
+              Welcome back, Amir! Here's your track overview.
+            </p>
           </div>
 
           <div className="flex items-center gap-4">
@@ -59,10 +66,30 @@ function MentorDashboard() {
 
         {/* Stat cards */}
         <div className="grid grid-cols-4 gap-5 mb-6">
-          <StatCard label="My Students" value="32" sublabel="Total Students" icon={<Users size={18} className="text-teal-700" />} />
-          <StatCard label="Attendance (Avg.)" value="86.2%" sublabel="This Week" icon={<TrendingUp size={18} className="text-teal-700" />} />
-          <StatCard label="Pending Submissions" value="7" sublabel="Needs Review" icon={<FileText size={18} className="text-teal-700" />} />
-          <StatCard label="Average Grade" value="84.1%" sublabel="This Batch" icon={<Star size={18} className="text-teal-700" />} />
+          <StatCard
+            label="My Students"
+            value="32"
+            sublabel="Total Students"
+            icon={<Users size={18} className="text-teal-700" />}
+          />
+          <StatCard
+            label="Attendance (Avg.)"
+            value="86.2%"
+            sublabel="This Week"
+            icon={<TrendingUp size={18} className="text-teal-700" />}
+          />
+          <StatCard
+            label="Pending Submissions"
+            value="7"
+            sublabel="Needs Review"
+            icon={<FileText size={18} className="text-teal-700" />}
+          />
+          <StatCard
+            label="Average Grade"
+            value="84.1%"
+            sublabel="This Track"
+            icon={<Star size={18} className="text-teal-700" />}
+          />
         </div>
 
         {/* Chart + at-risk */}

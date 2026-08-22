@@ -7,50 +7,72 @@ const submissionSchema = new mongoose.Schema(
       ref: "Assignment",
       required: true,
     },
+
     student: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
+
     githubUrl: {
       type: String,
       required: true,
       trim: true,
     },
+
     liveDemoUrl: {
       type: String,
       trim: true,
     },
+
     notes: {
       type: String,
       trim: true,
     },
-    status: {
-      type: String,
-      enum: ["submitted", "graded", "resubmission_requested"],
-      default: "submitted",
+
+    submittedAt: {
+      type: Date,
+      default: Date.now,
     },
+
     score: {
       type: Number,
+      min: 0,
       default: null,
     },
+
     feedback: {
       type: String,
-      default: "",
+      trim: true,
     },
+
+    status: {
+      type: String,
+      enum: [
+        "Submitted",
+        "Graded",
+        "Resubmission Required",
+      ],
+      default: "Submitted",
+    },
+
     gradedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       default: null,
     },
-    submittedAt: {
+
+    gradedAt: {
       type: Date,
-      default: Date.now,
+      default: null,
     },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
-submissionSchema.index({ assignment: 1, student: 1 }, { unique: true });
-
-module.exports = mongoose.model("Submission", submissionSchema);
+module.exports = mongoose.model(
+  "Submission",
+  submissionSchema
+);

@@ -1,1932 +1,306 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { Routes, Route, Link, useLocation, useNavigate, Navigate } from "react-router-dom";
+import { 
+  FiGrid, FiClock, FiCheckSquare, FiTrendingUp, FiFileText, 
+  FiStar, FiBell, FiAward, FiBook, FiUser, FiSettings, 
+  FiLogOut, FiMenu 
+} from "react-icons/fi";
 import API from "../api/axios";
-import { go } from "../utils/navigation";
-import "./Student-Dashboard.css";
 
-const navItems = [
-  ["/student-dashboard", "Dashboard", "⌂"],
-  ["/student-dashboard/schedule", "My Schedule", "◷"],
-  ["/student-dashboard/attendance", "My Attendance", "✓"],
-  ["/student-dashboard/progress", "My Progress", "↗"],
-  ["/student-dashboard/assignments", "Assignments", "▣"],
-  ["/student-dashboard/grades", "Grades", "☆"],
-  ["/student-dashboard/announcements", "Announcements", "◇"],
-  ["/student-dashboard/achievements", "Achievements", "♛"],
-  ["/student-dashboard/resources", "Resources", "▤"],
-];
+import logo from "../assets/logo.png";
 
 const fallback = {
-  profile: {
-    name: "",
-    email: "",
-    role: "student",
-    track: "",
-    batch: "",
-  },
-
-  stats: {
-    attendance: null,
-    progress: null,
-    pendingAssignments: null,
-    averageGrade: null,
-  },
-
-  progress: [],
-  assignments: [],
-  announcements: [],
-  attendanceWeek: [],
-  schedule: [],
-  attendance: [],
-  grades: [],
-  achievements: [],
-  resources: [],
+  profile: { name: "", email: "", role: "student", track: "", batch: "" },
+  stats: { attendance: null, progress: null, pendingAssignments: null, averageGrade: null },
+  progress: [], assignments: [], announcements: [], attendanceWeek: [], schedule: [], attendance: [], grades: [], achievements: [], resources: []
 };
-
-function initials(name = "Student") {
-  return (
-    name
-      .split(" ")
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((part) => part[0])
-      .join("")
-      .toUpperCase() || "ST"
-  );
-}
 
 function formatDate(date) {
   if (!date) return "Not specified";
-
   const parsed = new Date(date);
-
-  if (Number.isNaN(parsed.getTime())) {
-    return date;
-  }
-
-  return parsed.toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+  return Number.isNaN(parsed.getTime()) ? date : parsed.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
 }
 
-function StatCard({
-  label,
-  value,
-  hint,
-  icon,
-  tone = "teal",
-}) {
+function StatCard({ label, value, hint, icon: Icon, tone = "teal" }) {
+  const colors = {
+    teal: "text-teal-600 bg-teal-100",
+    blue: "text-blue-600 bg-blue-100",
+    purple: "text-purple-600 bg-purple-100",
+    gold: "text-yellow-600 bg-yellow-100"
+  };
+  const bgClass = colors[tone] || colors.teal;
+  
   return (
-    <div className="student-stat-card">
-      <div className="student-stat-info">
-        <p>{label}</p>
-        <strong>{value}</strong>
-
-        {hint && (
-          <span className={`stat-hint ${tone}`}>
-            {hint}
-          </span>
-        )}
+    <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100 flex items-center justify-between">
+      <div>
+        <p className="text-sm font-medium text-gray-500">{label}</p>
+        <p className="text-2xl font-bold text-gray-900 mt-1">{value}</p>
+        {hint && <p className="text-xs text-gray-400 mt-1">{hint}</p>}
       </div>
-
-      <div className={`student-stat-icon ${tone}`}>
-        {icon}
+      <div className={`p-4 rounded-full ${bgClass}`}>
+        <Icon size={24} />
       </div>
     </div>
   );
 }
 
-function Panel({
-  title,
-  action,
-  children,
-  className = "",
-}) {
+function Panel({ title, action, children }) {
   return (
-    <section
-      className={`student-panel ${className}`}
-    >
-      <div className="student-panel-head">
-        <h2>{title}</h2>
+    <section className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden mt-6">
+      <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+        <h2 className="font-semibold text-gray-800">{title}</h2>
         {action}
       </div>
-
-      {children}
+      <div className="p-6">{children}</div>
     </section>
   );
 }
 
-function EmptyState({
-  icon = "◇",
-  title = "No data available yet",
-  text = "There is nothing to display here yet.",
-}) {
+function EmptyState({ icon: Icon, title, text }) {
   return (
-    <div className="student-empty-state">
-      <div className="student-empty-icon">
-        {icon}
-      </div>
-
-      <h3>{title}</h3>
-
-      <p>{text}</p>
+    <div className="flex flex-col items-center justify-center py-12 text-center">
+      <div className="text-gray-300 mb-4"><Icon size={48} /></div>
+      <h3 className="text-lg font-medium text-gray-900 mb-1">{title}</h3>
+      <p className="text-sm text-gray-500 max-w-sm">{text}</p>
     </div>
   );
 }
 
-function StudentDashboard() {
+function DashboardHome({ data, stats, profile }) {
+  return (
+    <div className="animate-fade-in">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <StatCard label="Attendance" value={stats.attendance ? `${stats.attendance}%` : "N/A"} hint="Overall attendance" icon={FiCheckSquare} tone="teal" />
+        <StatCard label="Progress" value={stats.progress ? `${stats.progress}%` : "N/A"} hint="Track completion" icon={FiTrendingUp} tone="blue" />
+        <StatCard label="Assignments" value={stats.pendingAssignments || "0"} hint="Pending tasks" icon={FiFileText} tone="purple" />
+        <StatCard label="Average Grade" value={stats.averageGrade ? `${stats.averageGrade}%` : "N/A"} hint="Across all graded work" icon={FiStar} tone="gold" />
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Panel title="Recent Announcements">
+          {data.announcements.length > 0 ? (
+            <div className="space-y-4">
+              {data.announcements.slice(0, 3).map((ann, i) => (
+                <div key={i} className="border-l-4 border-teal-500 pl-4 py-2">
+                  <h4 className="text-sm font-semibold text-gray-800">{ann.title}</h4>
+                  <p className="text-xs text-gray-500 mt-1">{formatDate(ann.date)}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <EmptyState icon={FiBell} title="No Announcements" text="You are all caught up!" />
+          )}
+        </Panel>
+        <Panel title="Upcoming Schedule">
+          {data.schedule.length > 0 ? (
+            <div className="space-y-4">
+              {data.schedule.slice(0, 3).map((session, i) => (
+                <div key={i} className="flex items-start gap-4">
+                  <div className="bg-teal-50 text-teal-700 py-1 px-3 rounded flex flex-col items-center justify-center min-w-[60px]">
+                    <span className="text-xs font-bold">{new Date(session.date).getDate()}</span>
+                    <span className="text-[10px] uppercase">{new Date(session.date).toLocaleString("default", { month: "short" })}</span>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-800">{session.topic}</h4>
+                    <p className="text-xs text-gray-500">{session.time} &middot; {session.type}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <EmptyState icon={FiClock} title="No Upcoming Sessions" text="Your schedule is clear." />
+          )}
+        </Panel>
+      </div>
+    </div>
+  );
+}
+
+function GenericPage({ title, description, icon: Icon, children }) {
+  return (
+    <div className="animate-fade-in">
+      <div className="mb-8">
+        <div className="flex items-center gap-3 text-teal-600 mb-2">
+          <Icon size={20} />
+          <span className="text-sm font-bold tracking-wider uppercase">Student Portal</span>
+        </div>
+        <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
+        <p className="text-gray-500 mt-1">{description}</p>
+      </div>
+      {children}
+    </div>
+  );
+}
+
+export default function StudentDashboard() {
   const [data, setData] = useState(fallback);
   const [loading, setLoading] = useState(true);
-  const [open, setOpen] = useState(false);
-
-  const [currentPath, setCurrentPath] = useState(
-    window.location.pathname
-  );
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const user = useMemo(() => {
-    try {
-      return JSON.parse(
-        localStorage.getItem("user") || "{}"
-      );
-    } catch {
-      return {};
-    }
-  }, []);
-
-  useEffect(() => {
-    const updatePath = () => {
-      setCurrentPath(window.location.pathname);
-      setOpen(false);
-
-      window.scrollTo({
-        top: 0,
-        behavior: "instant",
-      });
-    };
-
-    window.addEventListener(
-      "popstate",
-      updatePath
-    );
-
-    return () => {
-      window.removeEventListener(
-        "popstate",
-        updatePath
-      );
-    };
+    try { return JSON.parse(localStorage.getItem("user") || "{}"); }
+    catch { return {}; }
   }, []);
 
   useEffect(() => {
     let alive = true;
-
     API.get("/student/dashboard")
       .then(({ data: response }) => {
         if (!alive || !response) return;
-
         setData({
           ...fallback,
           ...response,
-
-          profile: {
-            ...fallback.profile,
-            ...(response.profile || {}),
-          },
-
-          stats: {
-            ...fallback.stats,
-            ...(response.stats || {}),
-          },
-
-          progress: Array.isArray(response.progress)
-            ? response.progress
-            : [],
-
-          assignments: Array.isArray(
-            response.assignments
-          )
-            ? response.assignments
-            : [],
-
-          announcements: Array.isArray(
-            response.announcements
-          )
-            ? response.announcements
-            : [],
-
-          attendanceWeek: Array.isArray(
-            response.attendanceWeek
-          )
-            ? response.attendanceWeek
-            : [],
-
-          schedule: Array.isArray(response.schedule)
-            ? response.schedule
-            : [],
-
-          attendance: Array.isArray(
-            response.attendance
-          )
-            ? response.attendance
-            : [],
-
-          grades: Array.isArray(response.grades)
-            ? response.grades
-            : [],
-
-          achievements: Array.isArray(
-            response.achievements
-          )
-            ? response.achievements
-            : [],
-
-          resources: Array.isArray(
-            response.resources
-          )
-            ? response.resources
-            : [],
+          profile: { ...fallback.profile, ...(response.profile || {}) },
+          stats: { ...fallback.stats, ...(response.stats || {}) },
+          progress: Array.isArray(response.progress) ? response.progress : [],
+          assignments: Array.isArray(response.assignments) ? response.assignments : [],
+          announcements: Array.isArray(response.announcements) ? response.announcements : [],
+          attendanceWeek: Array.isArray(response.attendanceWeek) ? response.attendanceWeek : [],
+          schedule: Array.isArray(response.schedule) ? response.schedule : [],
+          attendance: Array.isArray(response.attendance) ? response.attendance : [],
+          grades: Array.isArray(response.grades) ? response.grades : [],
+          achievements: Array.isArray(response.achievements) ? response.achievements : [],
+          resources: Array.isArray(response.resources) ? response.resources : [],
         });
       })
-      .catch(() => {
-        if (alive) {
-          setData(fallback);
-        }
-      })
-      .finally(() => {
-        if (alive) {
-          setLoading(false);
-        }
-      });
-
-    return () => {
-      alive = false;
-    };
+      .catch(() => { if (alive) setData(fallback); })
+      .finally(() => { if (alive) setLoading(false); });
+    return () => { alive = false; };
   }, []);
 
-  const profile =
-    data.profile || fallback.profile;
-
-  const stats =
-    data.stats || fallback.stats;
-
-  const name =
-    profile.name ||
-    user.name ||
-    "Student";
-
-  const navigate = (path) => {
-    go(path);
-
-    setCurrentPath(path);
-    setOpen(false);
-
-    window.scrollTo({
-      top: 0,
-      behavior: "instant",
-    });
-  };
-
-  const logout = () => {
+  const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-
     navigate("/");
   };
 
-  const isDashboard =
-    currentPath === "/student-dashboard";
+  const navItems = [
+    { path: "", label: "Dashboard", icon: FiGrid },
+    { path: "progress", label: "My Courses/Tracks", icon: FiTrendingUp },
+    { path: "assignments", label: "Assignments", icon: FiFileText },
+    { path: "attendance", label: "My Attendance", icon: FiCheckSquare },
+    { path: "profile", label: "Profile", icon: FiUser },
+    { path: "settings", label: "Settings", icon: FiSettings },
+  ];
 
-  const pageTitles = {
-    "/student-dashboard/schedule": [
-      "My Schedule",
-      "View your upcoming bootcamp sessions and learning schedule.",
-      "◷",
-    ],
+  const profile = data.profile || fallback.profile;
+  const name = profile.name || user.name || "Student";
 
-    "/student-dashboard/attendance": [
-      "My Attendance",
-      "View your complete attendance record.",
-      "✓",
-    ],
-
-    "/student-dashboard/progress": [
-      "My Progress",
-      "Track your learning progress across all topics.",
-      "↗",
-    ],
-
-    "/student-dashboard/assignments": [
-      "Assignments",
-      "View your assignments, deadlines and submissions.",
-      "▣",
-    ],
-
-    "/student-dashboard/grades": [
-      "Grades",
-      "View your grades and mentor feedback.",
-      "☆",
-    ],
-
-    "/student-dashboard/announcements": [
-      "Announcements",
-      "View the latest announcements from the bootcamp.",
-      "◇",
-    ],
-
-    "/student-dashboard/achievements": [
-      "Achievements",
-      "View your unlocked achievements and milestones.",
-      "♛",
-    ],
-
-    "/student-dashboard/resources": [
-      "Resources",
-      "Access learning materials and useful resources.",
-      "▤",
-    ],
-
-    "/student-dashboard/profile": [
-      "My Profile",
-      "View your student information and bootcamp details.",
-      "♙",
-    ],
-
-    "/student-dashboard/settings": [
-      "Settings",
-      "Manage your account and dashboard preferences.",
-      "⚙",
-    ],
-  };
-
-  const pageInfo =
-    pageTitles[currentPath];
+  if (loading) {
+    return <div className="flex items-center justify-center h-screen bg-gray-50 text-teal-700">Loading your dashboard...</div>;
+  }
 
   return (
-    <div className="student-portal">
-
-      {open && (
-        <button
-          className="student-overlay"
-          onClick={() => setOpen(false)}
-          aria-label="Close menu"
-        />
+    <div className="flex h-screen bg-gray-50 overflow-hidden font-sans text-gray-900">
+      {/* Mobile Overlay */}
+      {sidebarOpen && (
+        <div className="fixed inset-0 bg-black/50 z-20 md:hidden" onClick={() => setSidebarOpen(false)} />
       )}
 
-      <aside
-        className={`student-sidebar ${
-          open ? "open" : ""
-        }`}
-      >
-        <div
-          className="student-brand"
-          onClick={() => navigate("/")}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(event) => {
-            if (event.key === "Enter") {
-              navigate("/");
-            }
-          }}
-        >
-          <img
-            src="/assets/msj-logo.jpg"
-            alt="ASTU MSJ"
-          />
-
-          <div>
-            <b>ASTU MSJ</b>
-            <small>Bootcamp System</small>
+      {/* Sidebar */}
+      <aside className={`w-64 bg-teal-900 text-white shadow-xl fixed md:relative z-30 h-full flex flex-col justify-between transition-transform ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}>
+        <div>
+          <div className="p-6 border-b border-teal-800 flex items-center gap-3">
+            <img src={logo} alt="Logo" className="w-10 h-10 object-cover rounded-full bg-white p-1" />
+            <div>
+              <h1 className="font-bold text-sm text-white leading-tight">ASTU MSJ<br/>Bootcamp System</h1>
+            </div>
           </div>
+          <nav className="p-4 space-y-1 overflow-y-auto">
+            {navItems.map((item) => {
+              const fullPath = `/student-dashboard${item.path ? "/" + item.path : ""}`;
+              const isActive = location.pathname === fullPath || (item.path === "" && location.pathname === "/student-dashboard");
+              
+              return (
+                <Link
+                  key={item.path}
+                  to={fullPath}
+                  onClick={() => setSidebarOpen(false)}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                    isActive
+                      ? "bg-teal-800 text-white border-l-4 border-white"
+                      : "text-teal-100 hover:bg-teal-800/50 hover:text-white"
+                  }`}
+                >
+                  <item.icon size={18} className={isActive ? "text-white" : "text-teal-300"} />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
         </div>
-
-        <div className="student-nav-label">
-          Workspace
-        </div>
-
-        <nav className="student-navigation">
-          {navItems.map(
-            ([path, label, icon]) => (
-              <button
-                key={path}
-                className={
-                  currentPath === path
-                    ? "active"
-                    : ""
-                }
-                onClick={() =>
-                  navigate(path)
-                }
-              >
-                <span className="nav-icon">
-                  {icon}
-                </span>
-
-                <span className="nav-text">
-                  {label}
-                </span>
-
-                {label === "Assignments" &&
-                  stats.pendingAssignments != null && (
-                    <em>
-                      {stats.pendingAssignments}
-                    </em>
-                  )}
-              </button>
-            )
-          )}
-        </nav>
-
-        <div className="student-nav-label account-label">
-          Account
-        </div>
-
-        <nav className="student-navigation">
+        <div className="p-4 border-t border-teal-800 bg-teal-950/30">
           <button
-            className={
-              currentPath ===
-              "/student-dashboard/profile"
-                ? "active"
-                : ""
-            }
-            onClick={() =>
-              navigate(
-                "/student-dashboard/profile"
-              )
-            }
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-3 py-2.5 text-red-500 text-sm hover:bg-red-500/10 hover:text-red-400 rounded-lg font-medium transition-colors mb-4"
           >
-            <span className="nav-icon">
-              ♙
-            </span>
-
-            <span className="nav-text">
-              Profile
-            </span>
+            <FiLogOut size={18} />
+            Logout
           </button>
-
-          <button
-            className={
-              currentPath ===
-              "/student-dashboard/settings"
-                ? "active"
-                : ""
-            }
-            onClick={() =>
-              navigate(
-                "/student-dashboard/settings"
-              )
-            }
-          >
-            <span className="nav-icon">
-              ⚙
-            </span>
-
-            <span className="nav-text">
-              Settings
-            </span>
-          </button>
-        </nav>
-
-        <div className="mentor-note">
-          <b>✦ Mentor note</b>
-
-          <p>
-            Small, consistent steps are how you
-            finish strong.
-          </p>
+          <div className="flex items-center gap-3 px-2">
+            <div className="bg-teal-800 p-2 rounded-full">
+              <FiUser size={24} className="text-teal-200" />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-white truncate w-32">{name}</p>
+              <p className="text-xs text-teal-300 capitalize">{profile.track || "Student"}</p>
+            </div>
+          </div>
         </div>
-
-        <button
-          className="student-signout"
-          onClick={logout}
-        >
-          <span>↪</span>
-          Sign out
-        </button>
-
-        <button
-          className="student-user"
-          onClick={() =>
-            navigate(
-              "/student-dashboard/profile"
-            )
-          }
-        >
-          <div className="student-avatar">
-            {initials(name)}
-          </div>
-
-          <div className="student-user-info">
-            <b>{name}</b>
-
-            <small>
-              Student
-              {profile.track
-                ? ` · ${profile.track}`
-                : ""}
-            </small>
-          </div>
-        </button>
       </aside>
 
-      <div className="student-main">
-
-        <header className="student-topbar">
-          <div className="student-breadcrumb">
-            <button
-              className="mobile-menu"
-              onClick={() => setOpen(true)}
-              aria-label="Open menu"
-            >
-              ☰
-            </button>
-
-            <span className="breadcrumb-dot">
-              ●
-            </span>
-
-            <span className="breadcrumb-learning">
-              Learning space
-            </span>
-
-            <b>/</b>
-
-            <span>
-              {isDashboard
-                ? "Student Dashboard"
-                : pageInfo?.[0] ||
-                  "Student Dashboard"}
-            </span>
+      {/* Main Content */}
+      <main className="flex-1 flex flex-col h-screen overflow-hidden relative">
+        {/* Mobile Header */}
+        <header className="md:hidden bg-teal-900 text-white p-4 flex items-center justify-between shadow-md z-10">
+          <div className="flex items-center gap-2">
+            <img src={logo} alt="Logo" className="w-8 h-8 object-cover rounded-full bg-white p-0.5" />
+            <h1 className="font-bold text-sm">Student Portal</h1>
           </div>
-
-          <div className="student-top-actions">
-            <button
-              className="student-bell"
-              onClick={() =>
-                navigate(
-                  "/student-dashboard/announcements"
-                )
-              }
-              aria-label="Announcements"
-            >
-              ♧
-              <i />
-            </button>
-
-            <button
-              className="student-top-profile"
-              onClick={() =>
-                navigate(
-                  "/student-dashboard/profile"
-                )
-              }
-            >
-              <div className="student-avatar small">
-                {initials(name)}
-              </div>
-
-              <span>{name}</span>
-
-              <b>⌄</b>
-            </button>
-          </div>
+          <button className="p-2 text-teal-100 hover:text-white" onClick={() => setSidebarOpen(true)}>
+            <FiMenu size={24} />
+          </button>
         </header>
 
-        {isDashboard && (
-          <DashboardHome
-            data={data}
-            stats={stats}
-            profile={profile}
-            name={name}
-            navigate={navigate}
-            loading={loading}
-          />
-        )}
-
-        {!isDashboard && (
-          <StudentPage
-            path={currentPath}
-            data={data}
-            profile={profile}
-            navigate={navigate}
-          />
-        )}
-      </div>
+        <div className="flex-1 overflow-y-auto p-4 md:p-8">
+          <Routes>
+            <Route path="" element={<DashboardHome data={data} stats={data.stats} profile={profile} />} />
+            <Route path="attendance" element={
+              <GenericPage title="My Attendance" description="Track your session attendance." icon={FiCheckSquare}>
+                <Panel title="Attendance Records"><EmptyState icon={FiCheckSquare} title="No records found" text="Your attendance will be logged here." /></Panel>
+              </GenericPage>
+            } />
+            <Route path="progress" element={
+              <GenericPage title="My Courses & Tracks" description="Follow your learning progress." icon={FiTrendingUp}>
+                <Panel title="Course Modules"><EmptyState icon={FiTrendingUp} title="No courses assigned" text="You have not started any modules yet." /></Panel>
+              </GenericPage>
+            } />
+            <Route path="assignments" element={
+              <GenericPage title="Assignments" description="View and submit your tasks." icon={FiFileText}>
+                <Panel title="Pending Tasks"><EmptyState icon={FiFileText} title="All caught up!" text="No pending assignments." /></Panel>
+              </GenericPage>
+            } />
+            <Route path="profile" element={
+              <GenericPage title="My Profile" description="View your personal information." icon={FiUser}>
+                <Panel title="Personal Details">
+                  <div className="space-y-4 text-sm text-gray-700">
+                    <p><strong>Name:</strong> {name}</p>
+                    <p><strong>Email:</strong> {profile.email}</p>
+                    <p><strong>Track:</strong> {profile.track || 'Unassigned'}</p>
+                  </div>
+                </Panel>
+              </GenericPage>
+            } />
+            <Route path="settings" element={
+              <GenericPage title="Settings" description="Manage your account preferences." icon={FiSettings}>
+                <Panel title="Preferences"><EmptyState icon={FiSettings} title="Settings" text="Update your preferences here." /></Panel>
+              </GenericPage>
+            } />
+            <Route path="*" element={<Navigate to="/student-dashboard" replace />} />
+          </Routes>
+        </div>
+      </main>
     </div>
   );
 }
-
-function DashboardHome({
-  data,
-  stats,
-  profile,
-  name,
-  navigate,
-  loading,
-}) {
-  const progress = data.progress || [];
-  const assignments = data.assignments || [];
-  const announcements = data.announcements || [];
-  const attendanceWeek =
-    data.attendanceWeek || [];
-
-  return (
-    <main className="student-content">
-
-      <div className="student-heading">
-        <div className="student-heading-text">
-          <p className="eyebrow">
-            YOUR LEARNING SPACE
-          </p>
-
-          <h1>Student Dashboard</h1>
-
-          <p>
-            Welcome back,{" "}
-            {name.split(" ")[0]}.
-            {loading
-              ? " Loading your latest information..."
-              : " Keep up the great work."}
-          </p>
-        </div>
-
-        <div className="student-batch">
-          <span>●</span>
-
-          {profile.batch ||
-            "Your Batch"}
-        </div>
-      </div>
-
-      <div className="student-stats-grid">
-        <StatCard
-          label="Attendance"
-          value={
-            stats.attendance != null
-              ? `${Number(
-                  stats.attendance
-                ).toFixed(1)}%`
-              : "—"
-          }
-          hint={
-            stats.attendance != null
-              ? "Current"
-              : "Not available"
-          }
-          icon="◷"
-          tone="teal"
-        />
-
-        <StatCard
-          label="Overall Progress"
-          value={
-            stats.progress != null
-              ? `${stats.progress}%`
-              : "—"
-          }
-          hint={
-            stats.progress != null
-              ? "Current"
-              : "Not available"
-          }
-          icon="◔"
-          tone="blue"
-        />
-
-        <StatCard
-          label="Assignments"
-          value={
-            stats.pendingAssignments != null
-              ? stats.pendingAssignments
-              : "—"
-          }
-          hint={
-            stats.pendingAssignments != null
-              ? "Pending"
-              : "Not available"
-          }
-          icon="▣"
-          tone="purple"
-        />
-
-        <StatCard
-          label="Average Grade"
-          value={
-            stats.averageGrade != null
-              ? `${Number(
-                  stats.averageGrade
-                ).toFixed(1)}%`
-              : "—"
-          }
-          hint={
-            stats.averageGrade != null
-              ? "Current"
-              : "Not available"
-          }
-          icon="☆"
-          tone="gold"
-        />
-      </div>
-
-      <div className="student-dashboard-grid">
-
-        <Panel
-          title="Progress Overview"
-          action={
-            <button
-              onClick={() =>
-                navigate(
-                  "/student-dashboard/progress"
-                )
-              }
-            >
-              View All
-            </button>
-          }
-        >
-          {progress.length === 0 ? (
-            <EmptyState
-              icon="↗"
-              title="No progress recorded yet"
-              text="Your learning progress will appear here once it is available."
-            />
-          ) : (
-            <div className="progress-list">
-              {progress.map(
-                (item, index) => {
-                  const label =
-                    item.topic ||
-                    item.name ||
-                    item[0] ||
-                    `Topic ${index + 1}`;
-
-                  const value =
-                    item.percent ??
-                    item.value ??
-                    item.progress ??
-                    item[1] ??
-                    0;
-
-                  const safeValue = Math.max(
-                    0,
-                    Math.min(
-                      100,
-                      Number(value) || 0
-                    )
-                  );
-
-                  return (
-                    <div
-                      className="progress-row"
-                      key={
-                        label || index
-                      }
-                    >
-                      <div className="progress-row-top">
-                        <span>
-                          {label}
-                        </span>
-
-                        <b>
-                          {safeValue}%
-                        </b>
-                      </div>
-
-                      <div className="progress-track">
-                        <i
-                          style={{
-                            width: `${safeValue}%`,
-                          }}
-                        />
-                      </div>
-                    </div>
-                  );
-                }
-              )}
-            </div>
-          )}
-        </Panel>
-
-        <Panel
-          title="Upcoming Assignments"
-          action={
-            <button
-              onClick={() =>
-                navigate(
-                  "/student-dashboard/assignments"
-                )
-              }
-            >
-              View All
-            </button>
-          }
-        >
-          {assignments.length === 0 ? (
-            <EmptyState
-              icon="▣"
-              title="No assignments yet"
-              text="Your assignments will appear here when they are added."
-            />
-          ) : (
-            <div className="assignment-list">
-              {assignments
-                .slice(0, 3)
-                .map((item, index) => (
-                  <button
-                    className="assignment-item"
-                    key={
-                      item._id ||
-                      item.title ||
-                      index
-                    }
-                    onClick={() =>
-                      navigate(
-                        "/student-dashboard/assignments"
-                      )
-                    }
-                  >
-                    <span className="assignment-icon">
-                      ▣
-                    </span>
-
-                    <div>
-                      <b>
-                        {item.title}
-                      </b>
-
-                      <small>
-                        Due:{" "}
-                        {formatDate(
-                          item.deadline ||
-                            item.due
-                        )}
-                      </small>
-                    </div>
-
-                    <em
-                      className={
-                        Number(
-                          item.daysLeft
-                        ) <= 2
-                          ? "urgent"
-                          : "soon"
-                      }
-                    >
-                      {item.daysLeft != null
-                        ? `${item.daysLeft} Days Left`
-                        : "View"}
-                    </em>
-                  </button>
-                ))}
-            </div>
-          )}
-        </Panel>
-
-        <Panel
-          title="Recent Announcements"
-          action={
-            <button
-              onClick={() =>
-                navigate(
-                  "/student-dashboard/announcements"
-                )
-              }
-            >
-              View All
-            </button>
-          }
-        >
-          {announcements.length === 0 ? (
-            <EmptyState
-              icon="◇"
-              title="No announcements"
-              text="New bootcamp announcements will appear here."
-            />
-          ) : (
-            <div className="announcement-list">
-              {announcements
-                .slice(0, 3)
-                .map((item, index) => (
-                  <button
-                    className="announcement-item"
-                    key={
-                      item._id ||
-                      item.title ||
-                      index
-                    }
-                    onClick={() =>
-                      navigate(
-                        "/student-dashboard/announcements"
-                      )
-                    }
-                  >
-                    <span className="announcement-icon">
-                      ◇
-                    </span>
-
-                    <div>
-                      <b>
-                        {item.title}
-                      </b>
-
-                      <small>
-                        {item.content}
-                      </small>
-                    </div>
-
-                    <em>
-                      {item.time ||
-                        "Recently"}
-                    </em>
-                  </button>
-                ))}
-            </div>
-          )}
-        </Panel>
-
-        <Panel title="Attendance This Week">
-          {attendanceWeek.length === 0 ? (
-            <EmptyState
-              icon="✓"
-              title="No attendance data"
-              text="Your attendance will appear here once sessions are recorded."
-            />
-          ) : (
-            <>
-              <div className="week-head">
-                {[
-                  "Mon",
-                  "Tue",
-                  "Wed",
-                  "Thu",
-                  "Fri",
-                  "Sat",
-                ].map((day) => (
-                  <span key={day}>
-                    {day}
-                  </span>
-                ))}
-              </div>
-
-              <div className="week-status">
-                {attendanceWeek
-                  .slice(0, 6)
-                  .map(
-                    (status, index) => (
-                      <span
-                        key={index}
-                        className={
-                          status ===
-                          "present"
-                            ? "present"
-                            : status ===
-                              "absent"
-                            ? "absent"
-                            : "none"
-                        }
-                      >
-                        {status ===
-                        "present"
-                          ? "✓"
-                          : status ===
-                            "absent"
-                          ? "×"
-                          : "—"}
-                      </span>
-                    )
-                  )}
-              </div>
-
-              <div className="attendance-legend">
-                <span>
-                  <i className="present" />
-                  Present
-                </span>
-
-                <span>
-                  <i className="absent" />
-                  Absent
-                </span>
-
-                <span>
-                  <i className="none" />
-                  Not marked
-                </span>
-              </div>
-            </>
-          )}
-        </Panel>
-      </div>
-
-      {loading && (
-        <p className="student-loading">
-          Loading your latest bootcamp data…
-        </p>
-      )}
-    </main>
-  );
-}
-
-function StudentPage({
-  path,
-  data,
-  profile,
-  navigate,
-}) {
-  switch (path) {
-    case "/student-dashboard/schedule":
-      return <SchedulePage data={data} />;
-
-    case "/student-dashboard/attendance":
-      return <AttendancePage data={data} />;
-
-    case "/student-dashboard/progress":
-      return <ProgressPage data={data} />;
-
-    case "/student-dashboard/assignments":
-      return <AssignmentsPage data={data} />;
-
-    case "/student-dashboard/grades":
-      return <GradesPage data={data} />;
-
-    case "/student-dashboard/announcements":
-      return (
-        <AnnouncementsPage data={data} />
-      );
-
-    case "/student-dashboard/achievements":
-      return (
-        <AchievementsPage data={data} />
-      );
-
-    case "/student-dashboard/resources":
-      return <ResourcesPage data={data} />;
-
-    case "/student-dashboard/profile":
-      return <ProfilePage profile={profile} />;
-
-    case "/student-dashboard/settings":
-      return <SettingsPage />;
-
-    default:
-      navigate("/student-dashboard");
-      return null;
-  }
-}
-
-function SchedulePage({ data }) {
-  const schedule = data.schedule || [];
-
-  return (
-    <main className="student-content">
-      <PageHeading
-        eyebrow="STUDENT PORTAL"
-        title="My Schedule"
-        description="View your upcoming bootcamp sessions and learning schedule."
-        icon="◷"
-      />
-
-      {schedule.length === 0 ? (
-        <EmptyState
-          icon="◷"
-          title="No schedule available"
-          text="Your upcoming sessions will appear here once they are scheduled."
-        />
-      ) : (
-        <div className="student-page-grid">
-          {schedule.map(
-            (item, index) => (
-              <div
-                className="student-info-card schedule-card"
-                key={
-                  item._id || index
-                }
-              >
-                <div className="schedule-date">
-                  <b>{item.date}</b>
-                  <span>{item.day}</span>
-                </div>
-
-                <div className="schedule-info">
-                  <span className="small-label">
-                    {item.type || "Session"}
-                  </span>
-
-                  <h3>{item.title}</h3>
-
-                  <p>
-                    ◷ {item.time}
-                  </p>
-
-                  <small>
-                    {item.mentor ||
-                      "Bootcamp Session"}
-                  </small>
-                </div>
-              </div>
-            )
-          )}
-        </div>
-      )}
-    </main>
-  );
-}
-
-function AttendancePage({ data }) {
-  const attendance = data.attendance || [];
-
-  const rate =
-    data.stats?.attendance != null
-      ? Number(
-          data.stats.attendance
-        ).toFixed(1)
-      : null;
-
-  const presentCount =
-    attendance.filter(
-      (item) =>
-        String(
-          item.status
-        ).toLowerCase() ===
-        "present"
-    ).length;
-
-  const absentCount =
-    attendance.filter(
-      (item) =>
-        String(
-          item.status
-        ).toLowerCase() ===
-        "absent"
-    ).length;
-
-  return (
-    <main className="student-content">
-      <PageHeading
-        eyebrow="STUDENT PORTAL"
-        title="My Attendance"
-        description="View your complete attendance record."
-        icon="✓"
-      />
-
-      <div className="student-stats-grid">
-        <StatCard
-          label="Attendance Rate"
-          value={
-            rate != null
-              ? `${rate}%`
-              : "—"
-          }
-          hint={
-            rate != null
-              ? "Current"
-              : "Not available"
-          }
-          icon="✓"
-          tone="teal"
-        />
-
-        <StatCard
-          label="Present"
-          value={
-            attendance.length
-              ? presentCount
-              : "—"
-          }
-          hint={
-            attendance.length
-              ? "Sessions"
-              : "Not available"
-          }
-          icon="●"
-          tone="blue"
-        />
-
-        <StatCard
-          label="Absent"
-          value={
-            attendance.length
-              ? absentCount
-              : "—"
-          }
-          hint={
-            attendance.length
-              ? "Sessions"
-              : "Not available"
-          }
-          icon="×"
-          tone="purple"
-        />
-      </div>
-
-      <Panel title="Attendance Record">
-        {attendance.length === 0 ? (
-          <EmptyState
-            icon="✓"
-            title="No attendance records"
-            text="Your attendance records will appear here once sessions are recorded."
-          />
-        ) : (
-          <div className="student-table-wrapper">
-            <table className="student-table">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Session</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {attendance.map(
-                  (item, index) => (
-                    <tr
-                      key={
-                        item._id ||
-                        index
-                      }
-                    >
-                      <td>
-                        {formatDate(
-                          item.date
-                        )}
-                      </td>
-
-                      <td>
-                        {item.session ||
-                          item.title ||
-                          "Bootcamp Session"}
-                      </td>
-
-                      <td>
-                        <span
-                          className={`status-badge ${
-                            String(
-                              item.status
-                            ).toLowerCase() ===
-                            "present"
-                              ? "success"
-                              : "danger"
-                          }`}
-                        >
-                          {item.status}
-                        </span>
-                      </td>
-                    </tr>
-                  )
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </Panel>
-    </main>
-  );
-}
-
-function ProgressPage({ data }) {
-  const progress = data.progress || [];
-
-  return (
-    <main className="student-content">
-      <PageHeading
-        eyebrow="STUDENT PORTAL"
-        title="My Progress"
-        description="Track your learning progress across all topics."
-        icon="↗"
-      />
-
-      <Panel title="Learning Progress">
-        {progress.length === 0 ? (
-          <EmptyState
-            icon="↗"
-            title="No progress recorded yet"
-            text="Your learning progress will appear here once it is available."
-          />
-        ) : (
-          <div className="full-progress-list">
-            {progress.map(
-              (item, index) => {
-                const label =
-                  item.topic ||
-                  item.name ||
-                  item[0] ||
-                  `Topic ${index + 1}`;
-
-                const value =
-                  Number(
-                    item.percent ??
-                      item.value ??
-                      item.progress ??
-                      item[1] ??
-                      0
-                  ) || 0;
-
-                const safeValue =
-                  Math.max(
-                    0,
-                    Math.min(
-                      100,
-                      value
-                    )
-                  );
-
-                return (
-                  <div
-                    className="full-progress-item"
-                    key={
-                      label ||
-                      index
-                    }
-                  >
-                    <div>
-                      <b>{label}</b>
-                      <span>
-                        {safeValue}%
-                      </span>
-                    </div>
-
-                    <div className="progress-track">
-                      <i
-                        style={{
-                          width: `${safeValue}%`,
-                        }}
-                      />
-                    </div>
-                  </div>
-                );
-              }
-            )}
-          </div>
-        )}
-      </Panel>
-    </main>
-  );
-}
-
-function AssignmentsPage({ data }) {
-  const assignments =
-    data.assignments || [];
-
-  return (
-    <main className="student-content">
-      <PageHeading
-        eyebrow="STUDENT PORTAL"
-        title="Assignments"
-        description="View your assignments, deadlines and submissions."
-        icon="▣"
-      />
-
-      {assignments.length === 0 ? (
-        <EmptyState
-          icon="▣"
-          title="No assignments yet"
-          text="Your assignments will appear here when they are added."
-        />
-      ) : (
-        <div className="assignment-page-list">
-          {assignments.map(
-            (item, index) => (
-              <div
-                className="student-info-card assignment-page-card"
-                key={
-                  item._id ||
-                  index
-                }
-              >
-                <div className="large-page-icon">
-                  ▣
-                </div>
-
-                <div className="assignment-page-info">
-                  <span className="small-label">
-                    Assignment
-                  </span>
-
-                  <h3>{item.title}</h3>
-
-                  <p>
-                    Due:{" "}
-                    {formatDate(
-                      item.deadline ||
-                        item.due
-                    )}
-                  </p>
-                </div>
-
-                <div className="assignment-page-status">
-                  <span
-                    className={`status-badge ${
-                      item.status ===
-                      "Completed"
-                        ? "success"
-                        : "warning"
-                    }`}
-                  >
-                    {item.status ||
-                      "Pending"}
-                  </span>
-
-                  {item.daysLeft != null && (
-                    <small>
-                      {item.daysLeft}{" "}
-                      days left
-                    </small>
-                  )}
-                </div>
-              </div>
-            )
-          )}
-        </div>
-      )}
-    </main>
-  );
-}
-
-function GradesPage({ data }) {
-  const grades = data.grades || [];
-
-  const average =
-    data.stats?.averageGrade != null
-      ? Number(
-          data.stats.averageGrade
-        ).toFixed(1)
-      : null;
-
-  return (
-    <main className="student-content">
-      <PageHeading
-        eyebrow="STUDENT PORTAL"
-        title="Grades"
-        description="View your grades and mentor feedback."
-        icon="☆"
-      />
-
-      <div className="student-stats-grid">
-        <StatCard
-          label="Average Grade"
-          value={
-            average != null
-              ? `${average}%`
-              : "—"
-          }
-          hint={
-            average != null
-              ? "Current"
-              : "Not available"
-          }
-          icon="☆"
-          tone="gold"
-        />
-      </div>
-
-      <Panel title="Your Grades">
-        {grades.length === 0 ? (
-          <EmptyState
-            icon="☆"
-            title="No grades yet"
-            text="Your grades and mentor feedback will appear here once they are available."
-          />
-        ) : (
-          <div className="student-table-wrapper">
-            <table className="student-table">
-              <thead>
-                <tr>
-                  <th>Assignment</th>
-                  <th>Score</th>
-                  <th>Feedback</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {grades.map(
-                  (item, index) => (
-                    <tr
-                      key={
-                        item._id ||
-                        index
-                      }
-                    >
-                      <td>
-                        <b>
-                          {item.assignment ||
-                            item.title}
-                        </b>
-                      </td>
-
-                      <td>
-                        <strong>
-                          {item.score}
-                          /
-                          {item.total ||
-                            100}
-                        </strong>
-                      </td>
-
-                      <td>
-                        {item.feedback ||
-                          "No feedback yet."}
-                      </td>
-                    </tr>
-                  )
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </Panel>
-    </main>
-  );
-}
-
-function AnnouncementsPage({
-  data,
-}) {
-  const announcements =
-    data.announcements || [];
-
-  return (
-    <main className="student-content">
-      <PageHeading
-        eyebrow="STUDENT PORTAL"
-        title="Announcements"
-        description="View the latest announcements from the bootcamp."
-        icon="◇"
-      />
-
-      {announcements.length === 0 ? (
-        <EmptyState
-          icon="◇"
-          title="No announcements"
-          text="New bootcamp announcements will appear here."
-        />
-      ) : (
-        <div className="announcement-page-list">
-          {announcements.map(
-            (item, index) => (
-              <article
-                className="student-info-card announcement-page-card"
-                key={
-                  item._id ||
-                  index
-                }
-              >
-                <div className="large-page-icon">
-                  ◇
-                </div>
-
-                <div>
-                  <div className="announcement-page-top">
-                    <h3>
-                      {item.title}
-                    </h3>
-
-                    <span>
-                      {item.time ||
-                        "Recently"}
-                    </span>
-                  </div>
-
-                  <p>
-                    {item.content ||
-                      item.description ||
-                      "No additional information available."}
-                  </p>
-                </div>
-              </article>
-            )
-          )}
-        </div>
-      )}
-    </main>
-  );
-}
-
-function AchievementsPage({
-  data,
-}) {
-  const achievements =
-    data.achievements || [];
-
-  return (
-    <main className="student-content">
-      <PageHeading
-        eyebrow="STUDENT PORTAL"
-        title="Achievements"
-        description="View your unlocked achievements and milestones."
-        icon="♛"
-      />
-
-      {achievements.length === 0 ? (
-        <EmptyState
-          icon="♛"
-          title="No achievements yet"
-          text="Your achievements and milestones will appear here."
-        />
-      ) : (
-        <div className="achievement-grid">
-          {achievements.map(
-            (item, index) => (
-              <article
-                className="student-info-card achievement-card"
-                key={
-                  item._id ||
-                  index
-                }
-              >
-                <div className="achievement-icon">
-                  {item.icon ||
-                    "🏆"}
-                </div>
-
-                <h3>
-                  {item.title}
-                </h3>
-
-                <p>
-                  {item.description}
-                </p>
-
-                <small>
-                  {item.date ||
-                    "Unlocked"}
-                </small>
-              </article>
-            )
-          )}
-        </div>
-      )}
-    </main>
-  );
-}
-
-function ResourcesPage({
-  data,
-}) {
-  const resources =
-    data.resources || [];
-
-  return (
-    <main className="student-content">
-      <PageHeading
-        eyebrow="STUDENT PORTAL"
-        title="Resources"
-        description="Access learning materials and useful resources."
-        icon="▤"
-      />
-
-      {resources.length === 0 ? (
-        <EmptyState
-          icon="▤"
-          title="No resources yet"
-          text="Learning materials will appear here when they are available."
-        />
-      ) : (
-        <div className="resource-grid">
-          {resources.map(
-            (item, index) => (
-              <article
-                className="student-info-card resource-card"
-                key={
-                  item._id ||
-                  index
-                }
-              >
-                <div className="large-page-icon">
-                  ▤
-                </div>
-
-                <span className="small-label">
-                  {item.type ||
-                    "Learning Resource"}
-                </span>
-
-                <h3>
-                  {item.title}
-                </h3>
-
-                <p>
-                  {item.description}
-                </p>
-
-                <button>
-                  Open Resource →
-                </button>
-              </article>
-            )
-          )}
-        </div>
-      )}
-    </main>
-  );
-}
-
-function ProfilePage({
-  profile,
-}) {
-  return (
-    <main className="student-content">
-      <PageHeading
-        eyebrow="STUDENT PORTAL"
-        title="My Profile"
-        description="View your student information and bootcamp details."
-        icon="♙"
-      />
-
-      <div className="profile-layout">
-        <section className="student-info-card profile-card">
-          <div className="profile-avatar">
-            {initials(
-              profile.name ||
-                "Student"
-            )}
-          </div>
-
-          <h2>
-            {profile.name ||
-              "Student"}
-          </h2>
-
-          <p>
-            {profile.email ||
-              "Student account"}
-          </p>
-
-          <span className="status-badge success">
-            Student
-          </span>
-        </section>
-
-        <section className="student-info-card profile-details">
-          <h2>Student Information</h2>
-
-          <div className="profile-row">
-            <span>Full Name</span>
-            <b>
-              {profile.name ||
-                "Not available"}
-            </b>
-          </div>
-
-          <div className="profile-row">
-            <span>Email</span>
-            <b>
-              {profile.email ||
-                "Not available"}
-            </b>
-          </div>
-
-          <div className="profile-row">
-            <span>Track</span>
-            <b>
-              {profile.track ||
-                "Not available"}
-            </b>
-          </div>
-
-          <div className="profile-row">
-            <span>Batch</span>
-            <b>
-              {profile.batch ||
-                "Not available"}
-            </b>
-          </div>
-
-          <div className="profile-row">
-            <span>Role</span>
-            <b>
-              {profile.role ||
-                "student"}
-            </b>
-          </div>
-        </section>
-      </div>
-    </main>
-  );
-}
-
-function SettingsPage() {
-  const [notifications, setNotifications] =
-    useState(true);
-
-  const [emailUpdates, setEmailUpdates] =
-    useState(true);
-
-  return (
-    <main className="student-content">
-      <PageHeading
-        eyebrow="STUDENT PORTAL"
-        title="Settings"
-        description="Manage your account and dashboard preferences."
-        icon="⚙"
-      />
-
-      <div className="settings-list">
-
-        <section className="student-info-card settings-card">
-          <div>
-            <h3>
-              Notifications
-            </h3>
-
-            <p>
-              Receive important bootcamp
-              announcements.
-            </p>
-          </div>
-
-          <button
-            className={`toggle ${
-              notifications
-                ? "on"
-                : ""
-            }`}
-            onClick={() =>
-              setNotifications(
-                (value) => !value
-              )
-            }
-            aria-label="Toggle notifications"
-          >
-            <span />
-          </button>
-        </section>
-
-        <section className="student-info-card settings-card">
-          <div>
-            <h3>
-              Email Updates
-            </h3>
-
-            <p>
-              Receive updates about
-              assignments and grades.
-            </p>
-          </div>
-
-          <button
-            className={`toggle ${
-              emailUpdates
-                ? "on"
-                : ""
-            }`}
-            onClick={() =>
-              setEmailUpdates(
-                (value) => !value
-              )
-            }
-            aria-label="Toggle email updates"
-          >
-            <span />
-          </button>
-        </section>
-
-        <section className="student-info-card settings-card">
-          <div>
-            <h3>
-              Account Security
-            </h3>
-
-            <p>
-              Keep your account secure
-              with a strong password.
-            </p>
-          </div>
-
-          <button className="settings-action">
-            Change Password
-          </button>
-        </section>
-      </div>
-    </main>
-  );
-}
-
-function PageHeading({
-  eyebrow,
-  title,
-  description,
-  icon,
-}) {
-  return (
-    <div className="student-page-heading">
-      <div>
-        <p className="eyebrow">
-          {eyebrow}
-        </p>
-
-        <h1>{title}</h1>
-
-        <p>
-          {description}
-        </p>
-      </div>
-
-      <div className="student-page-heading-icon">
-        {icon}
-      </div>
-    </div>
-  );
-}
-
-export default StudentDashboard;

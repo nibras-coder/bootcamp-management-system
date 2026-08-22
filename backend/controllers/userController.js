@@ -1,6 +1,22 @@
 const User = require("../models/User");
 const Batch = require("../models/Batch");
 
+const getUsers = async (req, res) => {
+  res.status(200).json({ message: "Not implemented yet" });
+};
+
+const createUser = async (req, res) => {
+  res.status(200).json({ message: "Not implemented yet" });
+};
+
+const updateUser = async (req, res) => {
+  res.status(200).json({ message: "Not implemented yet" });
+};
+
+const deleteUser = async (req, res) => {
+  res.status(200).json({ message: "Not implemented yet" });
+};
+
 // Get all students
 
 const getStudents = async (req, res) => {
@@ -100,6 +116,10 @@ const getMentorStudents = async (req, res) => {
 };
 
 module.exports = {
+  getUsers,
+  createUser,
+  updateUser,
+  deleteUser,
   getStudents,
   getUserById,
   getMentorStudents,

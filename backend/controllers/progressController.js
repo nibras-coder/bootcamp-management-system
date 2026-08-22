@@ -57,7 +57,7 @@ const createProgress = async (req, res) => {
       return res.status(404).json({
         success: false,
         message:
-          "Student not found in this batch",
+          "Student not found in this track",
       });
     }
 
@@ -80,7 +80,7 @@ const createProgress = async (req, res) => {
 
     const progress = await Progress.create({
       student,
-      batch,
+      track,
       topic,
       status:
         status || "Not Started",

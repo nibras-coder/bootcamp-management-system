@@ -6,7 +6,8 @@ const initialAnnouncements = [
   {
     id: 1,
     title: "React Assignment Deadline Extended",
-    content: "The deadline for the React Components assignment is moved to May 22.",
+    content:
+      "The deadline for the React Components assignment is moved to May 22.",
     targetAudience: "batch",
     publishDate: "2026-05-14",
   },
@@ -23,7 +24,7 @@ const audienceLabels = {
   all: "Everyone",
   students: "All Students",
   mentors: "All Mentors",
-  batch: "My Batch",
+  batch: "My Track",
 };
 
 function Announcements() {
@@ -72,7 +73,9 @@ function Announcements() {
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Announcements</h1>
-            <p className="text-gray-500 text-sm">Share updates with your batch.</p>
+            <p className="text-gray-500 text-sm">
+              Share updates with your track.
+            </p>
           </div>
           <button
             onClick={() => setShowForm(true)}
@@ -94,7 +97,9 @@ function Announcements() {
                     <span className="text-xs bg-teal-50 text-teal-700 px-2 py-1 rounded-full">
                       {audienceLabels[item.targetAudience]}
                     </span>
-                    <span className="text-xs text-gray-400">{item.publishDate}</span>
+                    <span className="text-xs text-gray-400">
+                      {item.publishDate}
+                    </span>
                   </div>
                 </div>
                 <button
@@ -108,7 +113,9 @@ function Announcements() {
           ))}
 
           {announcements.length === 0 && (
-            <p className="text-gray-400 text-sm text-center py-10">No announcements yet.</p>
+            <p className="text-gray-400 text-sm text-center py-10">
+              No announcements yet.
+            </p>
           )}
         </div>
 
@@ -117,7 +124,9 @@ function Announcements() {
           <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
             <div className="bg-white rounded-xl p-6 w-full max-w-md">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="font-semibold text-gray-800">New Announcement</h3>
+                <h3 className="font-semibold text-gray-800">
+                  New Announcement
+                </h3>
                 <button onClick={() => setShowForm(false)}>
                   <X size={18} className="text-gray-400" />
                 </button>
@@ -146,7 +155,7 @@ function Announcements() {
                   onChange={handleChange}
                   className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm"
                 >
-                  <option value="batch">My Batch</option>
+                  <option value="batch">My Track</option>
                   <option value="students">All Students</option>
                   <option value="all">Everyone</option>
                 </select>

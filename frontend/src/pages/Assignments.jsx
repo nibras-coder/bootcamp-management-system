@@ -68,7 +68,13 @@ function Assignments() {
     };
 
     setAssignments([newAssignment, ...assignments]);
-    setFormData({ title: "", description: "", instructions: "", deadline: "", maxScore: 100 });
+    setFormData({
+      title: "",
+      description: "",
+      instructions: "",
+      deadline: "",
+      maxScore: 100,
+    });
     setFile(null);
     setShowForm(false);
   };
@@ -81,7 +87,9 @@ function Assignments() {
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Assignments</h1>
-            <p className="text-gray-500 text-sm">Create and manage assignments for your batch.</p>
+            <p className="text-gray-500 text-sm">
+              Create and manage assignments for your .
+            </p>
           </div>
           <button
             onClick={() => setShowForm(true)}
@@ -105,7 +113,10 @@ function Assignments() {
             </thead>
             <tbody>
               {assignments.map((item) => (
-                <tr key={item.id} className="border-b border-gray-50 last:border-0">
+                <tr
+                  key={item.id}
+                  className="border-b border-gray-50 last:border-0"
+                >
                   <td className="py-3 text-gray-800">{item.title}</td>
                   <td className="py-3 text-gray-600">{item.deadline}</td>
                   <td className="py-3 text-gray-600">{item.maxScore}</td>
