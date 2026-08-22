@@ -94,7 +94,7 @@ function Sidebar({ onClose }) {
         <div className="flex items-center gap-3 mt-3 px-2">
           <div className="w-9 h-9 rounded-full bg-teal-700" />
           <div>
-            <p className="text-sm font-medium">Yonas Mekonnen</p>
+            <p className="text-sm font-medium">Yunus Hasen</p>
             <p className="text-xs text-teal-300">Mentor</p>
           </div>
         </div>

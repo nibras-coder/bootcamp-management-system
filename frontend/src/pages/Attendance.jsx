@@ -30,7 +30,6 @@ function Attendance() {
   };
 
   const handleSave = () => {
-    // TODO: send `students` + `date` to backend via POST /api/attendance
     console.log("Saving attendance for", date, students);
     alert("Attendance saved (not yet connected to backend)");
   };

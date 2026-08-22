@@ -48,7 +48,6 @@ function Announcements() {
       return;
     }
 
-    // TODO: send formData to backend via POST /api/announcements
     const newAnnouncement = {
       id: Date.now(),
       ...formData,
@@ -61,7 +60,6 @@ function Announcements() {
   };
 
   const handleDelete = (id) => {
-    // TODO: send DELETE to backend via DELETE /api/announcements/:id
     setAnnouncements((prev) => prev.filter((a) => a.id !== id));
   };
 

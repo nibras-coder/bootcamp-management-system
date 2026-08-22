@@ -685,6 +685,15 @@ h3 {
 .social-youtube {
   color: #ff0000 !important;
 }
+
+.social-tiktok {
+  color: #111 !important;
+}
+
+.social-tiktok svg {
+  filter: drop-shadow(1px 1px 0 #fe2c55) drop-shadow(-1px -1px 0 #25f4ee);
+}
+
 .social-x {
   color: #111 !important;
 }

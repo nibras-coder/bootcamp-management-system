@@ -10,6 +10,7 @@ import {
 } from "react-router-dom";
 import "./style.css";
 import API from "./api/axios";
+import { FiMenu, FiX } from "react-icons/fi";
 
 // Page Imports
 import Login from "./pages/Login";
@@ -36,8 +37,8 @@ import SettingsPage from "./pages/admin/SettingsPage";
 import ResourcesPage from "./pages/admin/ResourcesPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import StudentDashboard from "./pages/StudentDashboard";
+import MentorsSection from "./components/landing/Mentors";
 
-// --- DATA ARRAYS ---
 const tracks = [
   {
     slug: "web",
@@ -186,7 +187,6 @@ const navItems = [
   ["/contact", "Contact"],
 ];
 
-// --- REUSABLE COMPONENTS ---
 function Logo({ size = 42 }) {
   const navigate = useNavigate();
   return (
@@ -248,7 +248,11 @@ function Header() {
           onClick={() => setOpen((v) => !v)}
           aria-label="Toggle navigation"
         >
-          {open ? "├ù" : "Γÿ░"}
+          {open ? (
+            <FiX className="text-2xl size-6" />
+          ) : (
+            <FiMenu className="text-2xl size-6" />
+          )}
         </button>
       </div>
     </header>
@@ -257,6 +261,9 @@ function Header() {
 
 function SocialIcon({ type }) {
   const paths = {
+    tiktok: (
+      <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z" />
+    ),
     telegram: (
       <path d="M21.4 3.5 2.9 10.7c-1.2.5-1.2 2.2 0 2.6l4.7 1.5 1.8 5.6c.3 1 1.6 1.2 2.2.4l2.5-3.1 4.9 3.5c.9.7 2.1.1 2.3-1l2.4-15c.2-1.3-1-2.2-2.3-1.7ZM9.2 14.3l9.4-7.1-7.9 8.4-.4 2.7-1.1-4Z" />
     ),
@@ -291,6 +298,7 @@ function Footer() {
     ["facebook", "Facebook", "https://facebook.com/astumsj"],
     ["youtube", "YouTube", "https://youtube.com/@astumsj"],
     ["x", "X", "https://x.com/astumsj"],
+    ["tiktok", "TikTok", "https://vt.tiktok.com/ZSVak4cxQ/"],
   ];
   return (
     <footer className="footer">
@@ -299,7 +307,7 @@ function Footer() {
           <Logo size={44} />
           <p>
             A centralized platform to manage bootcamp activities, track progress
-            and grow together ΓÇö run by Adama Science and Technology University
+            and grow together - run by Adama Science and Technology University
             Muslim Students Jemea.
           </p>
           <div className="socials">
@@ -339,7 +347,7 @@ function Footer() {
       </div>
       <div className="container footer-bottom">
         <span>Made by Nibras Coders</span>
-        <span>ASTU MSJ Bootcamp ΓÇö Learn. Build. Grow Together.</span>
+        <span>ASTU MSJ Bootcamp - Learn. Build. Grow Together.</span>
       </div>
     </footer>
   );
@@ -353,8 +361,15 @@ function Button({ children, variant = "primary", onClick, href }) {
         className={`btn ${variant}`}
         href={href}
         onClick={(e) => {
-          e.preventDefault();
-          navigate(href);
+          if (href.startsWith("#")) {
+            e.preventDefault();
+            document
+              .querySelector(href)
+              ?.scrollIntoView({ behavior: "smooth" });
+          } else {
+            e.preventDefault();
+            navigate(href);
+          }
         }}
       >
         {children}
@@ -367,7 +382,6 @@ function Button({ children, variant = "primary", onClick, href }) {
   );
 }
 
-// --- PUBLIC PAGES ---
 function Home() {
   const [faqOpen, setFaqOpen] = useState(null);
   return (
@@ -465,22 +479,7 @@ function Home() {
         </div>
       </section>
 
-      <section className="section container">
-        <div className="section-head row">
-          <SectionTitle
-            title="Meet a few mentors"
-            text="Brothers and sisters guiding every track."
-          />
-          <Button href="/mentors" variant="outline">
-            See all mentors
-          </Button>
-        </div>
-        <div className="mentor-grid">
-          {mentors.slice(0, 3).map((m) => (
-            <MentorCard key={m.id} m={m} />
-          ))}
-        </div>
-      </section>
+      <MentorsSection isHighlight={true} />
 
       <section className="section container faq-section">
         <SectionTitle title="Questions" />
@@ -489,7 +488,7 @@ function Home() {
             <div className="faq-item" key={q}>
               <button onClick={() => setFaqOpen(faqOpen === i ? null : i)}>
                 <span>{q}</span>
-                <b>{faqOpen === i ? "ΓêÆ" : "+"}</b>
+                <b>{faqOpen === i ? "-" : "+"}</b>
               </button>
               {faqOpen === i && <p>{a}</p>}
             </div>
@@ -579,6 +578,17 @@ function TracksPage() {
           </article>
         ))}
       </div>
+    </PageShell>
+  );
+}
+
+function PublicMentorsPage() {
+  return (
+    <PageShell
+      title="Our Mentors"
+      intro="Meet the brothers and sisters guiding every track. Connect with mentors who are dedicated to your growth."
+    >
+      <MentorsSection />
     </PageShell>
   );
 }
@@ -697,9 +707,9 @@ function ContactPage() {
         <div className="side-stack">
           <div className="soft-card">
             <h2>Reach us directly</h2>
-            <p>Γ£ë hello@astumsj.org</p>
-            <p>Γîû ASTU Main Campus, Adama, Ethiopia</p>
-            <p>Γ₧ñ Telegram: @astumsj</p>
+            <p>hello@astumsj.org</p>
+            <p>ASTU Main Campus, Adama, Ethiopia</p>
+            <p>Telegram: @astumsj</p>
           </div>
           <div className="soft-card">
             <h2>Follow us</h2>
@@ -739,6 +749,15 @@ function ContactPage() {
                 aria-label="YouTube"
               >
                 <SocialIcon type="youtube" />
+              </a>
+              <a
+                className="social social-tiktok"
+                href="https://vt.tiktok.com/ZSVak4cxQ/"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="TikTok"
+              >
+                <SocialIcon type="tiktok" />
               </a>
               <a
                 className="social social-x"
@@ -852,8 +871,6 @@ function ForgotPage() {
   );
 }
 
-// --- APP & ROUTING ---
-// Layout wrapper for pages that should show the public Header and Footer
 function PublicLayout() {
   return (
     <div className="app">
@@ -872,7 +889,7 @@ function App() {
         <Route element={<PublicLayout />}>
           <Route path="/" element={<Home />} />
           <Route path="/tracks" element={<TracksPage />} />
-          <Route path="/mentors" element={<MentorsPage />} />
+          <Route path="/mentors" element={<PublicMentorsPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
         </Route>
@@ -899,18 +916,18 @@ function App() {
 
         {/* Admin Routes */}
         <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<Navigate to="/admin/dashboard" replace />} />
-            <Route path="dashboard" element={<AdminDashboard />} />
-            <Route path="batches" element={<BatchesPage />} />
-            <Route path="mentors" element={<MentorsPage />} />
-            <Route path="students" element={<StudentsPage />} />
-            <Route path="attendance" element={<AttendancePage />} />
-            <Route path="assignments" element={<AssignmentsPage />} />
-            <Route path="announcements" element={<AnnouncementsPage />} />
-            <Route path="resources" element={<ResourcesPage />} />
-            <Route path="reports" element={<ReportsPage />} />
-            <Route path="settings" element={<SettingsPage />} />
-          </Route>
+          <Route index element={<Navigate to="/admin/dashboard" replace />} />
+          <Route path="dashboard" element={<AdminDashboard />} />
+          <Route path="batches" element={<BatchesPage />} />
+          <Route path="mentors" element={<MentorsPage />} />
+          <Route path="students" element={<StudentsPage />} />
+          <Route path="attendance" element={<AttendancePage />} />
+          <Route path="assignments" element={<AssignmentsPage />} />
+          <Route path="announcements" element={<AnnouncementsPage />} />
+          <Route path="resources" element={<ResourcesPage />} />
+          <Route path="reports" element={<ReportsPage />} />
+          <Route path="settings" element={<SettingsPage />} />
+        </Route>
 
         {/* Redirect old dashboard to admin/dashboard */}
         <Route
