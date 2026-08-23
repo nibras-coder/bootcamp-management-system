@@ -1,89 +1,150 @@
 const User = require("../models/User");
 const Batch = require("../models/Batch");
+const asyncHandler = require("../utils/asyncHandler");
 
-const getUsers = async (req, res) => {
-  try {
-    const filter = {};
-    if (req.query.role) {
-      filter.role = req.query.role;
-    }
-    
-    const users = await User.find(filter).select("-password").sort({ createdAt: -1 });
-    
-    res.status(200).json({
-      success: true,
-      count: users.length,
-      data: users,
-    });
-  } catch (error) {
-    console.error("Get users error:", error);
-    res.status(500).json({
+// GET /api/users
+const getUsers = asyncHandler(async (req, res) => {
+  const { role, search } = req.query;
+  const query = {};
+
+  if (role) {
+    query.role = role;
+  }
+
+  if (search) {
+    query.$or = [
+      { fullName: { $regex: search, $options: "i" } },
+      { email: { $regex: search, $options: "i" } },
+    ];
+  }
+
+  const users = await User.find(query).sort({ createdAt: -1 });
+
+  res.status(200).json({
+    success: true,
+    count: users.length,
+    users,
+  });
+});
+
+// GET /api/users/:id
+const getUserById = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.params.id)
+    .select("-password")
+    .populate("batch", "name track");
+
+  if (!user) {
+    return res.status(404).json({
       success: false,
-      message: "Failed to get users",
-      error: error.message,
+      message: "User not found",
+    });
+  }
+
+  res.status(200).json({
+    success: true,
+    data: user,
+  });
+});
+
+// Admin creates a user directly
+const createUser = asyncHandler(async (req, res) => {
+  const { fullName, email, password, role, batch } = req.body;
+
+  if (!fullName || !email || !password || !role) {
+    return res.status(400).json({
+      success: false,
+      message: "Missing required fields",
     });
   }
 };
+// Get one user
 
-const createUser = async (req, res) => {
-  try {
-    const { name, email, password, gender, phone, expertise, status } = req.body;
+  const existing = await User.findOne({
+    email: email.toLowerCase(),
+  });
 
-    if (!name || !email || !password) {
-      return res.status(400).json({ success: false, message: "Name, email, and password are required" });
-    }
-
-    const existingUser = await User.findOne({ email: email.toLowerCase().trim() });
-    if (existingUser) {
-      return res.status(400).json({ success: false, message: "Email already registered" });
-    }
-
-    const bcrypt = require("bcryptjs");
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    // Creating the user. 
-    // The role is explicitly set to "mentor".
-    const newUser = await User.create({
-      name,
-      email,
-      password: hashedPassword,
-      role: "mentor",
-      mentorRole: req.body.role || "",
-      gender,
-      phone,
-      expertise,
-      isActive: status === "Active",
-    });
-
-    // Remove password from response
-    newUser.password = undefined;
-
-    res.status(201).json({
-      success: true,
-      message: "Mentor created successfully",
-      data: newUser,
-    });
-  } catch (error) {
-    console.error("Create user error:", error);
-    res.status(500).json({
+  if (existing) {
+    return res.status(400).json({
       success: false,
-      message: "Failed to create mentor",
-      error: error.message,
+      message: "Email already in use",
     });
   }
 };
+// Get mentor's students
 
-const updateUser = async (req, res) => {
-  res.status(200).json({ message: "Not implemented yet" });
-};
+  const user = await User.create({
+    fullName,
+    email,
+    password,
+    role,
+    batch,
+  });
 
-const deleteUser = async (req, res) => {
-  res.status(200).json({ message: "Not implemented yet" });
-};
+  res.status(201).json({
+    success: true,
+    message: "User created",
+    user,
+  });
+});
+
+// PUT /api/users/:id
+const updateUser = asyncHandler(async (req, res) => {
+  const { fullName, email, role, batch } = req.body;
+
+  const user = await User.findById(req.params.id);
+
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      message: "User not found",
+    });
+  }
+
+  if (fullName !== undefined) {
+    user.fullName = fullName;
+  }
+
+  if (email !== undefined) {
+    user.email = email.toLowerCase();
+  }
+
+  if (role !== undefined) {
+    user.role = role;
+  }
+
+  if (batch !== undefined) {
+    user.batch = batch;
+  }
+
+  await user.save();
+
+  res.status(200).json({
+    success: true,
+    message: "User updated",
+    user,
+  });
+});
+
+// DELETE /api/users/:id
+const deleteUser = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.params.id);
+
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      message: "User not found",
+    });
+  }
+
+  await user.deleteOne();
+
+  res.status(200).json({
+    success: true,
+    message: "User deleted",
+  });
+});
 
 // Get all students
-
 const getStudents = async (req, res) => {
   try {
     const students = await User.find({
@@ -107,53 +168,20 @@ const getStudents = async (req, res) => {
     });
   }
 };
-// Get one user
 
-const getUserById = async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id)
-      .select("-password")
-      .populate("batch", "name track");
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      data: user,
-    });
-  } catch (error) {
-    console.error("Get user error:", error);
-
-    res.status(500).json({
-      success: false,
-      message: "Failed to get user",
-      error: error.message,
-    });
-  }
-};
-// Get mentor's students
-
+// Get students assigned to the logged-in mentor
 const getMentorStudents = async (req, res) => {
   try {
     const mentorId = req.user.id;
 
     // Find batches assigned to this mentor
-    
     const batches = await Batch.find({
       mentors: mentorId,
     }).select("_id name track");
 
-    const batchIds = batches.map(
-      (batch) => batch._id
-    );
+    const batchIds = batches.map((batch) => batch._id);
 
     // Find students belonging to those batches
-
     const students = await User.find({
       role: "student",
       batch: { $in: batchIds },
@@ -167,10 +195,7 @@ const getMentorStudents = async (req, res) => {
       data: students,
     });
   } catch (error) {
-    console.error(
-      "Get mentor students error:",
-      error
-    );
+    console.error("Get mentor students error:", error);
 
     res.status(500).json({
       success: false,
@@ -182,10 +207,10 @@ const getMentorStudents = async (req, res) => {
 
 module.exports = {
   getUsers,
+  getUserById,
   createUser,
   updateUser,
   deleteUser,
   getStudents,
-  getUserById,
   getMentorStudents,
 };

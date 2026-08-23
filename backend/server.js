@@ -13,6 +13,9 @@ const submissionRoutes = require("./routes/submissionRoutes");
 const announcementRoutes = require( "./routes/announcementRoutes");
 const userRoutes = require( "./routes/userRoutes");
 const batchRoutes = require("./routes/batchRoutes");
+const studentRoutes = require("./routes/studentRoutes");
+const profileRoutes = require("./routes/profileRoutes");
+const settingsRoutes = require("./routes/settingsRoutes");
 
 dotenv.config();
 
@@ -30,6 +33,9 @@ app.use("/api/submissions",submissionRoutes);
 app.use("/api/announcements",announcementRoutes);
 app.use("/api/users",userRoutes);
 app.use( "/api/batches", batchRoutes);
+app.use("/api/student", studentRoutes);
+app.use("/api/profile", profileRoutes);
+app.use("/api/settings", settingsRoutes);
 
 app.get("/", (req, res) => {
   res.json({

@@ -1,5 +1,6 @@
 const Announcement = require("../models/Announcement");
 const Batch = require("../models/Batch");
+const User = require("../models/User");
 
 // Create announcement
 
@@ -54,14 +55,8 @@ const createAnnouncement = async (req, res) => {
       await Announcement.findById(
         announcement._id
       )
-        .populate(
-          "batch",
-          "name track"
-        )
-        .populate(
-          "author",
-          "name email"
-        );
+        .populate("batch", "name track")
+        .populate("author", "name email");
 
     res.status(201).json({
       success: true,
@@ -106,14 +101,8 @@ const getMentorAnnouncements = async (
           $in: batchIds,
         },
       })
-        .populate(
-          "batch",
-          "name track"
-        )
-        .populate(
-          "author",
-          "name email"
-        )
+        .populate("batch", "name track")
+        .populate("author", "name email")
         .sort({
           publishDate: -1,
         });
@@ -149,14 +138,8 @@ const getAnnouncementById = async (
 
     const announcement =
       await Announcement.findById(id)
-        .populate(
-          "batch",
-          "name track"
-        )
-        .populate(
-          "author",
-          "name email"
-        );
+        .populate("batch", "name track")
+        .populate("author", "name email");
 
     if (!announcement) {
       return res.status(404).json({
@@ -198,7 +181,85 @@ const getAnnouncementById = async (
     });
   }
 };
-// Update announcement
+
+const getMyAnnouncements = async (
+  req,
+  res
+) => {
+  try {
+    // Get logged-in student's ID
+    const studentId = req.user.id;
+
+    // Find logged-in student
+
+    const student = await User.findOne({
+      _id: studentId,
+      role: "student",
+    }).populate("batch", "name track");
+
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found",
+      });
+    }
+    // Student must have a batch
+
+    if (!student.batch) {
+      return res.status(404).json({
+        success: false,
+        message:
+          "Student is not assigned to a batch",
+      });
+    }
+    // Find announcements for student's batch
+  
+    const announcements =
+      await Announcement.find({
+        batch: student.batch._id,
+        targetAudience: {
+          $in: ["students", "all"],
+        },
+        publishDate: {
+          $lte: new Date(),
+        },
+      })
+        .populate("batch", "name track")
+        .populate("author", "name email")
+        .sort({
+          publishDate: -1,
+        });
+
+    res.status(200).json({
+      success: true,
+      count: announcements.length,
+
+      data: {
+        student: {
+          id: student._id,
+          name: student.name,
+          email: student.email,
+          batch: student.batch,
+        },
+
+        announcements,
+      },
+    });
+  } catch (error) {
+    console.error(
+      "Get my announcements error:",
+      error
+    );
+
+    res.status(500).json({
+      success: false,
+      message:
+        "Failed to get your announcements",
+      error: error.message,
+    });
+  }
+};
+// Update announcement -> Mentor
 
 const updateAnnouncement = async (
   req,
@@ -262,14 +323,8 @@ const updateAnnouncement = async (
 
     const updatedAnnouncement =
       await Announcement.findById(id)
-        .populate(
-          "batch",
-          "name track"
-        )
-        .populate(
-          "author",
-          "name email"
-        );
+        .populate("batch", "name track")
+        .populate("author", "name email");
 
     res.status(200).json({
       success: true,
@@ -352,6 +407,7 @@ module.exports = {
   createAnnouncement,
   getMentorAnnouncements,
   getAnnouncementById,
+  getMyAnnouncements,
   updateAnnouncement,
   deleteAnnouncement,
 };

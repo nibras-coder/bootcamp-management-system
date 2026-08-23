@@ -12,6 +12,7 @@ const authorize = require(
 
 const {
   createProgress,
+  getMentorProgress,
   getProgress,
   getStudentProgress,
   updateProgress,
@@ -19,12 +20,12 @@ const {
   "../controllers/progressController"
 );
 
-// Get all progress
+// Get all progress for mentor's students
 router.get(
   "/",
   protect,
-  authorize("mentor", "student", "admin"),
-  getProgress
+  authorize("mentor"),
+  getMentorProgress
 );
 
 // Get one student's progress

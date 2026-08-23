@@ -12,6 +12,7 @@ const authorize = require(
 
 const {
   createAssignment,
+  getMentorAssignments,
   getAssignments,
   getAssignmentById,
   updateAssignment,
