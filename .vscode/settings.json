@@ -1,0 +1,4 @@
+{
+  "css.lint.unknownAtRules": "ignore",
+  "postman.settings.dotenv-detection-notification-visibility": false
+}

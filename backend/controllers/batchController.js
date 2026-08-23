@@ -96,7 +96,7 @@ const getBatches = async (req, res) => {
 
     res.status(500).json({
       success: false,
-      message: "Failed to get batches",
+      message: "Failed to get Tracks",
       error: error.message,
     });
   }

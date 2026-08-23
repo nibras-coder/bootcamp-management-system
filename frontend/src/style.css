@@ -1,0 +1,2478 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display&family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap");
+
+/* =========================================================
+   GLOBAL
+========================================================= */
+
+:root {
+  --bg: #fbfcfb;
+  --ink: #20363a;
+  --muted: #5f7174;
+
+  --primary: #0b746d;
+  --primary2: #075f5a;
+  --teal-soft: #dfeeed;
+
+  --card: #ffffff;
+  --border: #d9e5e3;
+  --sand: #f1eee6;
+
+  --shadow: 0 18px 42px -24px rgba(24, 62, 65, 0.28);
+
+  --display: "DM Serif Display", Georgia, serif;
+  --body:
+    "DM Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  --arabic: "Noto Naskh Arabic", serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 15px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--display);
+  font-weight: 400;
+}
+
+/* =========================================================
+   LAYOUT
+========================================================= */
+
+.container {
+  width: min(1120px, calc(100% - 48px));
+  margin: 0 auto;
+}
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(251, 252, 251, 0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(223, 232, 231, 0.9);
+}
+
+.nav {
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 25px;
+}
+
+.logo {
+  border: 0;
+  background: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.logo img {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: contain;
+  background: #fff;
+  border: 1px solid #d7e0df;
+  flex: none;
+}
+
+.logo b {
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.nav-links {
+  display: flex;
+  gap: 30px;
+  color: #677578;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.nav-links a {
+  transition: 0.2s;
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+  color: var(--primary);
+}
+
+.nav-actions {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+}
+
+.ghost-btn,
+.small-btn {
+  border: 0;
+  background: transparent;
+  padding: 9px 12px;
+  font-size: 13px;
+}
+
+.small-btn {
+  background: var(--primary);
+  color: white;
+  border-radius: 7px;
+}
+
+.mobile-toggle {
+  display: none;
+  border: 0;
+  background: transparent;
+  font-size: 26px;
+  color: var(--ink);
+  padding: 5px;
+}
+
+/* =========================================================
+   BUTTONS
+========================================================= */
+
+.hero-buttons,
+.button-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--primary);
+  border-radius: 7px;
+  background: var(--primary);
+  color: #fff;
+  padding: 12px 19px;
+  font-size: 13px;
+  font-weight: 600;
+  min-height: 44px;
+  transition: 0.2s;
+}
+
+.btn:hover {
+  background: var(--primary2);
+  transform: translateY(-1px);
+}
+
+.btn.outline {
+  background: transparent;
+  color: var(--primary);
+}
+
+.btn.outline:hover {
+  background: var(--teal-soft);
+}
+
+.btn.light {
+  background: #fff;
+  color: var(--primary);
+  border-color: #fff;
+}
+
+.btn.light:hover {
+  background: #f1f7f6;
+}
+
+/* =========================================================
+   HERO
+========================================================= */
+
+.hero {
+  position: relative;
+  min-height: 610px;
+  overflow: hidden;
+  background: #f8faf9;
+}
+
+.hero-image {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 78% center;
+}
+
+.hero-fade {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    90deg,
+    #fbfcfb 0%,
+    rgba(251, 252, 251, 0.94) 24%,
+    rgba(251, 252, 251, 0.66) 42%,
+    rgba(251, 252, 251, 0.18) 62%,
+    rgba(251, 252, 251, 0) 78%
+  );
+}
+
+.hero-inner {
+  position: relative;
+  z-index: 2;
+  min-height: 610px;
+  display: flex;
+  align-items: center;
+}
+
+.hero-copy {
+  width: 560px;
+  max-width: 100%;
+  padding: 45px 0;
+}
+
+.arabic {
+  font-family: var(--arabic);
+  font-size: 35px;
+  color: #182d35;
+  direction: rtl;
+  text-align: left;
+  width: max-content;
+  max-width: 100%;
+}
+
+.arabic-rule {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--primary);
+  font-size: 13px;
+  width: 230px;
+  justify-content: center;
+  margin: 7px 0;
+}
+
+.arabic-rule span {
+  height: 1px;
+  flex: 1;
+  background: linear-gradient(90deg, transparent, #8ab9b4);
+}
+
+.arabic-rule span:last-child {
+  background: linear-gradient(90deg, #8ab9b4, transparent);
+}
+
+.hero h1 {
+  font-size: 60px;
+  line-height: 1.04;
+  letter-spacing: -0.035em;
+  margin: 24px 0 0;
+}
+
+.hero h1 strong {
+  color: var(--primary);
+  font-weight: 400;
+}
+
+.hero p {
+  max-width: 520px;
+  color: var(--muted);
+  line-height: 1.75;
+  font-size: 16px;
+  margin: 22px 0;
+}
+
+/* =========================================================
+   STATS
+========================================================= */
+
+.stats {
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background: #f0f5f4;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 30px;
+  padding: 31px 0;
+}
+
+.stats b {
+  display: block;
+  color: var(--primary);
+  font-family: var(--display);
+  font-size: 28px;
+  font-weight: 400;
+}
+
+.stats span {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* =========================================================
+   SECTIONS
+========================================================= */
+
+.section {
+  padding-top: 74px;
+  padding-bottom: 74px;
+}
+
+.section-title {
+  margin-bottom: 30px;
+}
+
+.section-title h2 {
+  font-size: 38px;
+  margin: 0;
+  letter-spacing: -0.025em;
+}
+
+.section-title p {
+  max-width: 540px;
+  color: var(--muted);
+  margin: 8px 0 0;
+  line-height: 1.75;
+  font-size: 15px;
+}
+
+.section-head.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.section-head.row .section-title {
+  margin-bottom: 0;
+}
+
+/* =========================================================
+   TRACKS
+========================================================= */
+
+.track-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+}
+
+.track-card {
+  padding: 27px;
+  min-height: 180px;
+  transition: 0.2s;
+}
+
+.track-card:hover {
+  transform: translateY(-3px);
+}
+
+.icon {
+  color: var(--primary);
+  font-size: 21px;
+  line-height: 1;
+  height: 27px;
+}
+
+.track-card h3,
+.feature-card h3,
+.mentor-card h3 {
+  font-family: var(--body);
+  font-size: 19px;
+  line-height: 1.3;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  margin: 16px 0 7px;
+}
+
+.track-card p,
+.feature-card p,
+.mentor-card p {
+  font-family: var(--body);
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.75;
+  margin: 0;
+}
+
+/* =========================================================
+   HOW IT WORKS
+========================================================= */
+
+.how-card {
+  background: linear-gradient(135deg, #08756e, #075f5a);
+  border-radius: 20px;
+  color: #fff;
+  padding: 38px 42px;
+}
+
+.how-card h2 {
+  font-size: 32px;
+  margin: 0;
+}
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  margin-top: 30px;
+}
+
+.step {
+  border-top: 1px solid rgba(255, 255, 255, 0.25);
+  padding-top: 15px;
+}
+
+.step > span {
+  color: #b8ded9;
+  font-family: var(--display);
+  font-size: 12px;
+}
+
+.step h3 {
+  font-size: 17px;
+  margin: 13px 0 7px;
+}
+
+.step p {
+  font-size: 13px;
+  line-height: 1.7;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+/* =========================================================
+   FEATURES
+========================================================= */
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.feature-card {
+  background: #eef4f3;
+  border-radius: 9px;
+  padding: 27px;
+  min-height: 160px;
+}
+
+/* =========================================================
+   MENTORS
+========================================================= */
+
+.mentor-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 14px;
+}
+
+.mentor-grid.six {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.mentor-card {
+  padding: 27px;
+  min-height: 220px;
+}
+
+.initials {
+  width: 43px;
+  height: 43px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--primary);
+  color: #fff;
+  font-family: var(--display);
+  font-size: 13px;
+}
+
+.mentor-card h3 {
+  margin-top: 22px;
+}
+
+.mentor-card span {
+  display: block;
+  color: var(--primary);
+  font-size: 13px;
+  margin-top: 6px;
+}
+
+.mentor-card p {
+  margin-top: 14px;
+}
+
+/* =========================================================
+   FAQ
+========================================================= */
+
+.faq-section {
+  max-width: 850px;
+}
+
+.faq {
+  border-top: 1px solid var(--border);
+}
+
+.faq-item {
+  border-bottom: 1px solid var(--border);
+}
+
+.faq-item button {
+  width: 100%;
+  padding: 18px 4px;
+  border: 0;
+  background: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  text-align: left;
+  color: var(--ink);
+  font-size: 13px;
+}
+
+.faq-item button b {
+  font-size: 18px;
+  font-weight: 400;
+  color: #78898a;
+  flex: none;
+}
+
+.faq-item p {
+  margin: 0 4px 18px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+/* =========================================================
+   CTA
+========================================================= */
+
+.cta {
+  margin: 0 auto 75px;
+  width: min(1120px, calc(100% - 48px));
+  padding: 35px 40px;
+  border-radius: 13px;
+  background: var(--primary);
+  color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 25px;
+}
+
+.cta h2 {
+  margin: 0;
+  font-size: 30px;
+}
+
+.cta p {
+  margin: 7px 0 0;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 12px;
+}
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+.footer {
+  border-top: 1px solid var(--border);
+  background: #eef4f3;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1.2fr;
+  gap: 45px;
+  padding: 55px 0 42px;
+}
+
+.footer-main p {
+  max-width: 410px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.footer-grid h4 {
+  font-family: var(--display);
+  font-size: 15px;
+  margin: 4px 0 15px;
+}
+
+.footer-grid > div:not(.footer-main) {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.footer-grid a,
+.footer-grid p {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.socials {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  flex-wrap: wrap;
+  margin-top: 22px;
+}
+
+.social {
+  width: 44px !important;
+  height: 44px !important;
+  padding: 0 !important;
+  border: 1px solid #cddedb !important;
+  border-radius: 50% !important;
+  display: grid !important;
+  place-items: center !important;
+  background: #fff !important;
+  color: #286d69 !important;
+  box-shadow: 0 8px 22px -16px rgba(19, 64, 66, 0.5) !important;
+  transition: 0.2s;
+}
+
+.social span {
+  display: none !important;
+}
+
+.social svg {
+  width: 21px;
+  height: 21px;
+  fill: currentColor;
+}
+
+.social:hover {
+  transform: translateY(-3px) scale(1.04);
+  background: #f7fbfa !important;
+}
+
+.social-telegram {
+  color: #229ed9 !important;
+}
+
+.social-instagram {
+  color: #c13584 !important;
+}
+
+.social-facebook {
+  color: #1877f2 !important;
+}
+.social-youtube {
+  color: #ff0000 !important;
+}
+
+.social-tiktok {
+  color: #111 !important;
+}
+
+.social-tiktok svg {
+  filter: drop-shadow(1px 1px 0 #fe2c55) drop-shadow(-1px -1px 0 #25f4ee);
+}
+
+.social-x {
+  color: #111 !important;
+}
+
+.footer-bottom {
+  border-top: 1px solid #d7e3e1;
+  padding: 17px 0;
+  display: flex;
+  justify-content: space-between;
+  color: #7c8b8d;
+  font-size: 10px;
+}
+
+/* =========================================================
+   INNER PAGES
+========================================================= */
+
+.page-shell {
+  padding-top: 82px;
+  padding-bottom: 92px;
+  min-height: calc(100vh - 72px);
+}
+
+.page-shell > h1 {
+  font-family: var(--display);
+  font-size: 54px;
+  margin: 0;
+}
+
+.page-intro {
+  max-width: 780px;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.8;
+  margin: 12px 0 0;
+}
+
+.page-content {
+  margin-top: 58px;
+}
+
+.large-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.large-card {
+  padding: 30px;
+}
+
+.large-card h2 {
+  font-size: 25px;
+  margin: 15px 0 8px;
+}
+
+.large-card > p,
+.info-card p,
+.soft-card p,
+.soft-cta p {
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.85;
+}
+
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 18px 0;
+}
+
+.pills span {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #edf3f2;
+  color: #5e7072;
+  font-size: 10px;
+}
+
+.soft-cta {
+  margin-top: 55px;
+  background: #eef4f3;
+  border-radius: 12px;
+  padding: 30px;
+}
+
+.soft-cta h2,
+.info-card h2,
+.soft-card h2 {
+  font-family: var(--body);
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.info-card {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 28px;
+  background: #fff;
+}
+
+.soft-card {
+  background: #eef4f3;
+  border-radius: 10px;
+  padding: 25px;
+}
+
+.soft-card h3 {
+  font-family: var(--body);
+  font-size: 17px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.subheading {
+  font-family: var(--body);
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  margin: 68px 0 26px;
+}
+
+.light-steps .step {
+  border-color: var(--border);
+}
+
+.light-steps .step > span {
+  color: var(--primary);
+}
+
+.light-steps .step h3 {
+  font-family: var(--body);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.light-steps .step p {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.75;
+}
+
+/* =========================================================
+   FORMS / CONTACT
+========================================================= */
+
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1.25fr 0.85fr;
+  gap: 22px;
+}
+
+.form-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 28px;
+}
+
+.field {
+  display: grid;
+  gap: 9px;
+  margin-bottom: 21px;
+}
+
+.field > span {
+  font-size: 13px;
+  font-weight: 700;
+  color: #56676a;
+}
+
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  border: 1px solid #d6e2e0;
+  background: #fcfdfd;
+  border-radius: 9px;
+  padding: 12px 14px;
+  min-height: 48px;
+  outline: none;
+  color: var(--ink);
+  font-size: 15px;
+}
+
+.field textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(12, 118, 111, 0.08);
+}
+
+.side-stack {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+}
+
+/* =========================================================
+   AUTHENTICATION - DESKTOP
+========================================================= */
+
+.auth-page {
+  min-height: 100vh;
+  width: 100%;
+  padding: 36px 20px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, #f3f7f6, #edf3f1);
+}
+
+.auth-shell {
+  width: min(900px, 100%);
+  display: grid;
+  grid-template-columns: minmax(0, 70%) minmax(210px, 30%);
+  min-height: 520px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 26px 70px -32px rgba(24, 65, 68, 0.35);
+}
+
+.auth-main {
+  padding: 46px 58px;
+  min-width: 0;
+}
+
+.auth-main h1 {
+  font-family: var(--body);
+  font-size: 38px;
+  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  margin: 0 0 10px;
+}
+
+.auth-subtitle {
+  color: var(--muted);
+  font-family: var(--body);
+  font-size: 15px;
+  line-height: 1.7;
+  margin: 0 0 32px;
+}
+
+.auth-form {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.auth-form .btn {
+  width: 100%;
+  min-height: 48px;
+  font-size: 14px;
+  margin-top: 7px;
+}
+
+.password {
+  position: relative;
+}
+
+.password input {
+  padding-right: 58px;
+}
+
+.password button {
+  position: absolute;
+  right: 7px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 0;
+  background: none;
+  color: var(--primary);
+  font-size: 12px;
+}
+
+.form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: var(--muted);
+  margin: 2px 0 20px;
+  gap: 10px;
+}
+
+.form-options label {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+}
+
+.form-options a,
+.auth-switch a {
+  color: var(--primary);
+}
+
+.auth-switch {
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 18px 0 0;
+}
+
+.two-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.terms {
+  display: flex;
+  gap: 7px;
+  align-items: flex-start;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0 0 20px;
+}
+
+.terms b {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.auth-art {
+  position: relative;
+  min-height: 520px;
+  padding: 24px;
+  color: #fff;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  background: linear-gradient(150deg, #117e76, #075f5a);
+}
+
+.auth-art > img:first-child {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.24;
+  mix-blend-mode: multiply;
+}
+
+.art-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(9, 113, 106, 0.05),
+    rgba(3, 63, 61, 0.45)
+  );
+}
+
+.auth-brand {
+  position: absolute;
+  top: 32px;
+  left: 28px;
+  right: 28px;
+  z-index: 3;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.auth-brand .logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  color: white;
+  min-width: 0;
+}
+
+.auth-brand .logo span {
+  color: white;
+  font-size: 15px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.auth-brand .logo span b {
+  font-weight: 400;
+}
+
+.auth-home-hint {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 12px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.auth-art .logo {
+  color: #fff;
+  font-size: 13px;
+  gap: 8px;
+}
+
+.auth-art .logo img {
+  border: 2px solid rgba(255, 255, 255, 0.7);
+}
+
+.auth-home-hint {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.8);
+  white-space: nowrap;
+}
+
+.auth-mark {
+  position: absolute;
+  left: 50%;
+  top: 52%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+
+  width: 112px;
+  height: 112px;
+
+  border-radius: 34% 66% 58% 42% / 52% 40% 60% 48%;
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  background: rgba(255, 255, 255, 0.08);
+
+  display: grid;
+  place-items: center;
+
+  box-shadow:
+    inset 0 0 0 10px rgba(255, 255, 255, 0.03),
+    0 20px 45px rgba(0, 0, 0, 0.12);
+
+  backdrop-filter: blur(2px);
+}
+
+.auth-mark span {
+  font-family: var(--arabic);
+  font-size: 54px;
+  color: rgba(255, 255, 255, 0.82);
+  line-height: 1;
+}
+
+.auth-logo {
+  display: none !important;
+}
+
+.quote {
+  position: relative;
+  z-index: 3;
+}
+
+.quote b {
+  display: block;
+  font-family: var(--display);
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+.quote span {
+  display: block;
+  margin-top: 9px;
+  font-size: 10px;
+  opacity: 0.75;
+}
+
+.auth-error {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border: 1px solid #e6b8b8;
+  background: #fff5f5;
+  color: #9b3d3d;
+  border-radius: 7px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 900px) {
+  .container {
+    width: calc(100% - 34px);
+  }
+
+  .hero {
+    min-height: 600px;
+  }
+
+  .hero-inner {
+    min-height: 600px;
+  }
+
+  .hero h1 {
+    font-size: 52px;
+  }
+
+  .hero p {
+    font-size: 15px;
+  }
+
+  .track-grid,
+  .feature-grid,
+  .mentor-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .footer-grid {
+    grid-template-columns: 1.6fr 1fr 1fr;
+  }
+
+  .footer-main {
+    grid-column: 1 / -1;
+  }
+
+  .auth-page {
+    padding: 28px 16px;
+  }
+
+  .auth-shell {
+    width: min(820px, 100%);
+    grid-template-columns: minmax(0, 68%) minmax(190px, 32%);
+    min-height: 500px;
+  }
+
+  .auth-main {
+    padding: 38px 40px;
+  }
+
+  .auth-art {
+    min-height: 500px;
+  }
+
+  .auth-main h1 {
+    font-size: 34px;
+  }
+
+  .auth-subtitle {
+    font-size: 14px;
+  }
+
+  .field input,
+  .field select,
+  .field textarea {
+    font-size: 14px;
+  }
+
+  .page-shell > h1 {
+    font-size: 46px;
+  }
+}
+
+/* =========================================================
+   PHONE
+========================================================= */
+
+@media (max-width: 700px) {
+  /* ---------- General ---------- */
+
+  html,
+  body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .container {
+    width: calc(100% - 32px) !important;
+    max-width: 100%;
+  }
+
+  .section {
+    padding: 52px 0 !important;
+  }
+
+  /* ---------- Header ---------- */
+
+  .nav {
+    height: 64px;
+  }
+
+  .logo {
+    font-size: 13px !important;
+    gap: 8px;
+  }
+
+  .logo img {
+    width: 34px !important;
+    height: 34px !important;
+  }
+
+  .nav-links {
+    display: none;
+    position: absolute;
+    top: 64px;
+    left: 0;
+    right: 0;
+
+    width: 100%;
+
+    background: #fff;
+    border-bottom: 1px solid var(--border);
+
+    padding: 16px 20px;
+
+    flex-direction: column;
+    gap: 12px;
+
+    box-shadow: 0 16px 30px rgba(0, 0, 0, 0.06);
+  }
+
+  .nav-links.open {
+    display: flex;
+  }
+
+  .nav-actions {
+    display: none;
+  }
+
+  .mobile-toggle {
+    display: block;
+  }
+
+  /* ---------- Hero ---------- */
+
+  .hero {
+    min-height: 650px !important;
+  }
+
+  .hero-inner {
+    min-height: 650px !important;
+
+    display: flex;
+    align-items: flex-end !important;
+
+    padding-bottom: 52px;
+  }
+
+  .hero-image {
+    position: absolute !important;
+    inset: 0 !important;
+
+    width: 100% !important;
+    height: 100% !important;
+
+    object-fit: cover !important;
+    object-position: 72% 18% !important;
+  }
+
+  .hero-fade {
+    background: linear-gradient(
+      180deg,
+      rgba(251, 252, 251, 0.1) 0%,
+      rgba(251, 252, 251, 0.28) 20%,
+      rgba(251, 252, 251, 0.74) 45%,
+      rgba(251, 252, 251, 0.95) 64%,
+      #fbfcfb 82%,
+      #fbfcfb 100%
+    ) !important;
+  }
+
+  .hero-copy {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+
+  .arabic {
+    font-size: 25px !important;
+    line-height: 1.3;
+  }
+
+  .arabic-rule {
+    width: 190px;
+    margin: 6px 0 10px;
+  }
+
+  .hero h1 {
+    font-size: 39px !important;
+    line-height: 1.08 !important;
+    margin: 12px 0 0 !important;
+  }
+
+  .hero p {
+    max-width: 100% !important;
+    font-size: 13px !important;
+    line-height: 1.7 !important;
+    margin: 15px 0 20px !important;
+  }
+
+  .hero-buttons {
+    width: 100%;
+    display: grid !important;
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .hero-buttons .btn {
+    width: 100%;
+    min-width: 0 !important;
+    min-height: 44px;
+    font-size: 13px;
+  }
+
+  /* ---------- Stats ---------- */
+
+  .stats-grid {
+    width: 100%;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .stats-grid > div {
+    min-width: 0 !important;
+    width: 100%;
+
+    padding: 22px 12px !important;
+
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+
+    text-align: center;
+  }
+
+  .stats-grid > div:nth-child(2n) {
+    border-right: 0;
+  }
+
+  .stats-grid > div:nth-child(3),
+  .stats-grid > div:nth-child(4) {
+    border-bottom: 0;
+  }
+
+  .stats b {
+    font-size: 23px !important;
+    line-height: 1.2;
+    white-space: normal !important;
+  }
+
+  .stats span {
+    font-size: 11px !important;
+    line-height: 1.45;
+    white-space: normal !important;
+  }
+
+  /* ---------- Section headings ---------- */
+
+  .section-title {
+    margin-bottom: 24px !important;
+  }
+
+  .section-title h2 {
+    font-size: 30px !important;
+    line-height: 1.15;
+  }
+
+  .section-title p {
+    font-size: 13px !important;
+    line-height: 1.7;
+    max-width: 100%;
+  }
+
+  /* ---------- Cards ---------- */
+
+  .track-grid,
+  .feature-grid,
+  .mentor-grid,
+  .mentor-grid.six {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+
+  .track-card,
+  .feature-card,
+  .mentor-card {
+    width: 100%;
+    min-width: 0;
+    min-height: auto !important;
+    padding: 22px !important;
+    border-radius: 14px;
+  }
+
+  .track-card h3,
+  .feature-card h3,
+  .mentor-card h3 {
+    font-size: 17px !important;
+    line-height: 1.35;
+    margin: 14px 0 8px;
+  }
+
+  .track-card p,
+  .feature-card p,
+  .mentor-card p {
+    font-size: 13px !important;
+    line-height: 1.7 !important;
+  }
+
+  /* ---------- How it works ---------- */
+
+  .how-card {
+    width: 100%;
+    padding: 28px 22px !important;
+    border-radius: 18px;
+  }
+
+  .how-card h2 {
+    font-size: 29px !important;
+  }
+
+  .steps {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 18px !important;
+    margin-top: 25px;
+  }
+
+  .step {
+    padding-top: 14px;
+  }
+
+  .step h3 {
+    font-size: 16px !important;
+  }
+
+  .step p {
+    font-size: 12px !important;
+    line-height: 1.7 !important;
+  }
+
+  /* ---------- Mentors ---------- */
+
+  .section-head.row {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 14px !important;
+    margin-bottom: 24px !important;
+  }
+
+  .section-head.row .section-title {
+    width: 100%;
+    margin-bottom: 0 !important;
+  }
+
+  .section-head.row .btn {
+    width: 100%;
+  }
+
+  /* ---------- FAQ ---------- */
+
+  .faq-section {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .faq-item button {
+    padding: 17px 2px;
+    gap: 15px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .faq-item p {
+    font-size: 12px;
+    line-height: 1.7;
+  }
+
+  /* ---------- CTA ---------- */
+
+  .cta {
+    width: calc(100% - 32px) !important;
+    margin: 0 auto 50px !important;
+
+    padding: 26px 22px !important;
+    border-radius: 15px;
+
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+
+    gap: 18px;
+  }
+
+  .cta h2 {
+    font-size: 25px !important;
+    line-height: 1.2;
+  }
+
+  .cta p {
+    font-size: 12px !important;
+  }
+
+  .cta .btn {
+    width: 100%;
+  }
+
+  /* ---------- Footer ---------- */
+
+  .footer-grid {
+    grid-template-columns: 1fr !important;
+    gap: 28px !important;
+    padding: 42px 0 32px !important;
+  }
+
+  .footer-main {
+    grid-column: auto !important;
+  }
+
+  .footer-main p,
+  .footer-grid a,
+  .footer-grid p {
+    font-size: 12px !important;
+    line-height: 1.7 !important;
+  }
+
+  .footer-grid h4 {
+    font-size: 15px !important;
+  }
+
+  .social {
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  .footer-bottom {
+    flex-direction: column !important;
+    gap: 7px;
+    text-align: center;
+  }
+
+  /* =======================================================
+     LOGIN + REGISTRATION
+     MOBILE VERSION
+     IMPORTANT:
+     This changes the authentication card from the cramped
+     side-by-side desktop layout into a comfortable phone
+     layout.
+  ======================================================= */
+
+  .auth-page {
+    min-height: 100svh !important;
+    width: 100%;
+    padding: 18px 14px !important;
+
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
+
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+  }
+
+  .auth-shell {
+    width: 100% !important;
+    max-width: 420px !important;
+
+    min-height: 0 !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+
+    border-radius: 16px !important;
+    overflow: hidden !important;
+  }
+
+  /* Image/calligraphy goes above the form on phones. */
+
+  .auth-art {
+    order: -1 !important;
+
+    width: 100% !important;
+    min-height: 170px !important;
+    height: 170px !important;
+
+    padding: 14px !important;
+    flex: none;
+  }
+
+  .auth-art > img:first-child {
+    width: 100% !important;
+    height: 100% !important;
+
+    object-fit: cover !important;
+    object-position: center !important;
+
+    opacity: 0.3 !important;
+  }
+
+  .auth-brand {
+    top: 14px !important;
+    left: 14px !important;
+    right: 14px !important;
+  }
+
+  .auth-art .logo {
+    font-size: 11px !important;
+  }
+
+  .auth-art .logo img {
+    width: 31px !important;
+    height: 31px !important;
+  }
+
+  .auth-home-hint {
+    display: none !important;
+  }
+
+  .auth-mark {
+    width: 68px !important;
+    height: 68px !important;
+
+    top: 56% !important;
+  }
+
+  .auth-mark span {
+    font-size: 34px !important;
+  }
+
+  .quote {
+    display: none !important;
+  }
+
+  /* Form area */
+
+  .auth-main {
+    width: 100% !important;
+    padding: 28px 20px 26px !important;
+    min-width: 0 !important;
+  }
+
+  .auth-main h1 {
+    font-size: 27px !important;
+    line-height: 1.18 !important;
+    margin: 0 0 8px !important;
+  }
+
+  .auth-subtitle {
+    font-size: 12px !important;
+    line-height: 1.6 !important;
+    margin: 0 0 22px !important;
+  }
+
+  .auth-form {
+    width: 100%;
+    gap: 0 !important;
+  }
+
+  .field {
+    width: 100%;
+    margin-bottom: 14px !important;
+    gap: 7px !important;
+  }
+
+  .field > span {
+    font-size: 11px !important;
+  }
+
+  .field input,
+  .field select,
+  .field textarea {
+    width: 100% !important;
+    min-width: 0 !important;
+
+    min-height: 43px !important;
+
+    padding: 9px 11px !important;
+
+    font-size: 12px !important;
+
+    border-radius: 8px !important;
+  }
+
+  .password {
+    width: 100%;
+  }
+
+  .password input {
+    padding-right: 48px !important;
+  }
+
+  .password button {
+    right: 6px !important;
+    font-size: 10px !important;
+  }
+
+  .form-options {
+    width: 100%;
+
+    display: flex;
+    flex-wrap: wrap;
+
+    gap: 8px !important;
+
+    font-size: 10px !important;
+
+    margin: 2px 0 14px !important;
+  }
+
+  .auth-form .btn {
+    width: 100% !important;
+
+    min-height: 44px !important;
+
+    font-size: 12px !important;
+
+    padding: 10px 12px !important;
+
+    margin-top: 3px !important;
+  }
+
+  .terms {
+    width: 100%;
+
+    font-size: 10px !important;
+    line-height: 1.5 !important;
+
+    margin: 0 0 14px !important;
+  }
+
+  .auth-switch {
+    font-size: 10px !important;
+    line-height: 1.5 !important;
+    margin-top: 13px !important;
+  }
+
+  .two-inputs {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 0 !important;
+  }
+
+  .auth-error {
+    font-size: 10px !important;
+    padding: 9px 10px !important;
+  }
+
+  /* ---------- Inner pages ---------- */
+
+  .page-shell {
+    padding-top: 48px !important;
+    padding-bottom: 58px !important;
+  }
+
+  .page-shell > h1 {
+    font-size: 38px !important;
+    line-height: 1.1;
+  }
+
+  .page-intro {
+    font-size: 13px !important;
+    line-height: 1.75;
+  }
+
+  .page-content {
+    margin-top: 32px !important;
+  }
+
+  .large-grid,
+  .two-col,
+  .contact-grid {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+
+  .large-card,
+  .info-card,
+  .soft-card,
+  .form-card {
+    padding: 21px !important;
+    min-width: 0;
+  }
+
+  .large-card h2 {
+    font-size: 22px !important;
+  }
+
+  .large-card > p,
+  .info-card p,
+  .soft-card p,
+  .soft-cta p {
+    font-size: 12px !important;
+    line-height: 1.75 !important;
+  }
+}
+
+/* =========================================================
+   VERY SMALL PHONES
+========================================================= */
+
+@media (max-width: 420px) {
+  .container {
+    width: calc(100% - 28px) !important;
+  }
+
+  /* ---------- Hero ---------- */
+
+  .hero {
+    min-height: 620px !important;
+  }
+
+  .hero-inner {
+    min-height: 620px !important;
+    padding-bottom: 42px;
+  }
+
+  .hero h1 {
+    font-size: 34px !important;
+  }
+
+  .arabic {
+    font-size: 23px !important;
+  }
+
+  .hero p {
+    font-size: 12px !important;
+  }
+
+  /* ---------- Stats ---------- */
+
+  .stats-grid > div {
+    padding: 19px 9px !important;
+  }
+
+  .stats b {
+    font-size: 21px !important;
+  }
+
+  .stats span {
+    font-size: 10px !important;
+  }
+
+  /* ---------- Sections ---------- */
+
+  .section {
+    padding: 46px 0 !important;
+  }
+
+  .section-title h2 {
+    font-size: 28px !important;
+  }
+
+  /* ---------- Cards ---------- */
+
+  .track-card,
+  .feature-card,
+  .mentor-card {
+    padding: 19px !important;
+  }
+
+  .track-card h3,
+  .feature-card h3,
+  .mentor-card h3 {
+    font-size: 16px !important;
+  }
+
+  .track-card p,
+  .feature-card p,
+  .mentor-card p {
+    font-size: 12px !important;
+  }
+
+  /* ---------- CTA ---------- */
+
+  .cta {
+    width: calc(100% - 28px) !important;
+    padding: 23px 19px !important;
+  }
+
+  /* ---------- Authentication ---------- */
+
+  .auth-page {
+    padding: 12px 10px !important;
+  }
+
+  .auth-shell {
+    width: 100% !important;
+    max-width: 390px !important;
+
+    border-radius: 14px !important;
+  }
+
+  .auth-art {
+    min-height: 150px !important;
+    height: 150px !important;
+  }
+
+  .auth-main {
+    padding: 24px 17px 22px !important;
+  }
+
+  .auth-main h1 {
+    font-size: 24px !important;
+  }
+
+  .auth-subtitle {
+    font-size: 11px !important;
+    margin-bottom: 19px !important;
+  }
+
+  .field {
+    margin-bottom: 12px !important;
+  }
+
+  .field > span {
+    font-size: 10px !important;
+  }
+
+  .field input,
+  .field select,
+  .field textarea {
+    min-height: 41px !important;
+    font-size: 11px !important;
+    padding: 8px 10px !important;
+  }
+
+  .auth-form .btn {
+    min-height: 42px !important;
+    font-size: 11px !important;
+  }
+
+  .form-options,
+  .terms,
+  .auth-switch {
+    font-size: 9px !important;
+  }
+}
+/* =========================================================
+   FINAL MOBILE POLISH
+========================================================= */
+
+@media (max-width: 700px) {
+  /* Give the whole mobile page a little more breathing room */
+  .container {
+    width: calc(100% - 36px) !important;
+  }
+
+  .section {
+    padding-top: 46px !important;
+    padding-bottom: 46px !important;
+  }
+
+  /* ---------- HERO ---------- */
+
+  .hero-inner {
+    padding-left: 0;
+    padding-right: 0;
+    padding-bottom: 46px;
+  }
+
+  .hero h1 {
+    font-size: 42px !important;
+    line-height: 1.08 !important;
+  }
+
+  .hero p {
+    font-size: 14px !important;
+    line-height: 1.75 !important;
+  }
+
+  .hero-buttons .btn {
+    font-size: 14px !important;
+    min-height: 46px;
+  }
+
+  /* ---------- STATS ---------- */
+
+  .stats-grid > div {
+    padding: 20px 14px !important;
+  }
+
+  .stats b {
+    font-size: 24px !important;
+  }
+
+  .stats span {
+    font-size: 12px !important;
+    line-height: 1.5 !important;
+  }
+
+  /* ---------- SECTION TITLES ---------- */
+
+  .section-title {
+    margin-bottom: 22px !important;
+  }
+
+  .section-title h2 {
+    font-size: 32px !important;
+    line-height: 1.15 !important;
+  }
+
+  .section-title p {
+    font-size: 13px !important;
+    line-height: 1.7 !important;
+  }
+
+  /* ---------- TRACK / FEATURE CARDS ---------- */
+
+  .track-grid,
+  .feature-grid,
+  .mentor-grid {
+    gap: 14px !important;
+  }
+
+  .track-card,
+  .feature-card,
+  .mentor-card {
+    padding: 17px !important;
+    min-height: 0 !important;
+  }
+
+  .track-card h3,
+  .feature-card h3,
+  .mentor-card h3 {
+    font-size: 17px !important;
+    line-height: 1.35 !important;
+    margin-top: 12px !important;
+  }
+
+  .track-card p,
+  .feature-card p,
+  .mentor-card p {
+    font-size: 13px !important;
+    line-height: 1.65 !important;
+  }
+
+  /* ---------- HOW IT WORKS ---------- */
+
+  .how-card {
+    padding: 24px 18px !important;
+    border-radius: 16px !important;
+  }
+
+  .how-card h2 {
+    font-size: 31px !important;
+    margin-bottom: 4px;
+  }
+
+  .steps {
+    gap: 14px !important;
+    margin-top: 20px !important;
+  }
+
+  .step {
+    padding-top: 12px !important;
+  }
+
+  .step > span {
+    font-size: 13px !important;
+  }
+
+  .step h3 {
+    font-size: 17px !important;
+    line-height: 1.3 !important;
+    margin: 8px 0 5px !important;
+  }
+
+  .step p {
+    font-size: 13px !important;
+    line-height: 1.65 !important;
+  }
+
+  /* ---------- WHAT YOU GET ---------- */
+
+  .feature-card {
+    padding: 17px !important;
+  }
+
+  .feature-card .icon {
+    margin-bottom: 2px;
+  }
+
+  .feature-card h3 {
+    margin-top: 9px !important;
+  }
+
+  /* ---------- MENTORS ---------- */
+
+  .mentor-card {
+    padding: 18px !important;
+  }
+
+  .mentor-card h3 {
+    margin-top: 14px !important;
+  }
+
+  /* ---------- FAQ ---------- */
+
+  .faq-item button {
+    padding: 17px 0 !important;
+    font-size: 14px !important;
+  }
+
+  .faq-item p {
+    font-size: 13px !important;
+    line-height: 1.7 !important;
+  }
+
+  /* ---------- CTA ---------- */
+
+  .cta {
+    width: calc(100% - 36px) !important;
+    padding: 24px 20px !important;
+    margin-bottom: 42px !important;
+  }
+
+  .cta h2 {
+    font-size: 27px !important;
+  }
+
+  .cta p {
+    font-size: 13px !important;
+  }
+
+  /* =======================================================
+     LOGIN + REGISTRATION
+  ======================================================= */
+
+  .auth-page {
+    padding: 22px 16px !important;
+  }
+
+  .auth-shell {
+    max-width: 410px !important;
+    border-radius: 18px !important;
+  }
+
+  /* Make the calligraphy panel slightly taller */
+  .auth-art {
+    min-height: 190px !important;
+    height: 190px !important;
+  }
+
+  /* Make the calligraphy more visible */
+  .auth-art > img:first-child {
+    opacity: 0.48 !important;
+    mix-blend-mode: normal !important;
+    filter: contrast(1.05) brightness(0.95) !important;
+  }
+
+  .art-overlay {
+    background: linear-gradient(
+      180deg,
+      rgba(9, 113, 106, 0.02),
+      rgba(3, 63, 61, 0.32)
+    ) !important;
+  }
+
+  .auth-main {
+    padding: 30px 22px 28px !important;
+  }
+
+  .auth-main h1 {
+    font-size: 29px !important;
+    line-height: 1.18 !important;
+  }
+
+  .auth-subtitle {
+    font-size: 13px !important;
+    line-height: 1.65 !important;
+    margin-bottom: 22px !important;
+  }
+
+  .field {
+    margin-bottom: 15px !important;
+  }
+
+  .field > span {
+    font-size: 12px !important;
+  }
+
+  .field input,
+  .field select,
+  .field textarea {
+    min-height: 45px !important;
+    font-size: 13px !important;
+    padding: 10px 12px !important;
+  }
+
+  .form-options {
+    font-size: 11px !important;
+    margin-bottom: 16px !important;
+  }
+
+  .terms {
+    font-size: 11px !important;
+    line-height: 1.55 !important;
+  }
+
+  .auth-form .btn {
+    min-height: 46px !important;
+    font-size: 13px !important;
+  }
+
+  .auth-switch {
+    font-size: 11px !important;
+    margin-top: 15px !important;
+  }
+
+  .auth-mark {
+    width: 76px !important;
+    height: 76px !important;
+  }
+
+  .auth-mark span {
+    font-size: 38px !important;
+  }
+}
+
+/* =========================================================
+   VERY SMALL PHONES
+========================================================= */
+
+@media (max-width: 420px) {
+  .container {
+    width: calc(100% - 30px) !important;
+  }
+
+  .section {
+    padding-top: 42px !important;
+    padding-bottom: 42px !important;
+  }
+
+  .hero h1 {
+    font-size: 38px !important;
+  }
+
+  .hero p {
+    font-size: 13px !important;
+  }
+
+  .section-title h2 {
+    font-size: 29px !important;
+  }
+
+  .track-card,
+  .feature-card,
+  .mentor-card {
+    padding: 15px !important;
+  }
+
+  .track-card h3,
+  .feature-card h3,
+  .mentor-card h3 {
+    font-size: 16px !important;
+  }
+
+  .track-card p,
+  .feature-card p,
+  .mentor-card p {
+    font-size: 12px !important;
+  }
+
+  .how-card {
+    padding: 22px 17px !important;
+  }
+
+  .how-card h2 {
+    font-size: 28px !important;
+  }
+
+  .step h3 {
+    font-size: 16px !important;
+  }
+
+  .step p {
+    font-size: 12px !important;
+  }
+
+  .cta {
+    width: calc(100% - 30px) !important;
+    padding: 22px 18px !important;
+  }
+
+  .auth-page {
+    padding: 16px 12px !important;
+  }
+
+  .auth-art {
+    min-height: 175px !important;
+    height: 175px !important;
+  }
+
+  .auth-main {
+    padding: 26px 18px 24px !important;
+  }
+
+  .auth-main h1 {
+    font-size: 26px !important;
+  }
+
+  .auth-subtitle {
+    font-size: 12px !important;
+  }
+
+  .field input,
+  .field select,
+  .field textarea {
+    min-height: 43px !important;
+    font-size: 12px !important;
+  }
+
+  .auth-form .btn {
+    min-height: 44px !important;
+    font-size: 12px !important;
+  }
+}

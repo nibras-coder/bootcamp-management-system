@@ -51,7 +51,7 @@ router.get(
   getBatchById
 );
 
-// Get students in batch
+// Get students in track
 router.get(
   "/:id/students",
   protect,

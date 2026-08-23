@@ -52,12 +52,12 @@ const createProgress = async (req, res) => {
       return res.status(404).json({
         success: false,
         message:
-          "Student not found in this batch",
+          "Student not found in this track",
       });
     }
 
     // Prevent duplicate topic/week
-    
+
     const existingProgress =
       await Progress.findOne({
         student,

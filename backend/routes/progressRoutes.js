@@ -13,6 +13,7 @@ const authorize = require(
 const {
   createProgress,
   getMentorProgress,
+  getProgress,
   getStudentProgress,
   updateProgress,
 } = require(

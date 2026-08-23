@@ -6,31 +6,31 @@ const UsersTable = () => {
     {
       id: 1,
       name: "Hanan Mohammed",
-      email: "hayat@astu.edu.et",
+      email: "hanan@gmail.com",
       role: "Student",
-      batch: "Web Dev Batch 2",
+      batch: "Web Dev Trach 2",
       status: "Active",
     },
     {
       id: 2,
       name: "Ahmed Yassin",
-      email: "ahmed@astu.edu.et",
+      email: "ahmed@gmail.com",
       role: "Student",
-      batch: "UI/UX Batch 1",
+      batch: "UI/UX Track 1",
       status: "Active",
     },
     {
       id: 3,
-      name: "Sumeya Abdulfetah",
-      email: "sumeya@astu.edu.et",
+      name: "Samiya Fuad",
+      email: "samiya@gmail.com",
       role: "Mentor",
-      batch: "Web Dev Batch 2",
+      batch: "Web Dev Track 2",
       status: "Active",
     },
     {
       id: 4,
       name: "Abdullah Isa",
-      email: "abdullah@astu.edu.et",
+      email: "abdullah@gmail.com",
       role: "Student",
       batch: "Data Science 1",
       status: "Inactive",
@@ -56,7 +56,7 @@ const UsersTable = () => {
             <tr className="bg-bootcamp-background text-bootcamp-textLight text-sm uppercase tracking-wider border-b border-gray-200">
               <th className="px-6 py-4 font-semibold">User</th>
               <th className="px-6 py-4 font-semibold">Role</th>
-              <th className="px-6 py-4 font-semibold">Batch</th>
+              <th className="px-6 py-4 font-semibold">Track</th>
               <th className="px-6 py-4 font-semibold">Status</th>
               <th className="px-6 py-4 font-semibold text-right">Actions</th>
             </tr>

@@ -2,6 +2,8 @@ const Assignment = require("../models/Assignment");
 const Batch = require("../models/Batch");
 const User = require("../models/User");
 
+// Create assignmet
+
 const createAssignment = async (req, res) => {
   try {
     const mentorId = req.user.id;
@@ -118,8 +120,12 @@ const getMentorAssignments = async (req, res) => {
     });
   }
 };
+// Get one assignment
 
-const getAssignmentById = async (req, res) => {
+const getAssignmentById = async (
+  req,
+  res
+) => {
   try {
     const mentorId = req.user.id;
     const { id } = req.params;

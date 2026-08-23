@@ -56,6 +56,8 @@ const createUser = asyncHandler(async (req, res) => {
       message: "Missing required fields",
     });
   }
+};
+// Get one user
 
   const existing = await User.findOne({
     email: email.toLowerCase(),
@@ -67,6 +69,8 @@ const createUser = asyncHandler(async (req, res) => {
       message: "Email already in use",
     });
   }
+};
+// Get mentor's students
 
   const user = await User.create({
     fullName,

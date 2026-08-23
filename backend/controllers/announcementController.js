@@ -2,6 +2,8 @@ const Announcement = require("../models/Announcement");
 const Batch = require("../models/Batch");
 const User = require("../models/User");
 
+// Create announcement
+
 const createAnnouncement = async (req, res) => {
   try {
     const mentorId = req.user.id;
@@ -76,7 +78,7 @@ const createAnnouncement = async (req, res) => {
     });
   }
 };
-// Get announcement -> Mentor
+// Get mentor announcement
 
 const getMentorAnnouncements = async (
   req,
@@ -124,6 +126,7 @@ const getMentorAnnouncements = async (
     });
   }
 };
+// Get one announcement
 
 const getAnnouncementById = async (
   req,
@@ -343,7 +346,7 @@ const updateAnnouncement = async (
     });
   }
 };
-// Delet announcement -> Mentor
+// Delete announcement
 
 const deleteAnnouncement = async (
   req,

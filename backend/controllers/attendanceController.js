@@ -40,7 +40,7 @@ const markAttendance = async (req, res) => {
     }
 
     // Check student exists and belongs to batch
-    
+
     const studentUser = await User.findOne({
       _id: student,
       role: "student",
@@ -383,7 +383,6 @@ const updateAttendance = async (
     });
   }
 };
-
 
 module.exports = {
   markAttendance,
