@@ -12,6 +12,6 @@ frontend/.env
 # Build outputs
 dist/
 build/
-
+.vscode
 # OS generated files
 .DS_Store
