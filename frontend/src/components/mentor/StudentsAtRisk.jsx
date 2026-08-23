@@ -1,7 +1,7 @@
 const atRiskStudents = [
-  { name: "Abel Tesfaye", attendance: 55 },
-  { name: "Mekdes Alemu", attendance: 60 },
-  { name: "Daniel Worku", attendance: 62 },
+  { name: "Hashim Kemal", attendance: 55 },
+  { name: "Dana Ayub", attendance: 60 },
+  { name: "Suha Kedir", attendance: 62 },
 ];
 
 function StudentsAtRisk() {

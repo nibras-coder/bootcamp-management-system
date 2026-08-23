@@ -1,13 +1,30 @@
 const assignments = [
-  { student: "Abel Tesfaye", title: "React Components", date: "May 14, 2026", status: "Pending" },
-  { student: "Mekdes Alemu", title: "API Integration", date: "May 13, 2026", status: "Pending" },
-  { student: "Daniel Worku", title: "React Components", date: "May 13, 2026", status: "Pending" },
+  {
+    student: "Huda Temam",
+    title: "React Components",
+    date: "May 14, 2026",
+    status: "Pending",
+  },
+  {
+    student: "Mahi Awel",
+    title: "API Integration",
+    date: "May 13, 2026",
+    status: "Pending",
+  },
+  {
+    student: "Daniya Abdu",
+    title: "React Components",
+    date: "May 13, 2026",
+    status: "Pending",
+  },
 ];
 
 function RecentAssignments() {
   return (
     <div className="bg-white rounded-xl p-5 shadow-sm">
-      <h3 className="font-semibold text-gray-800 mb-4">Recent Assignments to Grade</h3>
+      <h3 className="font-semibold text-gray-800 mb-4">
+        Recent Assignments to Grade
+      </h3>
       <table className="w-full text-sm">
         <thead>
           <tr className="text-left text-gray-400 border-b border-gray-100">

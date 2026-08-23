@@ -5,10 +5,10 @@ import { X } from "lucide-react";
 const initialSubmissions = [
   {
     id: 1,
-    student: "Abel Tesfaye",
+    student: "Huda Temam",
     assignment: "React Components",
-    githubUrl: "https://github.com/abel/react-components",
-    liveDemoUrl: "https://abel-demo.vercel.app",
+    githubUrl: "https://github.com/huda/react-components",
+    liveDemoUrl: "https://huda-demo.vercel.app",
     notes: "Used custom hooks for state management.",
     status: "submitted",
     score: null,
@@ -16,9 +16,9 @@ const initialSubmissions = [
   },
   {
     id: 2,
-    student: "Mekdes Alemu",
+    student: "Mahi Awel",
     assignment: "API Integration",
-    githubUrl: "https://github.com/mekdes/api-integration",
+    githubUrl: "https://github.com/mahi/api-integration",
     liveDemoUrl: "",
     notes: "",
     status: "submitted",
@@ -27,10 +27,10 @@ const initialSubmissions = [
   },
   {
     id: 3,
-    student: "Daniel Worku",
+    student: "Daniya Abdu",
     assignment: "React Components",
-    githubUrl: "https://github.com/daniel/react-components",
-    liveDemoUrl: "https://daniel-demo.vercel.app",
+    githubUrl: "https://github.com/daniya/react-components",
+    liveDemoUrl: "https://daniya-demo.vercel.app",
     notes: "Deployed a bit late, sorry!",
     status: "graded",
     score: 88,
@@ -67,9 +67,14 @@ function Grading() {
     setSubmissions((prev) =>
       prev.map((sub) =>
         sub.id === selected.id
-          ? { ...sub, score: score ? Number(score) : null, feedback, status: newStatus }
-          : sub
-      )
+          ? {
+              ...sub,
+              score: score ? Number(score) : null,
+              feedback,
+              status: newStatus,
+            }
+          : sub,
+      ),
     );
     closeModal();
   };
@@ -80,7 +85,9 @@ function Grading() {
 
       <main className="flex-1 p-8">
         <h1 className="text-2xl font-bold text-gray-900 mb-1">Grading</h1>
-        <p className="text-gray-500 text-sm mb-6">Review and grade student submissions.</p>
+        <p className="text-gray-500 text-sm mb-6">
+          Review and grade student submissions.
+        </p>
 
         <div className="bg-white rounded-xl shadow-sm p-5">
           <table className="w-full text-sm">
@@ -95,12 +102,17 @@ function Grading() {
             </thead>
             <tbody>
               {submissions.map((sub) => (
-                <tr key={sub.id} className="border-b border-gray-50 last:border-0">
+                <tr
+                  key={sub.id}
+                  className="border-b border-gray-50 last:border-0"
+                >
                   <td className="py-3 text-gray-800">{sub.student}</td>
                   <td className="py-3 text-gray-600">{sub.assignment}</td>
                   <td className="py-3 text-gray-600">{sub.score ?? "—"}</td>
                   <td className="py-3">
-                    <span className={`text-xs px-2 py-1 rounded-full capitalize ${statusColors[sub.status]}`}>
+                    <span
+                      className={`text-xs px-2 py-1 rounded-full capitalize ${statusColors[sub.status]}`}
+                    >
                       {sub.status.replace("_", " ")}
                     </span>
                   </td>
@@ -134,14 +146,24 @@ function Grading() {
               <div className="space-y-2 mb-4 text-sm">
                 <p>
                   <span className="text-gray-500">GitHub: </span>
-                  <a href={selected.githubUrl} target="_blank" rel="noreferrer" className="text-teal-700 hover:underline">
+                  <a
+                    href={selected.githubUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-teal-700 hover:underline"
+                  >
                     {selected.githubUrl}
                   </a>
                 </p>
                 {selected.liveDemoUrl && (
                   <p>
                     <span className="text-gray-500">Live Demo: </span>
-                    <a href={selected.liveDemoUrl} target="_blank" rel="noreferrer" className="text-teal-700 hover:underline">
+                    <a
+                      href={selected.liveDemoUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-teal-700 hover:underline"
+                    >
                       {selected.liveDemoUrl}
                     </a>
                   </p>
@@ -156,7 +178,9 @@ function Grading() {
 
               <div className="space-y-3">
                 <div>
-                  <label className="block text-sm text-gray-600 mb-1">Score</label>
+                  <label className="block text-sm text-gray-600 mb-1">
+                    Score
+                  </label>
                   <input
                     type="number"
                     value={score}
@@ -167,7 +191,9 @@ function Grading() {
                 </div>
 
                 <div>
-                  <label className="block text-sm text-gray-600 mb-1">Feedback</label>
+                  <label className="block text-sm text-gray-600 mb-1">
+                    Feedback
+                  </label>
                   <textarea
                     value={feedback}
                     onChange={(e) => setFeedback(e.target.value)}

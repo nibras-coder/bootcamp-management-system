@@ -6,7 +6,7 @@ const UsersTable = () => {
     {
       id: 1,
       name: "Hanan Mohammed",
-      email: "hayat@gmail.com",
+      email: "hanan@gmail.com",
       role: "Student",
       batch: "Web Dev Trach 2",
       status: "Active",

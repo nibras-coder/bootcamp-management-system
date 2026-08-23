@@ -12,7 +12,7 @@ const authorize = require(
 
 const {
   createAssignment,
-  getMentorAssignments,
+  getAssignments,
   getAssignmentById,
   updateAssignment,
   deleteAssignment,
@@ -20,12 +20,12 @@ const {
   "../controllers/assignmentController"
 );
 
-// Get mentor assignments
+// Get mentor or student assignments
 router.get(
   "/",
   protect,
-  authorize("mentor"),
-  getMentorAssignments
+  authorize("mentor", "student", "admin"),
+  getAssignments
 );
 
 // Get one assignment
