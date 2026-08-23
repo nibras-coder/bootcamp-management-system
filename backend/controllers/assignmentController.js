@@ -89,38 +89,39 @@ const createAssignment = async (req, res) => {
     });
   }
 };
-// Get mentor assignment
-
-const getMentorAssignments = async (
+const getAssignments = async (
   req,
   res
 ) => {
   try {
-    const mentorId = req.user.id;
+    const userId = req.user.id;
+    const userRole = req.user.role;
 
-    const batches = await Batch.find({
-      mentors: mentorId,
-    }).select("_id");
+    let assignments = [];
 
-    const batchIds = batches.map(
-      (batch) => batch._id
-    );
+    if (userRole === "student") {
+      // Students only see assignments for their batch
+      assignments = await Assignment.find({
+        batch: req.user.batch,
+      })
+        .populate("batch", "name track")
+        .populate("createdBy", "name email")
+        .sort({ deadline: 1 });
+    } else {
+      // Mentors see assignments for batches they mentor
+      const batches = await Batch.find({
+        mentors: userId,
+      }).select("_id");
 
-    const assignments =
-      await Assignment.find({
+      const batchIds = batches.map((batch) => batch._id);
+
+      assignments = await Assignment.find({
         batch: { $in: batchIds },
       })
-        .populate(
-          "batch",
-          "name track"
-        )
-        .populate(
-          "createdBy",
-          "name email"
-        )
-        .sort({
-          deadline: 1,
-        });
+        .populate("batch", "name track")
+        .populate("createdBy", "name email")
+        .sort({ deadline: 1 });
+    }
 
     res.status(200).json({
       success: true,
@@ -128,15 +129,11 @@ const getMentorAssignments = async (
       data: assignments,
     });
   } catch (error) {
-    console.error(
-      "Get mentor assignments error:",
-      error
-    );
+    console.error("Get assignments error:", error);
 
     res.status(500).json({
       success: false,
-      message:
-        "Failed to get assignments",
+      message: "Failed to get assignments",
       error: error.message,
     });
   }
@@ -347,7 +344,7 @@ const deleteAssignment = async (
 
 module.exports = {
   createAssignment,
-  getMentorAssignments,
+  getAssignments,
   getAssignmentById,
   updateAssignment,
   deleteAssignment,

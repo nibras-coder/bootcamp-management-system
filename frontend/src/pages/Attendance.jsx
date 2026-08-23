@@ -2,9 +2,9 @@ import { useState } from "react";
 import Sidebar from "../components/mentor/Sidebar";
 
 const initialStudents = [
-  { id: 1, name: "Abel Tesfaye", status: "present" },
-  { id: 2, name: "Mekdes Alemu", status: "present" },
-  { id: 3, name: "Daniel Worku", status: "absent" },
+  { id: 1, name: "Huda Temem", status: "present" },
+  { id: 2, name: "Mahi Hasen", status: "present" },
+  { id: 3, name: "Daniya Abdu", status: "absent" },
   { id: 4, name: "Sara Ali", status: "present" },
 ];
 

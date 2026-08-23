@@ -38,15 +38,16 @@ const createUser = async (req, res) => {
       return res.status(400).json({ success: false, message: "Email already registered" });
     }
 
+    const bcrypt = require("bcryptjs");
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
     // Creating the user. 
     // The role is explicitly set to "mentor".
-    // Note: The password string is passed here and will be automatically hashed 
-    // using bcrypt by the existing pre("save") hook in your User.js model, 
-    // which exactly matches the logic used in your authController's register function.
     const newUser = await User.create({
       name,
       email,
-      password,
+      password: hashedPassword,
       role: "mentor",
       mentorRole: req.body.role || "",
       gender,

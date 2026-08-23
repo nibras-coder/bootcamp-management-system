@@ -32,13 +32,13 @@ function MentorDashboard() {
     fetchDashboard();
   }, []);
 
-  if (loading) {
-    return <p className="p-8 text-gray-600">Loading dashboard...</p>;
-  }
+  // if (loading) {
+  //   return <p className="p-8 text-gray-600">Loading dashboard...</p>;
+  // }
 
-  if (error) {
-    return <p className="p-8 text-red-600">{error}</p>;
-  }
+  // if (error) {
+  //   return <p className="p-8 text-red-600">{error}</p>;
+  // }
 
   return (
     <div className="flex flex-col md:flex-row bg-gray-50 min-h-screen relative">

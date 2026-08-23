@@ -2,20 +2,20 @@ import Sidebar from "../components/mentor/Sidebar";
 
 const students = [
   {
-    name: "Abel Tesfaye",
-    email: "abel@gmailcom",
+    name: "Adm Adel",
+    email: "adem@gmailcom",
     attendance: 55,
     progress: "In Progress",
   },
   {
-    name: "Mekdes Alemu",
-    email: "mekdes@gmailcom",
+    name: "Mahi Hasen",
+    email: "mahi@gmailcom",
     attendance: 60,
     progress: "In Progress",
   },
   {
-    name: "Daniel Worku",
-    email: "daniel@gmailcom",
+    name: "Daniya Abdu",
+    email: "daniya@gmailcom",
     attendance: 62,
     progress: "Needs Improvement",
   },

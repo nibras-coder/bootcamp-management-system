@@ -1,9 +1,22 @@
 import { useState } from "react";
 import Sidebar from "../components/mentor/Sidebar";
 
-const topics = ["HTML/CSS", "JavaScript", "React", "Node.js", "Express.js", "MongoDB", "Git/GitHub"];
+const topics = [
+  "HTML/CSS",
+  "JavaScript",
+  "React",
+  "Node.js",
+  "Express.js",
+  "MongoDB",
+  "Git/GitHub",
+];
 
-const statusOptions = ["not_started", "in_progress", "completed", "needs_improvement"];
+const statusOptions = [
+  "not_started",
+  "in_progress",
+  "completed",
+  "needs_improvement",
+];
 
 const statusLabels = {
   not_started: "Not Started",
@@ -22,27 +35,27 @@ const statusColors = {
 const initialStudents = [
   {
     id: 1,
-    name: "Abel Tesfaye",
+    name: "Aya Esmael",
     progress: {
       "HTML/CSS": "completed",
-      "JavaScript": "completed",
-      "React": "in_progress",
+      JavaScript: "completed",
+      React: "in_progress",
       "Node.js": "not_started",
       "Express.js": "not_started",
-      "MongoDB": "not_started",
+      MongoDB: "not_started",
       "Git/GitHub": "completed",
     },
   },
   {
     id: 2,
-    name: "Mekdes Alemu",
+    name: "Meka Ali",
     progress: {
       "HTML/CSS": "completed",
-      "JavaScript": "needs_improvement",
-      "React": "not_started",
+      JavaScript: "needs_improvement",
+      React: "not_started",
       "Node.js": "not_started",
       "Express.js": "not_started",
-      "MongoDB": "not_started",
+      MongoDB: "not_started",
       "Git/GitHub": "in_progress",
     },
   },
@@ -50,7 +63,9 @@ const initialStudents = [
 
 function Progress() {
   const [students, setStudents] = useState(initialStudents);
-  const [selectedStudentId, setSelectedStudentId] = useState(initialStudents[0].id);
+  const [selectedStudentId, setSelectedStudentId] = useState(
+    initialStudents[0].id,
+  );
   const [note, setNote] = useState("");
 
   const selectedStudent = students.find((s) => s.id === selectedStudentId);
@@ -59,9 +74,12 @@ function Progress() {
     setStudents((prev) =>
       prev.map((student) =>
         student.id === selectedStudentId
-          ? { ...student, progress: { ...student.progress, [topic]: newStatus } }
-          : student
-      )
+          ? {
+              ...student,
+              progress: { ...student.progress, [topic]: newStatus },
+            }
+          : student,
+      ),
     );
   };
 
@@ -78,7 +96,9 @@ function Progress() {
 
       <main className="flex-1 p-8">
         <h1 className="text-2xl font-bold text-gray-900 mb-1">Progress</h1>
-        <p className="text-gray-500 text-sm mb-6">Track each student's progress by topic.</p>
+        <p className="text-gray-500 text-sm mb-6">
+          Track each student's progress by topic.
+        </p>
 
         {/* Student selector */}
         <div className="flex gap-2 mb-6">
@@ -108,12 +128,17 @@ function Progress() {
             </thead>
             <tbody>
               {topics.map((topic) => (
-                <tr key={topic} className="border-b border-gray-50 last:border-0">
+                <tr
+                  key={topic}
+                  className="border-b border-gray-50 last:border-0"
+                >
                   <td className="py-3 text-gray-800">{topic}</td>
                   <td className="py-3">
                     <select
                       value={selectedStudent.progress[topic]}
-                      onChange={(e) => handleStatusChange(topic, e.target.value)}
+                      onChange={(e) =>
+                        handleStatusChange(topic, e.target.value)
+                      }
                       className={`text-xs px-3 py-1.5 rounded-full border-0 ${statusColors[selectedStudent.progress[topic]]}`}
                     >
                       {statusOptions.map((option) => (
@@ -131,7 +156,9 @@ function Progress() {
 
         {/* Notes */}
         <div className="bg-white rounded-xl shadow-sm p-5">
-          <h3 className="font-semibold text-gray-800 mb-3">Add a Note for {selectedStudent.name}</h3>
+          <h3 className="font-semibold text-gray-800 mb-3">
+            Add a Note for {selectedStudent.name}
+          </h3>
           <textarea
             value={note}
             onChange={(e) => setNote(e.target.value)}
