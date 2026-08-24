@@ -2,6 +2,8 @@ const express = require("express");
 
 const {
   getStudentDashboard,
+  getStudentSchedule,
+  getStudentResources,
 } = require("../controllers/studentController");
 
 const {
@@ -32,6 +34,20 @@ router.get(
   protect,
   roleMiddleware("student"),
   getStudentDashboard
+);
+
+router.get(
+  "/schedule",
+  protect,
+  roleMiddleware("student"),
+  getStudentSchedule
+);
+
+router.get(
+  "/resources",
+  protect,
+  roleMiddleware("student"),
+  getStudentResources
 );
 
 router.get(

@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs");
 
 const userSchema = new mongoose.Schema(
   {
@@ -13,7 +14,7 @@ const userSchema = new mongoose.Schema(
       unique: true,
       lowercase: true,
       trim: true,
-      match: [/^\S+@\S+\.\S+$/, "Please provide a valid email"],
+      match: [/^\S+@astu\.edu\.et$/i, "Please use a valid ASTU email"],
     },
     password: {
       type: String,
@@ -29,18 +30,12 @@ const userSchema = new mongoose.Schema(
     batch: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Batch",
-      default: null
-    },
-    password: {
-      type: String,
-      required: true,
-      minlength: 6,
+      default: null,
     },
     resetPasswordToken: {
       type: String,
       default: null,
     },
-    
     resetPasswordExpires: {
       type: Date,
       default: null,
@@ -54,16 +49,15 @@ const userSchema = new mongoose.Schema(
         type: Boolean,
         default: true,
       },
-    
       announcementNotifications: {
         type: Boolean,
         default: true,
       },
-    
       assignmentNotifications: {
         type: Boolean,
         default: true,
       },
+    },
     gender: {
       type: String,
       enum: ["Male", "Female"],
@@ -85,35 +79,16 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
-    resetPasswordToken: {
-      type: String,
-      default: null,
-    },
-    
-    resetPasswordExpires: {
-      type: Date,
-      default: null,
-    },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
-// Hash password before saving
 userSchema.pre("save", async function () {
-  // If the password wasn't changed or is already hashed, skip
-  if (!this.isModified("password") || this.password.startsWith("$2")) {
-    return;
-  }
-  
-  // Scramble the password
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
+  if (!this.isModified("password") || this.password.startsWith("$2")) return;
+  this.password = await bcrypt.hash(this.password, 10);
 });
 
-// Compare password during login
-userSchema.methods.comparePassword = async function (candidatePassword) {
+userSchema.methods.comparePassword = function (candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
 

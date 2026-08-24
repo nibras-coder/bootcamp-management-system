@@ -1,5 +1,5 @@
-const Submission = require("../models/Submission");
-const Assignment = require("../models/Assignment");
+const Submission = require("../models/submission");
+const Assignment = require("../models/assignment");
 const User = require("../models/User");
 const Batch = require("../models/Batch");
 
