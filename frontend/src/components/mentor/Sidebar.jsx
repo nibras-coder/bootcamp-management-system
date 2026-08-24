@@ -15,15 +15,15 @@ import {
 } from "lucide-react";
 
 const navItems = [
-  { label: "Dashboard", icon: LayoutDashboard, path: "/mentor-dashboard" },
-  { label: "My Students", icon: Users, path: "/my-students" },
-  { label: "Attendance", icon: Calendar, path: "/attendance" },
-  { label: "Progress", icon: TrendingUp, path: "/progress" },
-  { label: "Assignments", icon: FileText, path: "/assignments" },
-  { label: "Grading", icon: Award, path: "/grading" },
-  { label: "Announcements", icon: Megaphone, path: "/announcements" },
-  { label: "Profile", icon: User, path: "/profile" },
-  { label: "Settings", icon: Settings, path: "/settings" },
+  { label: "Dashboard", icon: LayoutDashboard, path: "/mentor/dashboard" },
+  { label: "My Students", icon: Users, path: "/mentor/students" },
+  { label: "Attendance", icon: Calendar, path: "/mentor/attendance" },
+  { label: "Progress", icon: TrendingUp, path: "/mentor/progress" },
+  { label: "Assignments", icon: FileText, path: "/mentor/assignments" },
+  { label: "Grading", icon: Award, path: "/mentor/grading" },
+  { label: "Announcements", icon: Megaphone, path: "/mentor/announcements" },
+  { label: "Profile", icon: User, path: "/mentor/profile" },
+  { label: "Settings", icon: Settings, path: "/mentor/settings" },
 ];
 
 function Sidebar({ onClose }) {

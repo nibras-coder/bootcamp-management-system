@@ -27,6 +27,15 @@ const userSchema = new mongoose.Schema(
       enum: ["student", "mentor", "admin"],
       default: "student",
     },
+    gender: {
+     type: String,
+     enum: ["Male", "Female"],
+     default: null,
+    },
+    avatarUrl: {
+     type: String,
+     default: null,
+    },
     batch: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Batch",

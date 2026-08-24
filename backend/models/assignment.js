@@ -31,6 +31,11 @@ const assignmentSchema = new mongoose.Schema(
       required: true,
     },
 
+    startDate: {
+      type: Date,
+      required: true,
+    },
+
     deadline: {
       type: Date,
       required: true,
@@ -41,13 +46,28 @@ const assignmentSchema = new mongoose.Schema(
       required: true,
       min: 0,
     },
+
+    resourceLink: {
+      type: String,
+      trim: true,
+    },
+
+    attachment: {
+      fileName: {
+        type: String,
+        trim: true,
+      },
+      fileUrl: {
+        type: String,
+        trim: true,
+      },
+    },
   },
   {
     timestamps: true,
   }
 );
 
-module.exports = mongoose.model(
-  "Assignment",
-  assignmentSchema
-);
+module.exports =
+  mongoose.models.Assignment ||
+  mongoose.model("Assignment", assignmentSchema);

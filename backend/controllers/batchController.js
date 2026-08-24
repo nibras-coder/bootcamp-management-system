@@ -16,8 +16,7 @@ const createBatch = async (req, res) => {
     if (!name || !startDate) {
       return res.status(400).json({
         success: false,
-        message:
-          "Batch name and start date are required",
+        message: "Batch name and start date are required",
       });
     }
 
@@ -28,13 +27,10 @@ const createBatch = async (req, res) => {
         role: "mentor",
       });
 
-      if (
-        mentorUsers.length !== mentors.length
-      ) {
+      if (mentorUsers.length !== mentors.length) {
         return res.status(400).json({
           success: false,
-          message:
-            "One or more selected users are not mentors",
+          message: "One or more selected users are not mentors",
         });
       }
     }
@@ -47,11 +43,9 @@ const createBatch = async (req, res) => {
       mentors: mentors || [],
     });
 
-    const populatedBatch =
-      await Batch.findById(batch._id).populate(
-        "mentors",
-        "name email role"
-      );
+    const populatedBatch = await Batch.findById(
+      batch._id
+    ).populate("mentors", "name email role");
 
     res.status(201).json({
       success: true,
@@ -75,15 +69,13 @@ const createBatch = async (req, res) => {
     });
   }
 };
-// Get all batch
 
+
+// Get all batches
 const getBatches = async (req, res) => {
   try {
     const batches = await Batch.find()
-      .populate(
-        "mentors",
-        "name email role"
-      )
+      .populate("mentors", "name email role")
       .sort({ createdAt: -1 });
 
     res.status(200).json({
@@ -96,21 +88,47 @@ const getBatches = async (req, res) => {
 
     res.status(500).json({
       success: false,
-      message: "Failed to get Tracks",
+      message: "Failed to get batches",
       error: error.message,
     });
   }
 };
+
+
+// Get batches assigned to logged-in mentor
+const getMentorBatches = async (req, res) => {
+  try {
+    const mentorId = req.user.id;
+
+    const batches = await Batch.find({
+      mentors: mentorId,
+    })
+      .select("_id name track startDate endDate isActive mentors students")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      count: batches.length,
+      data: batches,
+    });
+  } catch (error) {
+    console.error("Get mentor batches error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to get mentor batches",
+      error: error.message,
+    });
+  }
+};
+
 // Get one batch
 
 const getBatchById = async (req, res) => {
   try {
     const batch = await Batch.findById(
       req.params.id
-    ).populate(
-      "mentors",
-      "name email role"
-    );
+    ).populate("mentors", "name email role");
 
     if (!batch) {
       return res.status(404).json({
@@ -124,10 +142,7 @@ const getBatchById = async (req, res) => {
       data: batch,
     });
   } catch (error) {
-    console.error(
-      "Get batch error:",
-      error
-    );
+    console.error("Get batch error:", error);
 
     res.status(500).json({
       success: false,
@@ -136,8 +151,9 @@ const getBatchById = async (req, res) => {
     });
   }
 };
-// Assign mentors to batch
 
+
+// Assign mentors to batch
 const assignMentors = async (req, res) => {
   try {
     const { mentors } = req.body;
@@ -145,8 +161,7 @@ const assignMentors = async (req, res) => {
     if (!Array.isArray(mentors)) {
       return res.status(400).json({
         success: false,
-        message:
-          "Mentors must be an array of user IDs",
+        message: "Mentors must be an array of user IDs",
       });
     }
 
@@ -155,13 +170,10 @@ const assignMentors = async (req, res) => {
       role: "mentor",
     });
 
-    if (
-      mentorUsers.length !== mentors.length
-    ) {
+    if (mentorUsers.length !== mentors.length) {
       return res.status(400).json({
         success: false,
-        message:
-          "One or more IDs do not belong to mentors",
+        message: "One or more IDs do not belong to mentors",
       });
     }
 
@@ -174,10 +186,7 @@ const assignMentors = async (req, res) => {
         new: true,
         runValidators: true,
       }
-    ).populate(
-      "mentors",
-      "name email role"
-    );
+    ).populate("mentors", "name email role");
 
     if (!batch) {
       return res.status(404).json({
@@ -188,31 +197,23 @@ const assignMentors = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message:
-        "Mentors assigned successfully",
+      message: "Mentors assigned successfully",
       data: batch,
     });
   } catch (error) {
-    console.error(
-      "Assign mentors error:",
-      error
-    );
+    console.error("Assign mentors error:", error);
 
     res.status(500).json({
       success: false,
-      message:
-        "Failed to assign mentors",
+      message: "Failed to assign mentors",
       error: error.message,
     });
   }
 };
 
-// Get batch student
 
-const getBatchStudents = async (
-  req,
-  res
-) => {
+// Get students in batch
+const getBatchStudents = async (req, res) => {
   try {
     const batch = await Batch.findById(
       req.params.id
@@ -238,23 +239,22 @@ const getBatchStudents = async (
       data: students,
     });
   } catch (error) {
-    console.error(
-      "Get batch students error:",
-      error
-    );
+    console.error("Get batch students error:", error);
 
     res.status(500).json({
       success: false,
-      message:
-        "Failed to get batch students",
+      message: "Failed to get batch students",
       error: error.message,
     });
   }
 };
 
+
+// Export controller
 module.exports = {
   createBatch,
   getBatches,
+  getMentorBatches,
   getBatchById,
   assignMentors,
   getBatchStudents,

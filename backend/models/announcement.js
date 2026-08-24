@@ -36,13 +36,27 @@ const announcementSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
+
+    // Students who have viewed this announcement
+    views: [
+      {
+        student: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
+
+        viewedAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
   },
   {
     timestamps: true,
   }
 );
 
-module.exports = mongoose.model(
-  "Announcement",
-  announcementSchema
-);
+module.exports =
+  mongoose.models.Announcement ||
+  mongoose.model("Announcement", announcementSchema);

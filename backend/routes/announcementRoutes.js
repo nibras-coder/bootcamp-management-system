@@ -14,13 +14,16 @@ const {
   createAnnouncement,
   getMentorAnnouncements,
   getAnnouncementById,
+  markAnnouncementAsViewed,
   updateAnnouncement,
   deleteAnnouncement,
 } = require(
   "../controllers/announcementController"
 );
 
-// Get mentor announcements
+// ==========================================
+// GET MENTOR ANNOUNCEMENTS
+// ==========================================
 router.get(
   "/",
   protect,
@@ -28,15 +31,9 @@ router.get(
   getMentorAnnouncements
 );
 
-// Get one announcement
-router.get(
-  "/:id",
-  protect,
-  authorize("mentor"),
-  getAnnouncementById
-);
-
-// Create announcement
+// ==========================================
+// CREATE ANNOUNCEMENT
+// ==========================================
 router.post(
   "/",
   protect,
@@ -44,7 +41,27 @@ router.post(
   createAnnouncement
 );
 
-// Update announcement
+// ==========================================
+// MARK ANNOUNCEMENT AS VIEWED
+// ==========================================
+router.post(
+  "/:id/view",
+  protect,
+  authorize("student"),
+  markAnnouncementAsViewed
+);
+
+// ==========================================
+// GET ONE ANNOUNCEMENT
+// ==========================================
+router.get(
+  "/:id",
+  protect,
+  authorize("mentor"),
+  getAnnouncementById
+);
+// UPDATE ANNOUNCEMENT
+
 router.put(
   "/:id",
   protect,
@@ -52,7 +69,9 @@ router.put(
   updateAnnouncement
 );
 
-// Delete announcement
+
+// DELETE ANNOUNCEMENT
+
 router.delete(
   "/:id",
   protect,

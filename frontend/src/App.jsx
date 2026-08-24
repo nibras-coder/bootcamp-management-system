@@ -51,7 +51,7 @@ const tracks = [
   },
   {
     slug: "mobile",
-    icon: "Γûú",
+    icon: "📱",
     name: "Mobile Development",
     desc: "Flutter, Dart and modern mobile tools.",
     details:
@@ -61,7 +61,7 @@ const tracks = [
   },
   {
     slug: "design",
-    icon: "Γùê",
+    icon: "🎨",
     name: "UI/UX Design",
     desc: "Design thinking, Figma and prototyping.",
     details:
@@ -71,7 +71,7 @@ const tracks = [
   },
   {
     slug: "data",
-    icon: "ΓûÑ",
+    icon: "📊",
     name: "Data Science",
     desc: "Python, machine learning and analysis.",
     details:
@@ -106,32 +106,32 @@ const steps = [
 
 const features = [
   [
-    "Γù╖",
+    "📅",
     "Attendance you can trust",
     "Every session is recorded so you always know where you stand.",
   ],
   [
-    "ΓÖº",
+    "👥",
     "Mentors beside you",
     "Small tracks with a dedicated mentor reviewing your work.",
   ],
   [
-    "ΓûÑ",
+    "📊",
     "Progress in the open",
     "Assignments, grades and milestones in one clear dashboard.",
   ],
   [
-    "ΓÖÖ",
+    "🏆",
     "Certificate on graduation",
     "Complete your capstone and earn a verified bootcamp certificate.",
   ],
   [
-    "Γûó",
+    "📚",
     "Free learning resources",
     "Curated notes, recordings and exercises for every track.",
   ],
   [
-    "ΓÖí",
+    "🤝",
     "A community that stays",
     "Study circles, alumni support and job-ready portfolio reviews.",
   ],
@@ -248,7 +248,7 @@ function Header() {
           onClick={() => setOpen((v) => !v)}
           aria-label="Toggle navigation"
         >
-          {open ? "Γö£├╣" : "╬ô├┐Γûæ"}
+          {open ? "✕" : "☰"}
         </button>
       </div>
     </header>
@@ -299,7 +299,7 @@ function Footer() {
           <Logo size={44} />
           <p>
             A centralized platform to manage bootcamp activities, track progress
-            and grow together ╬ô├ç├╢ run by Adama Science and Technology University
+            and grow together — run by Adama Science and Technology University
             Muslim Students Jemea.
           </p>
           <div className="socials">
@@ -339,7 +339,7 @@ function Footer() {
       </div>
       <div className="container footer-bottom">
         <span>Made by Nibras Coders</span>
-        <span>ASTU MSJ Bootcamp ╬ô├ç├╢ Learn. Build. Grow Together.</span>
+        <span>ASTU MSJ Bootcamp — Learn. Build. Grow Together.</span>
       </div>
     </footer>
   );
@@ -381,9 +381,9 @@ function Home() {
         <div className="hero-fade" />
         <div className="container hero-inner">
           <div className="hero-copy">
-            <div className="arabic text-gray-600">╪¿╪│┘à ╪º┘ä┘ä┘ç ╪º┘ä╪▒╪¡┘à┘å ╪º┘ä╪▒╪¡┘è┘à</div>
+            <div className="arabic text-gray-600">بسم الله الرحمن الرحيم</div>
             <div className="arabic-rule">
-              <span></span>█₧<span></span>
+              <span></span>۞<span></span>
             </div>
             <h1>
               Learn. Build.
@@ -489,7 +489,7 @@ function Home() {
             <div className="faq-item" key={q}>
               <button onClick={() => setFaqOpen(faqOpen === i ? null : i)}>
                 <span>{q}</span>
-                <b>{faqOpen === i ? "╬ô├¬├å" : "+"}</b>
+                <b>{faqOpen === i ? "−" : "+"}</b>
               </button>
               {faqOpen === i && <p>{a}</p>}
             </div>
@@ -577,6 +577,21 @@ function TracksPage() {
             </div>
             <Button href="/register">Register for this track</Button>
           </article>
+        ))}
+      </div>
+    </PageShell>
+  );
+}
+
+function MentorsPublicPage() {
+  return (
+    <PageShell
+      title="Meet our mentors"
+      intro="Brothers and sisters who volunteer their time and expertise to guide every track."
+    >
+      <div className="mentor-grid">
+        {mentors.map((m) => (
+          <MentorCard key={m.id} m={m} />
         ))}
       </div>
     </PageShell>
@@ -697,9 +712,9 @@ function ContactPage() {
         <div className="side-stack">
           <div className="soft-card">
             <h2>Reach us directly</h2>
-            <p>╬ô┬ú├½ hello@astumsj.org</p>
-            <p>╬ô├«├╗ ASTU Main Campus, Adama, Ethiopia</p>
-            <p>╬ôΓéº├▒ Telegram: @astumsj</p>
+            <p>hello@astumsj.org</p>
+            <p>ASTU Main Campus, Adama, Ethiopia</p>
+            <p>Telegram: @astumsj</p>
           </div>
           <div className="soft-card">
             <h2>Follow us</h2>
@@ -872,7 +887,7 @@ function App() {
         <Route element={<PublicLayout />}>
           <Route path="/" element={<Home />} />
           <Route path="/tracks" element={<TracksPage />} />
-          <Route path="/mentors" element={<MentorsPage />} />
+          <Route path="/mentors" element={<MentorsPublicPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
         </Route>
@@ -885,17 +900,20 @@ function App() {
         {/* Student Dashboard */}
         <Route path="/student-dashboard/*" element={<StudentDashboard />} />
 
-        {/* Dashboard */}
-        <Route path="/mentor-dashboard" element={<MentorDashboard />} />
-        {/* mystudents*/}
-        <Route path="/my-students" element={<MyStudents />} />
-        <Route path="/attendance" element={<Attendance />} />
-        <Route path="/progress" element={<Progress />} />
-        <Route path="/assignments" element={<Assignments />} />
-        <Route path="/grading" element={<Grading />} />
-        <Route path="/announcements" element={<Announcements />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/settings" element={<Settings />} />
+
+        {/* Mentor Routes */}
+        <Route path="/mentor" element={<Navigate to="/mentor/dashboard" replace />} />
+
+        <Route path="/mentor/dashboard" element={<MentorDashboard />} />
+        <Route path="/mentor/dashboard" element={<MentorDashboard />} />
+        <Route path="/mentor/students" element={<MyStudents />} />
+        <Route path="/mentor/attendance" element={<Attendance />} />
+        <Route path="/mentor/progress" element={<Progress />} />
+        <Route path="/mentor/assignments" element={<Assignments />} />
+        <Route path="/mentor/grading" element={<Grading />} />
+        <Route path="/mentor/announcements" element={<Announcements />} />
+        <Route path="/mentor/profile" element={<Profile />} />
+        <Route path="/mentor/settings" element={<Settings />} />
 
         {/* Admin Routes */}
         <Route path="/admin" element={<AdminLayout />}>

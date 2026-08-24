@@ -5,6 +5,7 @@ const verifyToken = async (req, res, next) => {
   try {
     let token;
 
+    // Check Authorization header
     if (
       req.headers.authorization &&
       req.headers.authorization.startsWith("Bearer")
@@ -12,6 +13,7 @@ const verifyToken = async (req, res, next) => {
       token = req.headers.authorization.split(" ")[1];
     }
 
+    // No token
     if (!token) {
       return res.status(401).json({
         success: false,
@@ -19,11 +21,17 @@ const verifyToken = async (req, res, next) => {
       });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    // Verify token
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET
+    );
 
-    // Select the user but hide the password for security
+    // Find user
+    // Password is hidden for security
     const user = await User.findById(decoded.id).select("-password");
-    
+
+    // User doesn't exist
     if (!user) {
       return res.status(401).json({
         success: false,
@@ -31,7 +39,7 @@ const verifyToken = async (req, res, next) => {
       });
     }
 
-    // Only block if explicitly set to false
+    // Check if account is deactivated
     if (user.isActive === false) {
       return res.status(403).json({
         success: false,
@@ -39,9 +47,19 @@ const verifyToken = async (req, res, next) => {
       });
     }
 
+    // Attach user to request
     req.user = user;
+
+    // Continue to controller
     next();
+
   } catch (error) {
+    // DEBUG: Show the real JWT error
+    console.error(
+      "JWT VERIFY ERROR:",
+      error.message
+    );
+
     return res.status(401).json({
       success: false,
       message: "Not authorized, token failed or expired",
@@ -49,8 +67,12 @@ const verifyToken = async (req, res, next) => {
   }
 };
 
+// ======================================================
+// ADMIN ONLY
+// ======================================================
+
 const isAdmin = (req, res, next) => {
-  if (req.user && req.user.role === 'admin') {
+  if (req.user && req.user.role === "admin") {
     next();
   } else {
     res.status(403).json({
@@ -60,17 +82,26 @@ const isAdmin = (req, res, next) => {
   }
 };
 
+// ======================================================
+// ROLE AUTHORIZATION
+// ======================================================
+
 const authorize = (...roles) => {
   return (req, res, next) => {
-    if (!roles.includes(req.user.role)) {
+    if (!req.user || !roles.includes(req.user.role)) {
       return res.status(403).json({
         success: false,
         message: "Access denied. You do not have permission.",
       });
     }
+
     next();
   };
 };
+
+// ======================================================
+// EXPORTS
+// ======================================================
 
 module.exports = {
   verifyToken,

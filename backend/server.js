@@ -1,7 +1,11 @@
+const dotenv = require("dotenv");
+
+dotenv.config();
+
 const express = require("express");
 const cors = require("cors");
-const dotenv = require("dotenv");
 const dns = require("dns");
+
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const mentorRoutes = require("./routes/mentorRoutes");
@@ -13,12 +17,11 @@ const announcementRoutes = require("./routes/announcementRoutes");
 const userRoutes = require("./routes/userRoutes");
 const batchRoutes = require("./routes/batchRoutes");
 
-dotenv.config();
-
 // Fix MongoDB SRV DNS resolution
 dns.setServers(["8.8.8.8", "1.1.1.1"]);
 
 const app = express();
+
 app.use(cors());
 app.use(express.json());
 
@@ -39,6 +42,7 @@ app.get("/", (req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
+
 connectDB().then(() => {
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
