@@ -16,14 +16,14 @@ const announcementSchema = new mongoose.Schema(
 
     targetAudience: {
       type: String,
-      enum: ["students", "mentors", "all"],
+      enum: ["students", "all"],
       default: "students",
     },
 
     batch: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Batch",
-      required: false,
+      required: true,
     },
 
     author: {
@@ -36,11 +36,6 @@ const announcementSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
-
-    readBy: [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User"
-    }],
   },
   {
     timestamps: true,

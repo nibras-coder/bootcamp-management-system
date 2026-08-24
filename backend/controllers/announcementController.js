@@ -434,15 +434,6 @@ const deleteAnnouncement = async (
   }
 };
 
-module.exports = {
-  createAnnouncement,
-  getMentorAnnouncements,
-  getAnnouncementById,
-  getMyAnnouncements,
-  updateAnnouncement,
-  deleteAnnouncement,
-};
-
 const markAnnouncementRead = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -479,9 +470,10 @@ const markAnnouncementRead = async (req, res) => {
 module.exports = {
   createAnnouncement,
   getMentorAnnouncements,
+  getAllAnnouncements,
   getAnnouncementById,
+  getMyAnnouncements,
   updateAnnouncement,
   deleteAnnouncement,
   markAnnouncementRead,
-  getAllAnnouncements,
 };
