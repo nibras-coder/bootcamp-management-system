@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -182,7 +182,7 @@ export default function StudentDashboard() {
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Progress Tracker */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8">
+         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8">
           <h2 className="text-lg font-bold text-gray-800 mb-4">
             Your Progress
           </h2>
@@ -203,6 +203,8 @@ export default function StudentDashboard() {
         </div>
 
         {/* Quick Attendance */}
+
+
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8 flex flex-col justify-center">
           <h2 className="text-lg font-bold text-gray-800 mb-2">
             My Attendance
@@ -224,7 +226,10 @@ export default function StudentDashboard() {
       </div>
 
       {/* Recent Assignments Preview */}
-      <div className="pt-4">
+
+
+      
+       <div className="pt-4">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold text-gray-900">
             Recent Assignments
@@ -360,7 +365,10 @@ export default function StudentDashboard() {
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden font-sans">
       {/* Mobile Header Menu Toggle */}
-      <div className="md:hidden absolute top-0 left-0 right-0 p-4 flex justify-between items-center z-40 bg-teal-900 text-white shadow-md">
+
+
+
+       <div className="md:hidden absolute top-0 left-0 right-0 p-4 flex justify-between items-center z-40 bg-teal-900 text-white shadow-md">
         <h1 className="text-lg font-bold tracking-tight">ASTU MSJ Bootcamp</h1>
         <button
           onClick={() => setIsMobileMenuOpen(true)}
@@ -371,7 +379,10 @@ export default function StudentDashboard() {
       </div>
 
       {/* Sidebar Overlay for Mobile */}
-      {isMobileMenuOpen && (
+
+
+      
+    {isMobileMenuOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-40 md:hidden"
           onClick={() => setIsMobileMenuOpen(false)}
@@ -379,7 +390,9 @@ export default function StudentDashboard() {
       )}
 
       {/* Solid Sidebar matching Admin/Mentor */}
-      <aside
+
+
+       <aside
         className={`
         fixed md:relative z-50 w-64 h-full flex flex-col justify-between transition-transform duration-300
         bg-teal-900 text-white shadow-xl
@@ -462,6 +475,10 @@ export default function StudentDashboard() {
       </aside>
 
       {/* Main Content Area */}
+
+
+
+      
       <main className="flex-1 overflow-y-auto bg-gray-50 p-6 md:p-8 pt-20 md:pt-8">
         <div className="max-w-6xl mx-auto pb-10">
           <header className="mb-8">
@@ -472,6 +489,8 @@ export default function StudentDashboard() {
           </header>
 
           {/* Dynamic Views */}
+
+        
           {activeTab === "overview" && <OverviewView />}
           {activeTab === "assignments" && <AssignmentsView />}
           {activeTab === "attendance" && <AttendanceView />}
@@ -479,6 +498,7 @@ export default function StudentDashboard() {
       </main>
 
       {/* Render Modals */}
+
       <SubmitModal />
       <FeedbackModal />
     </div>
