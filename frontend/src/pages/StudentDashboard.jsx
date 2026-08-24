@@ -1,486 +1,453 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
-  LayoutDashboard,
+  Bell,
+  CalendarCheck2,
+  Check,
+  CheckCircle2,
+  ChevronRight,
+  CircleAlert,
   FileText,
-  Calendar,
+  GraduationCap,
+  LayoutDashboard,
+  LogOut,
   Menu,
+  Megaphone,
+  Moon,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Settings,
+  Sun,
+  UserRound,
   X,
-  CheckCircle,
-  ExternalLink,
 } from "lucide-react";
+import API from "../api/axios";
+
+const navItems = [
+  { path: "/student-dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { path: "/student-dashboard/attendance", label: "My Attendance", icon: CalendarCheck2 },
+  { path: "/student-dashboard/progress", label: "My Progress", icon: GraduationCap },
+  { path: "/student-dashboard/assignments", label: "Assignments", icon: FileText },
+  { path: "/student-dashboard/grades", label: "Grades", icon: GraduationCap },
+  { path: "/student-dashboard/announcements", label: "Announcements", icon: Megaphone },
+  { path: "/student-dashboard/profile", label: "Profile", icon: UserRound },
+  { path: "/student-dashboard/settings", label: "Settings", icon: Settings },
+];
+
+const getTheme = () => localStorage.getItem("theme") || "light";
+
+const formatDate = (date) =>
+  new Date(date).toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+
+const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+function ThemeButton() {
+  const [theme, setTheme] = useState(getTheme);
+
+  useEffect(() => {
+    document.body.classList.toggle("dark-mode", theme === "dark");
+    localStorage.setItem("theme", theme);
+  }, [theme]);
+
+  return (
+    <button
+      className="theme-toggle"
+      type="button"
+      onClick={() => setTheme((value) => (value === "dark" ? "light" : "dark"))}
+      aria-label="Toggle dark mode"
+      title="Toggle dark mode"
+    >
+      {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+    </button>
+  );
+}
+
+function StudentSidebar({ mobileOpen, onClose, collapsed, onCollapse }) {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+  const logout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/login", { replace: true });
+  };
+
+  return (
+    <>
+      {mobileOpen && <button className="student-sidebar-backdrop" onClick={onClose} aria-label="Close menu" />}
+      <aside className={`student-sidebar ${mobileOpen ? "mobile-open" : ""} ${collapsed ? "collapsed" : ""}`}>
+        <div className="student-brand">
+          <div className="student-brand-mark"><GraduationCap size={24} /></div>
+          {!collapsed && (
+            <div>
+              <strong>ASTU MSJ</strong>
+              <span>Bootcamp System</span>
+            </div>
+          )}
+          <button className="student-mobile-close" onClick={onClose} aria-label="Close menu"><X size={20} /></button>
+        </div>
+
+        <nav className="student-nav">
+          {navItems.map(({ path, label, icon: Icon }) => {
+            const active = path === "/student-dashboard"
+              ? location.pathname === path
+              : location.pathname.startsWith(path);
+            return (
+              <button
+                key={path}
+                type="button"
+                className={`student-nav-item ${active ? "active" : ""}`}
+                title={collapsed ? label : undefined}
+                onClick={() => {
+                  navigate(path);
+                  onClose();
+                }}
+              >
+                <Icon size={19} />
+                {!collapsed && <span>{label}</span>}
+              </button>
+            );
+          })}
+        </nav>
+
+        <div className="student-sidebar-bottom">
+          <div className="student-user-mini">
+            <div className="student-avatar small">{(user.name || "S").charAt(0).toUpperCase()}</div>
+            {!collapsed && (
+              <div className="student-user-mini-text">
+                <strong>{user.name || "Student"}</strong>
+                <span>Student</span>
+              </div>
+            )}
+          </div>
+          <button className="student-nav-item logout" onClick={logout} title="Logout">
+            <LogOut size={19} />
+            {!collapsed && <span>Logout</span>}
+          </button>
+          <button className="student-collapse" onClick={onCollapse} title={collapsed ? "Expand sidebar" : "Collapse sidebar"}>
+            {collapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
+            {!collapsed && <span>Collapse menu</span>}
+          </button>
+        </div>
+      </aside>
+    </>
+  );
+}
+
+function StatCard({ title, value, label, icon: Icon, tone }) {
+  return (
+    <div className="student-stat-card">
+      <div className={`student-stat-icon ${tone}`}><Icon size={25} /></div>
+      <div className="student-stat-copy">
+        <span>{title}</span>
+        <strong>{value}</strong>
+        <small>{label}</small>
+      </div>
+    </div>
+  );
+}
+
+function SectionCard({ title, action, children, className = "" }) {
+  return (
+    <section className={`student-card ${className}`}>
+      <div className="student-card-head">
+        <h2>{title}</h2>
+        {action}
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function EmptyState({ text }) {
+  return <div className="student-empty">{text}</div>;
+}
 
 export default function StudentDashboard() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("overview");
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const location = useLocation();
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(localStorage.getItem("studentSidebarCollapsed") === "true");
+  const [selectedAssignment, setSelectedAssignment] = useState(null);
+  const [submitForm, setSubmitForm] = useState({ githubUrl: "", liveDemoUrl: "", notes: "" });
+  const [submitting, setSubmitting] = useState(false);
 
-  // Modal States
-  const [submitModalData, setSubmitModalData] = useState(null);
-  const [feedbackModalData, setFeedbackModalData] = useState(null);
-  const [submitUrl, setSubmitUrl] = useState("");
+  const user = useMemo(() => JSON.parse(localStorage.getItem("user") || "{}"), []);
 
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
-  const name = user.name || "Student";
+  useEffect(() => {
+    document.body.classList.add("student-app-body");
+    return () => document.body.classList.remove("student-app-body");
+  }, []);
 
-  // Mock Data
-  const progressScore = 85;
-  const attendanceHistory = "24/30 Days Attended";
-  const assignments = [
-    {
-      _id: "1",
-      title: "React Component Library",
-      deadline: "2026-08-25",
-      maxScore: 100,
-      status: "Pending",
-    },
-    {
-      _id: "2",
-      title: "Express REST API",
-      deadline: "2026-08-30",
-      maxScore: 100,
-      status: "Graded",
-      score: 95,
-      feedback:
-        "Excellent work! Great folder structure and proper error handling middleware.",
-    },
-    {
-      _id: "3",
-      title: "MongoDB Schema Design",
-      deadline: "2026-09-05",
-      maxScore: 100,
-      status: "Pending",
-    },
-  ];
+  useEffect(() => {
+    localStorage.setItem("studentSidebarCollapsed", String(collapsed));
+  }, [collapsed]);
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    navigate("/login");
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login", { replace: true });
+      return;
+    }
+
+    const loadDashboard = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const response = await API.get("/student/dashboard");
+        const payload = response.data?.data || response.data;
+        setData(payload);
+        if (payload.student) {
+          localStorage.setItem("user", JSON.stringify({
+            ...user,
+            id: payload.student._id || payload.student.id,
+            name: payload.student.name,
+            email: payload.student.email,
+            role: payload.student.role,
+          }));
+        }
+      } catch (err) {
+        if (err.response?.status === 401 || err.response?.status === 403) {
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          navigate("/login", { replace: true });
+          return;
+        }
+        setError(err.response?.data?.message || "Unable to load your dashboard.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadDashboard();
+  }, [navigate, user]);
+
+  const refresh = async () => {
+    const response = await API.get("/student/dashboard");
+    setData(response.data?.data || response.data);
   };
 
-  const navItems = [
-    { id: "overview", label: "Overview", icon: LayoutDashboard },
-    { id: "assignments", label: "Assignments", icon: FileText },
-    { id: "attendance", label: "My Attendance", icon: Calendar },
-  ];
+  const submitAssignment = async (event) => {
+    event.preventDefault();
+    if (!selectedAssignment) return;
+    setSubmitting(true);
+    try {
+      await API.post("/submissions", {
+        assignment: selectedAssignment._id,
+        githubUrl: submitForm.githubUrl,
+        liveDemoUrl: submitForm.liveDemoUrl,
+        notes: submitForm.notes,
+      });
+      setSelectedAssignment(null);
+      setSubmitForm({ githubUrl: "", liveDemoUrl: "", notes: "" });
+      await refresh();
+    } catch (err) {
+      setError(err.response?.data?.message || "Could not submit the assignment.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
-  // --- Sub-Components --- //
+  const stats = data?.stats || {};
+  const progress = data?.progressOverview || [];
+  const upcoming = data?.upcomingAssignments || [];
+  const announcements = data?.recentAnnouncements || [];
+  const attendance = data?.attendanceThisWeek || [];
 
-  const SubmitModal = () => {
-    if (!submitModalData) return null;
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/50">
-        <div className="bg-white p-6 md:p-8 rounded-xl shadow-xl w-full max-w-md">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-xl font-bold text-gray-900">
-              Submit Assignment
-            </h3>
-            <button
-              onClick={() => setSubmitModalData(null)}
-              className="text-gray-400 hover:text-gray-600 transition"
-            >
-              <X size={24} />
-            </button>
-          </div>
-          <p className="text-gray-600 text-sm mb-6">
-            Submitting work for:{" "}
-            <span className="font-bold text-gray-900">
-              {submitModalData.title}
-            </span>
-          </p>
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Project / GitHub URL
-            </label>
-            <input
-              type="url"
-              value={submitUrl}
-              onChange={(e) => setSubmitUrl(e.target.value)}
-              placeholder="https://github.com/..."
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-            />
-          </div>
-          <div className="flex gap-4">
-            <button
-              onClick={() => {
-                alert(`Successfully submitted ${submitUrl}!`);
-                setSubmitUrl("");
-                setSubmitModalData(null);
-              }}
-              className="flex-1 bg-teal-800 hover:bg-teal-900 text-white font-medium py-2 px-4 rounded-lg transition-colors"
-            >
-              Submit Work
-            </button>
-            <button
-              onClick={() => setSubmitModalData(null)}
-              className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-2 px-4 rounded-lg transition-colors"
-            >
-              Cancel
-            </button>
-          </div>
+  const weeklyAttendance = days.map((day) => {
+    const target = new Date();
+    const today = target.getDay();
+    const mondayOffset = today === 0 ? -6 : 1 - today;
+    const dayIndex = days.indexOf(day);
+    target.setDate(target.getDate() + mondayOffset + dayIndex);
+    target.setHours(0, 0, 0, 0);
+    const record = attendance.find((item) => {
+      const d = new Date(item.date);
+      d.setHours(0, 0, 0, 0);
+      return d.getTime() === target.getTime();
+    });
+    return { day, record };
+  });
+
+  const renderPage = () => {
+    if (location.pathname === "/student-dashboard") return <DashboardOverview />;
+    if (location.pathname.includes("/assignments")) return <AssignmentsPage />;
+    if (location.pathname.includes("/attendance")) return <AttendancePage />;
+    if (location.pathname.includes("/progress")) return <ProgressPage />;
+    if (location.pathname.includes("/grades")) return <GradesPage />;
+    if (location.pathname.includes("/announcements")) return <AnnouncementsPage />;
+    if (location.pathname.includes("/profile")) return <ProfilePage />;
+    if (location.pathname.includes("/settings")) return <SettingsPage />;
+    return <DashboardOverview />;
+  };
+
+  const DashboardOverview = () => (
+    <>
+      <div className="student-page-heading">
+        <div>
+          <h1>Student Dashboard</h1>
+          <p>Welcome back, {data?.student?.name || user.name || "Student"}! Keep up the great work.</p>
+        </div>
+        <div className="student-heading-actions">
+          <ThemeButton />
+          <button className="student-notification" title="Notifications"><Bell size={21} /><span>{announcements.length}</span></button>
         </div>
       </div>
-    );
-  };
 
-  const FeedbackModal = () => {
-    if (!feedbackModalData) return null;
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/50">
-        <div className="bg-white p-6 md:p-8 rounded-xl shadow-xl w-full max-w-md">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-xl font-bold flex items-center gap-2 text-gray-900">
-              <CheckCircle className="text-teal-600" size={20} /> Graded
-            </h3>
-            <button
-              onClick={() => setFeedbackModalData(null)}
-              className="text-gray-400 hover:text-gray-600 transition"
-            >
-              <X size={24} />
-            </button>
-          </div>
-          <h4 className="text-lg font-semibold text-gray-800 mb-4">
-            {feedbackModalData.title}
-          </h4>
-
-          <div className="my-6 p-4 bg-gray-50 rounded-lg border border-gray-100 text-center">
-            <p className="text-sm text-gray-500 uppercase tracking-wider mb-1">
-              Final Score
-            </p>
-            <p className="text-4xl font-black text-teal-700">
-              {feedbackModalData.score}{" "}
-              <span className="text-xl text-gray-400">
-                / {feedbackModalData.maxScore}
-              </span>
-            </p>
-          </div>
-
-          <div className="mb-8">
-            <p className="text-sm text-gray-500 uppercase tracking-wider mb-2">
-              Mentor Comments
-            </p>
-            <p className="text-gray-700 leading-relaxed p-4 bg-gray-50 rounded-lg border border-gray-100 italic">
-              "{feedbackModalData.feedback}"
-            </p>
-          </div>
-
-          <button
-            onClick={() => setFeedbackModalData(null)}
-            className="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-2 px-4 rounded-lg transition-colors"
-          >
-            Close
-          </button>
-        </div>
+      <div className="student-stats-grid">
+        <StatCard title="Attendance" value={`${stats.attendance || 0}%`} label={stats.attendance >= 75 ? "Good" : "Needs attention"} icon={CalendarCheck2} tone="teal" />
+        <StatCard title="Overall Progress" value={`${stats.progress || 0}%`} label={stats.progress >= 60 ? "On Track" : "Keep going"} icon={GraduationCap} tone="green" />
+        <StatCard title="Assignments" value={stats.assignments || 0} label={`${stats.pendingAssignments || 0} Pending`} icon={FileText} tone="purple" />
+        <StatCard title="Average Grade" value={`${stats.averageGrade || 0}%`} label={stats.averageGrade >= 80 ? "Very Good" : "Keep improving"} icon={GraduationCap} tone="gold" />
       </div>
-    );
-  };
 
-  // --- Views --- //
-
-  const OverviewView = () => (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Progress Tracker */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8">
-          <h2 className="text-lg font-bold text-gray-800 mb-4">
-            Your Progress
-          </h2>
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-600">
-              Completion
-            </span>
-            <span className="text-2xl font-bold text-teal-700">
-              {progressScore}%
-            </span>
-          </div>
-          <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-            <div
-              className="bg-teal-600 h-full rounded-full transition-all duration-1000 ease-out"
-              style={{ width: `${progressScore}%` }}
-            ></div>
-          </div>
-        </div>
-
-        {/* Quick Attendance */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8 flex flex-col justify-center">
-          <h2 className="text-lg font-bold text-gray-800 mb-2">
-            My Attendance
-          </h2>
-          <p className="text-sm font-medium text-gray-500 mb-4">
-            Overall History
-          </p>
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-teal-50 rounded-lg text-teal-600">
-              <CheckCircle size={28} />
+      <div className="student-content-grid">
+        <SectionCard title="Progress Overview" action={<button className="student-view-btn" onClick={() => navigate("/student-dashboard/progress")}>View All <ChevronRight size={15} /></button>}>
+          {progress.length ? (
+            <div className="progress-list">
+              {progress.slice(0, 6).map((item) => (
+                <div className="progress-row" key={String(item.id || item._id || item.topic)}>
+                  <div className="progress-row-top"><span>{item.topic}</span><strong>{item.value || 0}%</strong></div>
+                  <div className="progress-track"><div style={{ width: `${Math.min(100, Math.max(0, item.value || 0))}%` }} /></div>
+                </div>
+              ))}
             </div>
-            <div>
-              <span className="text-2xl font-bold text-gray-900">
-                {attendanceHistory}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
+          ) : <EmptyState text="No progress has been recorded yet." />}
+        </SectionCard>
 
-      {/* Recent Assignments Preview */}
-      <div className="pt-4">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-gray-900">
-            Recent Assignments
-          </h2>
-          <button
-            onClick={() => setActiveTab("assignments")}
-            className="text-sm font-medium text-teal-600 hover:text-teal-800 transition flex items-center gap-1"
-          >
-            View All <ExternalLink size={16} />
-          </button>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {assignments.slice(0, 3).map((assignment) => (
-            <div
-              key={assignment._id}
-              className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col justify-between hover:shadow-md transition-shadow"
-            >
-              <div>
-                <span
-                  className={`text-xs font-semibold px-2.5 py-1 rounded-md mb-4 inline-block ${
-                    assignment.status === "Graded"
-                      ? "bg-teal-50 text-teal-700"
-                      : "bg-orange-50 text-orange-600"
-                  }`}
-                >
-                  {assignment.status}
-                </span>
-                <h3 className="font-bold text-gray-900 mb-1">
-                  {assignment.title}
-                </h3>
-                <p className="text-sm text-gray-500 mb-6">
-                  Due: {new Date(assignment.deadline).toLocaleDateString()}
-                </p>
+        <SectionCard title="Upcoming Assignments" action={<button className="student-view-btn" onClick={() => navigate("/student-dashboard/assignments")}>View All <ChevronRight size={15} /></button>}>
+          {upcoming.length ? (
+            <div className="assignment-list compact">
+              {upcoming.slice(0, 4).map((assignment) => {
+                const daysLeft = Math.ceil((new Date(assignment.deadline) - new Date()) / 86400000);
+                const urgent = daysLeft <= 2;
+                return (
+                  <button className="assignment-row" key={assignment._id} onClick={() => setSelectedAssignment(assignment)}>
+                    <span className="assignment-row-icon"><FileText size={18} /></span>
+                    <span className="assignment-row-info"><strong>{assignment.title}</strong><small>Due: {formatDate(assignment.deadline)}</small></span>
+                    <span className={`deadline-badge ${urgent ? "urgent" : ""}`}>{daysLeft <= 0 ? "Due today" : `${daysLeft} Days Left`}</span>
+                  </button>
+                );
+              })}
+            </div>
+          ) : <EmptyState text="No upcoming assignments." />}
+        </SectionCard>
+
+        <SectionCard title="Recent Announcements" action={<button className="student-view-btn" onClick={() => navigate("/student-dashboard/announcements")}>View All <ChevronRight size={15} /></button>}>
+          {announcements.length ? (
+            <div className="announcement-list">
+              {announcements.slice(0, 3).map((item) => (
+                <div className="announcement-row" key={item._id}>
+                  <span className="announcement-icon"><Megaphone size={16} /></span>
+                  <div><strong>{item.title}</strong><p>{item.content}</p></div>
+                  <small>{formatDate(item.publishDate || item.createdAt)}</small>
+                </div>
+              ))}
+            </div>
+          ) : <EmptyState text="No announcements yet." />}
+        </SectionCard>
+
+        <SectionCard title="Attendance This Week">
+          <div className="weekly-attendance">
+            {weeklyAttendance.map(({ day, record }) => (
+              <div className="weekly-day" key={day}>
+                <span>{day}</span>
+                <div className={`weekly-status ${record?.status?.toLowerCase() || "not-marked"}`}>
+                  {record?.status === "Present" || record?.status === "Late" ? <Check size={20} /> : record?.status === "Absent" ? <X size={19} /> : <span>—</span>}
+                </div>
               </div>
-              <button
-                onClick={() =>
-                  assignment.status === "Graded"
-                    ? setFeedbackModalData(assignment)
-                    : setSubmitModalData(assignment)
-                }
-                className={`w-full font-medium py-2 px-4 rounded-lg transition-colors ${
-                  assignment.status === "Graded"
-                    ? "bg-gray-100 hover:bg-gray-200 text-gray-800"
-                    : "bg-teal-800 hover:bg-teal-900 text-white"
-                }`}
-              >
-                {assignment.status === "Graded"
-                  ? "View Feedback"
-                  : "Submit Work"}
-              </button>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-
-  const AssignmentsView = () => (
-    <div>
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">All Assignments</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {assignments.map((assignment) => (
-          <div
-            key={assignment._id}
-            className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col justify-between hover:shadow-md transition-shadow"
-          >
-            <div>
-              <div className="flex justify-between items-start mb-3">
-                <span
-                  className={`text-xs font-semibold px-2.5 py-1 rounded-md ${
-                    assignment.status === "Graded"
-                      ? "bg-teal-50 text-teal-700"
-                      : "bg-orange-50 text-orange-600"
-                  }`}
-                >
-                  {assignment.status}
-                </span>
-                <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded-md">
-                  Max: {assignment.maxScore}
-                </span>
-              </div>
-              <h3 className="font-bold text-gray-900 mb-1">
-                {assignment.title}
-              </h3>
-              <p className="text-sm text-gray-500 mb-6 flex items-center gap-1.5">
-                <Calendar size={14} />{" "}
-                {new Date(assignment.deadline).toLocaleDateString()}
-              </p>
-            </div>
-            <button
-              onClick={() =>
-                assignment.status === "Graded"
-                  ? setFeedbackModalData(assignment)
-                  : setSubmitModalData(assignment)
-              }
-              className={`w-full font-medium py-2 px-4 rounded-lg transition-colors ${
-                assignment.status === "Graded"
-                  ? "bg-gray-100 hover:bg-gray-200 text-gray-800"
-                  : "bg-teal-800 hover:bg-teal-900 text-white"
-              }`}
-            >
-              {assignment.status === "Graded" ? "View Feedback" : "Submit Work"}
-            </button>
+            ))}
           </div>
-        ))}
+          <div className="attendance-legend">
+            <span><i className="present" /> Present</span>
+            <span><i className="absent" /> Absent</span>
+            <span><i className="not-marked" /> Not Marked</span>
+          </div>
+        </SectionCard>
       </div>
-    </div>
+    </>
   );
 
-  const AttendanceView = () => (
-    <div>
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">
-        Attendance History
-      </h2>
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 md:p-12 text-center max-w-3xl mx-auto">
-        <div className="inline-block p-4 bg-teal-50 rounded-full mb-4 text-teal-600">
-          <Calendar size={40} />
-        </div>
-        <h3 className="text-2xl font-bold text-gray-900 mb-2">
-          You've attended 24 out of 30 days.
-        </h3>
-        <p className="text-gray-500 mb-8 max-w-lg mx-auto">
-          Your overall attendance rate is 80%. Keep showing up to ensure you
-          don't fall behind on the coursework!
-        </p>
-        <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden max-w-md mx-auto">
-          <div className="bg-teal-600 h-full rounded-full w-4/5"></div>
-        </div>
+  const AssignmentsPage = () => (
+    <PageSection title="Assignments" subtitle="View deadlines, submit your work, and review feedback.">
+      <div className="student-full-list">
+        {(data?.assignments || []).length ? data.assignments.map((assignment) => (
+          <div className="student-list-card" key={assignment._id}>
+            <div className="list-card-icon"><FileText size={20} /></div>
+            <div className="list-card-main"><h3>{assignment.title}</h3><p>{assignment.description}</p><small>Due {formatDate(assignment.deadline)} · Max score {assignment.maxScore}</small></div>
+            <span className={`status-pill ${assignment.status.toLowerCase().replaceAll(" ", "-")}`}>{assignment.status}</span>
+            <button className="student-primary-btn" onClick={() => assignment.status === "Graded" ? setSelectedAssignment(assignment) : setSelectedAssignment(assignment)}>{assignment.status === "Graded" ? "View feedback" : "Submit"}</button>
+          </div>
+        )) : <EmptyState text="No assignments are available for your batch." />}
       </div>
-    </div>
+    </PageSection>
   );
+
+  const AttendancePage = () => (
+    <PageSection title="My Attendance" subtitle="Your attendance records and current percentage.">
+      <div className="attendance-summary"><div><span>Attendance</span><strong>{stats.attendance || 0}%</strong></div><div><span>Present</span><strong>{stats.attendedSessions || 0}</strong></div><div><span>Total Sessions</span><strong>{stats.totalSessions || 0}</strong></div></div>
+      <div className="student-full-list">
+        {(data?.attendanceThisWeek || []).length ? data.attendanceThisWeek.map((item) => <div className="student-list-card" key={item.date}><div className="list-card-icon"><CalendarCheck2 size={20} /></div><div className="list-card-main"><h3>{formatDate(item.date)}</h3><p>Attendance status for this session</p></div><span className={`status-pill ${item.status.toLowerCase()}`}>{item.status}</span></div>) : <EmptyState text="No attendance records have been returned yet." />}
+      </div>
+    </PageSection>
+  );
+
+  const ProgressPage = () => (
+    <PageSection title="My Progress" subtitle="Track your learning progress by topic.">
+      <div className="progress-detail-grid">{progress.length ? progress.map((item) => <div className="progress-detail-card" key={String(item.id || item._id || item.topic)}><div className="progress-row-top"><strong>{item.topic}</strong><strong>{item.value || 0}%</strong></div><div className="progress-track"><div style={{ width: `${item.value || 0}%` }} /></div><small>{item.status}</small></div>) : <EmptyState text="Your mentor has not added progress yet." />}</div>
+    </PageSection>
+  );
+
+  const GradesPage = () => {
+    const graded = (data?.assignments || []).filter((item) => item.status === "Graded");
+    return <PageSection title="Grades" subtitle="Your graded assignments and mentor feedback."><div className="student-full-list">{graded.length ? graded.map((item) => <div className="student-list-card" key={item._id}><div className="list-card-icon gold"><GraduationCap size={20} /></div><div className="list-card-main"><h3>{item.title}</h3><p>{item.feedback || "No feedback provided."}</p></div><strong className="grade-value">{item.score}/{item.maxScore}</strong></div>) : <EmptyState text="No graded assignments yet." />}</div></PageSection>;
+  };
+
+  const AnnouncementsPage = () => <PageSection title="Announcements" subtitle="Important updates from your bootcamp team."><div className="student-full-list">{announcements.length ? announcements.map((item) => <div className="student-list-card" key={item._id}><div className="list-card-icon"><Megaphone size={20} /></div><div className="list-card-main"><h3>{item.title}</h3><p>{item.content}</p><small>{formatDate(item.publishDate || item.createdAt)}</small></div></div>) : <EmptyState text="No announcements yet." />}</div></PageSection>;
+
+  const ProfilePage = () => <PageSection title="Profile" subtitle="Your bootcamp account information."><div className="profile-panel"><div className="student-avatar large">{(data?.student?.name || user.name || "S").charAt(0).toUpperCase()}</div><div><h2>{data?.student?.name || user.name}</h2><p>{data?.student?.email || user.email}</p><span>{data?.student?.batch?.name || "No batch assigned yet"}</span></div></div></PageSection>;
+
+  const SettingsPage = () => <PageSection title="Settings" subtitle="Manage your dashboard preferences."><div className="settings-panel"><div><strong>Dark mode</strong><p>Use the theme button in the top-right corner to switch between light and dark mode.</p></div><ThemeButton /></div></PageSection>;
+
+  const PageSection = ({ title, subtitle, children }) => <><div className="student-page-heading"><div><h1>{title}</h1><p>{subtitle}</p></div><div className="student-heading-actions"><ThemeButton /></div></div>{children}</>;
+
+  if (loading) {
+    return <div className="student-loading-screen"><div className="student-spinner" /><p>Loading your dashboard...</p></div>;
+  }
+
+  if (error && !data) {
+    return <div className="student-loading-screen"><CircleAlert size={42} /><h2>Something went wrong</h2><p>{error}</p><button className="student-primary-btn" onClick={() => window.location.reload()}>Try again</button></div>;
+  }
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden font-sans">
-      {/* Mobile Header Menu Toggle */}
-      <div className="md:hidden absolute top-0 left-0 right-0 p-4 flex justify-between items-center z-40 bg-teal-900 text-white shadow-md">
-        <h1 className="text-lg font-bold tracking-tight">ASTU MSJ Bootcamp</h1>
-        <button
-          onClick={() => setIsMobileMenuOpen(true)}
-          className="p-2 hover:bg-teal-800 rounded-lg"
-        >
-          <Menu size={24} />
-        </button>
-      </div>
-
-      {/* Sidebar Overlay for Mobile */}
-      {isMobileMenuOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40 md:hidden"
-          onClick={() => setIsMobileMenuOpen(false)}
-        ></div>
-      )}
-
-      {/* Solid Sidebar matching Admin/Mentor */}
-      <aside
-        className={`
-        fixed md:relative z-50 w-64 h-full flex flex-col justify-between transition-transform duration-300
-        bg-teal-900 text-white shadow-xl
-        ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
-      `}
-      >
-        <div>
-          <div className="p-6 border-b border-teal-800 flex items-center justify-between md:justify-start gap-3">
-            <div>
-              <h1 className="font-bold text-lg leading-tight">ASTU MSJ</h1>
-              <p className="text-xs text-teal-300">Bootcamp System</p>
-            </div>
-            <button
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="md:hidden text-teal-200 hover:text-white p-1"
-            >
-              <X size={20} />
-            </button>
-          </div>
-
-          <nav className="p-4 space-y-1">
-            {navItems.map((item) => {
-              const isActive = activeTab === item.id;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => {
-                    setActiveTab(item.id);
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className={`w-full flex items-center gap-3 px-3 py-2 rounded text-sm transition-colors ${
-                    isActive
-                      ? "bg-teal-800 text-white font-semibold border-l-4 border-white"
-                      : "text-teal-100 hover:bg-teal-800/50"
-                  }`}
-                >
-                  <item.icon
-                    size={18}
-                    className={isActive ? "text-white" : "text-teal-300"}
-                  />
-                  {item.label}
-                </button>
-              );
-            })}
-          </nav>
-        </div>
-
-        <div className="p-4 border-t border-teal-800">
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-2 py-2 text-red-500 text-sm font-medium hover:bg-teal-800/50 rounded transition-colors mb-2"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-              <polyline points="16 17 21 12 16 7"></polyline>
-              <line x1="21" y1="12" x2="9" y2="12"></line>
-            </svg>
-            Logout
-          </button>
-          <div className="flex items-center gap-3 mt-2 px-2">
-            <div className="w-9 h-9 rounded-full bg-teal-700 flex items-center justify-center text-white font-bold">
-              {name.charAt(0).toUpperCase()}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white truncate">{name}</p>
-              <p className="text-xs text-teal-300">Student</p>
-            </div>
-          </div>
-        </div>
-      </aside>
-
-      {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto bg-gray-50 p-6 md:p-8 pt-20 md:pt-8">
-        <div className="max-w-6xl mx-auto pb-10">
-          <header className="mb-8">
-            <h1 className="text-2xl font-bold text-gray-900 mb-1">Dashboard</h1>
-            <p className="text-gray-500 text-sm">
-              Welcome back, {name}. Here is your current progress.
-            </p>
-          </header>
-
-          {/* Dynamic Views */}
-          {activeTab === "overview" && <OverviewView />}
-          {activeTab === "assignments" && <AssignmentsView />}
-          {activeTab === "attendance" && <AttendanceView />}
-        </div>
+    <div className={`student-app ${collapsed ? "sidebar-collapsed" : ""}`}>
+      <StudentSidebar mobileOpen={mobileOpen} onClose={() => setMobileOpen(false)} collapsed={collapsed} onCollapse={() => setCollapsed((v) => !v)} />
+      <main className="student-main">
+        <button className="student-mobile-menu" onClick={() => setMobileOpen(true)} aria-label="Open menu"><Menu size={22} /></button>
+        {error && <div className="student-error-banner">{error}</div>}
+        {renderPage()}
       </main>
 
-      {/* Render Modals */}
-      <SubmitModal />
-      <FeedbackModal />
+      {selectedAssignment && (
+        <div className="student-modal-backdrop" onMouseDown={() => setSelectedAssignment(null)}>
+          <div className="student-modal" onMouseDown={(e) => e.stopPropagation()}>
+            <div className="student-modal-head"><div><span>Assignment</span><h2>{selectedAssignment.title}</h2></div><button onClick={() => setSelectedAssignment(null)}><X size={20} /></button></div>
+            {selectedAssignment.status === "Graded" ? (
+              <div className="feedback-content"><div className="grade-big">{selectedAssignment.score}/{selectedAssignment.maxScore}</div><p>{selectedAssignment.feedback || "No feedback was added."}</p><a href={selectedAssignment.submission?.githubUrl} target="_blank" rel="noreferrer">View GitHub submission</a></div>
+            ) : (
+              <form onSubmit={submitAssignment} className="submit-form"><p>{selectedAssignment.description}</p><label>GitHub repository URL<input required type="url" value={submitForm.githubUrl} onChange={(e) => setSubmitForm({ ...submitForm, githubUrl: e.target.value })} placeholder="https://github.com/..." /></label><label>Live demo URL <span>(optional)</span><input type="url" value={submitForm.liveDemoUrl} onChange={(e) => setSubmitForm({ ...submitForm, liveDemoUrl: e.target.value })} placeholder="https://..." /></label><label>Notes <span>(optional)</span><textarea rows="3" value={submitForm.notes} onChange={(e) => setSubmitForm({ ...submitForm, notes: e.target.value })} placeholder="Add a short note for your mentor" /></label><button className="student-primary-btn" disabled={submitting}>{submitting ? "Submitting..." : "Submit Work"}</button></form>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
