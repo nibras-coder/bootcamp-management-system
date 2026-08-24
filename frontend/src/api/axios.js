@@ -1,8 +1,10 @@
 import axios from "axios";
 
-// In development this uses Vite's `/api` proxy.  In production set
-// VITE_API_URL to the public backend URL, including the `/api` path.
-const baseURL = (import.meta.env.VITE_API_URL || "/api").replace(/\/$/, "");
+let baseURL = import.meta.env.VITE_API_URL || "/api";
+baseURL = baseURL.replace(/\/$/, "");
+if (!baseURL.endsWith("/api")) {
+  baseURL += "/api";
+}
 
 const API = axios.create({
   baseURL,

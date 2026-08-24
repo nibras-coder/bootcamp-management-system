@@ -31,7 +31,7 @@ const getUserById = asyncHandler(async (req, res) => {
 });
 
 const createUser = asyncHandler(async (req, res) => {
-  const { name, fullName, email, password, role, batch } = req.body;
+  const { name, fullName, email, password, role, batch, mentorRole, expertise, phone, isActive, gender } = req.body;
   const userName = name || fullName;
 
   if (!userName || !email || !password || !role) {
@@ -50,6 +50,11 @@ const createUser = asyncHandler(async (req, res) => {
     password,
     role,
     batch: batch || null,
+    mentorRole,
+    expertise,
+    phone,
+    isActive: isActive !== undefined ? isActive : true,
+    gender
   });
 
   res.status(201).json({
@@ -63,7 +68,7 @@ const createUser = asyncHandler(async (req, res) => {
 });
 
 const updateUser = asyncHandler(async (req, res) => {
-  const { name, fullName, email, role, batch } = req.body;
+  const { name, fullName, email, role, batch, mentorRole, expertise, phone, isActive, gender } = req.body;
   const user = await User.findById(req.params.id);
   if (!user) return res.status(404).json({ success: false, message: "User not found" });
 
@@ -89,6 +94,12 @@ const updateUser = asyncHandler(async (req, res) => {
   if (batch !== undefined) {
     user.batch = batch;
   }
+  
+  if (mentorRole !== undefined) user.mentorRole = mentorRole;
+  if (expertise !== undefined) user.expertise = expertise;
+  if (phone !== undefined) user.phone = phone;
+  if (isActive !== undefined) user.isActive = isActive;
+  if (gender !== undefined) user.gender = gender;
 
   await user.save();
 

@@ -27,16 +27,8 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 const corsOptions = {
   origin: function (origin, callback) {
-    const allowedOrigins = [
-      process.env.FRONTEND_URL,
-      "http://localhost:5173",
-      "http://localhost:5174",
-    ];
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
+    // Reflect the request origin back to allow credentials without using '*'
+    callback(null, origin || true);
   },
   credentials: true,
 };
