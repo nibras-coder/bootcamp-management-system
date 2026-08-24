@@ -40,10 +40,7 @@ const createUser = asyncHandler(async (req, res) => {
       message: "Missing required fields",
     });
   }
-  const existing = await User.findOne({
-    email: email.toLowerCase(),
-  });
-
+  
   const existing = await User.findOne({ email: email.toLowerCase().trim() });
   if (existing) return res.status(400).json({ success: false, message: "Email already in use" });
 
