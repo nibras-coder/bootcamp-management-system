@@ -14,7 +14,7 @@ const statusColors = {
   present: "bg-teal-50 text-teal-700",
   absent: "bg-red-50 text-red-600",
   late: "bg-orange-50 text-orange-500",
-  excused: "bg-gray-100 text-gray-600",
+  excused: "bg-gray-100 text-gray-600 dark:text-gray-300",
 };
 
 function Attendance() {
@@ -44,7 +44,7 @@ function Attendance() {
       <main className="flex-1 p-8">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Attendance</h1>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Attendance</h1>
             <p className="text-gray-500 text-sm">
               Mark today's attendance for your track.
             </p>
@@ -53,11 +53,11 @@ function Attendance() {
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="border border-gray-200 rounded-lg px-4 py-2 text-sm"
+            className="border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2 text-sm"
           />
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm p-5 mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-5 mb-6">
           <p className="text-sm text-gray-500">
             Present today:{" "}
             <span className="font-semibold text-teal-700">
@@ -67,7 +67,7 @@ function Attendance() {
           </p>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm p-5">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-5">
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-gray-400 border-b border-gray-100">
@@ -81,7 +81,7 @@ function Attendance() {
                   key={student.id}
                   className="border-b border-gray-50 last:border-0"
                 >
-                  <td className="py-3 text-gray-800">{student.name}</td>
+                  <td className="py-3 text-gray-800 dark:text-gray-200">{student.name}</td>
                   <td className="py-3">
                     <div className="flex gap-2">
                       {statusOptions.map((option) => (

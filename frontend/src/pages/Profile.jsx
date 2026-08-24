@@ -12,13 +12,13 @@ function Profile() {
       <Sidebar />
 
       <main className="flex-1 p-8 max-w-2xl">
-        <h1 className="text-2xl font-bold text-gray-900 mb-1">Profile</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1">Profile</h1>
 
         <p className="text-gray-500 text-sm mb-6">
           View your account information.
         </p>
 
-        <div className="bg-white rounded-xl shadow-sm p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
           {/* Profile Header */}
           <div className="flex items-center gap-4 mb-6">
             <div className="w-16 h-16 rounded-full bg-teal-100 overflow-hidden flex items-center justify-center">
@@ -31,7 +31,7 @@ function Profile() {
             </div>
 
             <div>
-              <p className="font-semibold text-gray-800">{formData.fullName}</p>
+              <p className="font-semibold text-gray-800 dark:text-gray-200">{formData.fullName}</p>
 
               <p className="text-sm text-gray-500">Mentor</p>
             </div>
@@ -40,7 +40,7 @@ function Profile() {
           {/* Profile Information */}
           <div className="space-y-4">
             <div>
-              <label className="block text-sm text-gray-600 mb-1">
+              <label className="block text-sm text-gray-600 dark:text-gray-300 mb-1">
                 Full Name
               </label>
 
@@ -48,29 +48,29 @@ function Profile() {
                 type="text"
                 value={formData.fullName}
                 readOnly
-                className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm bg-gray-50 text-gray-600"
+                className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm bg-gray-50 text-gray-600 dark:text-gray-300"
               />
             </div>
 
             <div>
-              <label className="block text-sm text-gray-600 mb-1">Email</label>
+              <label className="block text-sm text-gray-600 dark:text-gray-300 mb-1">Email</label>
 
               <input
                 type="email"
                 value={formData.email}
                 readOnly
-                className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm bg-gray-50 text-gray-600"
+                className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm bg-gray-50 text-gray-600 dark:text-gray-300"
               />
             </div>
 
             <div>
-              <label className="block text-sm text-gray-600 mb-1">Phone</label>
+              <label className="block text-sm text-gray-600 dark:text-gray-300 mb-1">Phone</label>
 
               <input
                 type="text"
                 value={formData.phone}
                 readOnly
-                className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm bg-gray-50 text-gray-600"
+                className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm bg-gray-50 text-gray-600 dark:text-gray-300"
               />
             </div>
           </div>

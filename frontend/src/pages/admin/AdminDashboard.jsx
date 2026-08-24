@@ -55,10 +55,10 @@ const AdminDashboard = () => {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {/* Card 1 */}
-        <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex items-start justify-between">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-100 shadow-sm flex items-start justify-between">
           <div>
             <p className="text-sm font-medium text-gray-500">Total Students</p>
-            <h3 className="text-2xl font-bold text-gray-800 mt-1">248</h3>
+            <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mt-1">248</h3>
             <p className="text-xs font-medium text-green-500 mt-2">
               +12 this week
             </p>
@@ -68,10 +68,10 @@ const AdminDashboard = () => {
           </div>
         </div>
         {/* Card 2 */}
-        <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex items-start justify-between">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-100 shadow-sm flex items-start justify-between">
           <div>
             <p className="text-sm font-medium text-gray-500">Total Mentors</p>
-            <h3 className="text-2xl font-bold text-gray-800 mt-1">18</h3>
+            <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mt-1">18</h3>
             <p className="text-xs font-medium text-green-500 mt-2">
               +2 this week
             </p>
@@ -81,10 +81,10 @@ const AdminDashboard = () => {
           </div>
         </div>
         {/* Card 3 */}
-        <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex items-start justify-between">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-100 shadow-sm flex items-start justify-between">
           <div>
             <p className="text-sm font-medium text-gray-500">Active Tracks</p>
-            <h3 className="text-2xl font-bold text-gray-800 mt-1">6</h3>
+            <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mt-1">6</h3>
             <p className="text-xs font-medium text-gray-400 mt-2">No change</p>
           </div>
           <div className="p-3 bg-teal-50 rounded-lg text-teal-600">
@@ -92,12 +92,12 @@ const AdminDashboard = () => {
           </div>
         </div>
         {/* Card 4 */}
-        <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex items-start justify-between">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-100 shadow-sm flex items-start justify-between">
           <div>
             <p className="text-sm font-medium text-gray-500">
               Attendance (Avg.)
             </p>
-            <h3 className="text-2xl font-bold text-gray-800 mt-1">85.6%</h3>
+            <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mt-1">85.6%</h3>
             <p className="text-xs font-medium text-green-500 mt-2">
               +4.3% this week
             </p>
@@ -111,9 +111,9 @@ const AdminDashboard = () => {
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         {/* Line Chart */}
-        <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm lg:col-span-2">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-100 shadow-sm lg:col-span-2">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-base font-semibold text-gray-800">
+            <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200">
               Attendance Overview
             </h3>
           </div>
@@ -175,8 +175,8 @@ const AdminDashboard = () => {
         </div>
 
         {/* Doughnut Chart */}
-        <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex flex-col">
-          <h3 className="text-base font-semibold text-gray-800 mb-2">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-100 shadow-sm flex flex-col">
+          <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-2">
             Students by Track
           </h3>
           <div className="flex-1 flex flex-col justify-center">
@@ -210,7 +210,7 @@ const AdminDashboard = () => {
                 </PieChart>
               </ResponsiveContainer>
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <span className="text-2xl font-bold text-gray-800 leading-none">
+                <span className="text-2xl font-bold text-gray-800 dark:text-gray-200 leading-none">
                   248
                 </span>
                 <span className="text-xs text-gray-500 font-medium mt-1">
@@ -231,9 +231,9 @@ const AdminDashboard = () => {
                       className="w-3 h-3 rounded-full"
                       style={{ backgroundColor: COLORS[index % COLORS.length] }}
                     ></span>
-                    <span className="text-gray-600">{item.name}</span>
+                    <span className="text-gray-600 dark:text-gray-300">{item.name}</span>
                   </div>
-                  <span className="font-semibold text-gray-800">
+                  <span className="font-semibold text-gray-800 dark:text-gray-200">
                     {item.value}
                   </span>
                 </div>
@@ -246,9 +246,9 @@ const AdminDashboard = () => {
       {/* Bottom Widgets */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Announcements */}
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
           <div className="p-5 border-b border-gray-100 flex items-center justify-between">
-            <h3 className="text-base font-semibold text-gray-800">
+            <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200">
               Recent Announcements
             </h3>
             <button
@@ -264,7 +264,7 @@ const AdminDashboard = () => {
                 <Mic size={18} />
               </div>
               <div className="flex-1">
-                <h4 className="text-sm font-semibold text-gray-800">
+                <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-200">
                   Weekly Experience Sharing
                 </h4>
                 <p className="text-xs text-gray-500 mt-1 line-clamp-1">
@@ -283,7 +283,7 @@ const AdminDashboard = () => {
                 <FileEdit size={18} />
               </div>
               <div className="flex-1">
-                <h4 className="text-sm font-semibold text-gray-800">
+                <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-200">
                   DSA Weekly Contest
                 </h4>
                 <p className="text-xs text-gray-500 mt-1 line-clamp-1">
@@ -302,7 +302,7 @@ const AdminDashboard = () => {
                 <CalendarDays size={18} />
               </div>
               <div className="flex-1">
-                <h4 className="text-sm font-semibold text-gray-800">
+                <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-200">
                   Bootcamp Regular Sessions
                 </h4>
                 <p className="text-xs text-gray-500 mt-1 line-clamp-1">
@@ -319,9 +319,9 @@ const AdminDashboard = () => {
         </div>
 
         {/* Recent Assignments */}
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
           <div className="p-5 border-b border-gray-100 flex items-center justify-between">
-            <h3 className="text-base font-semibold text-gray-800">
+            <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200">
               Recent Assignments
             </h3>
             <button
@@ -344,12 +344,12 @@ const AdminDashboard = () => {
               <tbody className="text-sm divide-y divide-gray-100">
                 <tr className="hover:bg-gray-50 transition-colors">
                   <td className="py-3 px-5">
-                    <span className="font-medium text-gray-800">
+                    <span className="font-medium text-gray-800 dark:text-gray-200">
                       Codeforces Div 2
                     </span>
                   </td>
-                  <td className="py-3 px-5 text-gray-600">DSA & CP</td>
-                  <td className="py-3 px-5 text-gray-600">72/92</td>
+                  <td className="py-3 px-5 text-gray-600 dark:text-gray-300">DSA & CP</td>
+                  <td className="py-3 px-5 text-gray-600 dark:text-gray-300">72/92</td>
                   <td className="py-3 px-5">
                     <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-green-50 text-green-700 border border-green-100">
                       Active
@@ -358,12 +358,12 @@ const AdminDashboard = () => {
                 </tr>
                 <tr className="hover:bg-gray-50 transition-colors">
                   <td className="py-3 px-5">
-                    <span className="font-medium text-gray-800">
+                    <span className="font-medium text-gray-800 dark:text-gray-200">
                       API Integration
                     </span>
                   </td>
-                  <td className="py-3 px-5 text-gray-600">Mobile Dev</td>
-                  <td className="py-3 px-5 text-gray-600">58/58</td>
+                  <td className="py-3 px-5 text-gray-600 dark:text-gray-300">Mobile Dev</td>
+                  <td className="py-3 px-5 text-gray-600 dark:text-gray-300">58/58</td>
                   <td className="py-3 px-5">
                     <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-orange-50 text-orange-700 border border-orange-100">
                       Grading
@@ -372,12 +372,12 @@ const AdminDashboard = () => {
                 </tr>
                 <tr className="hover:bg-gray-50 transition-colors">
                   <td className="py-3 px-5">
-                    <span className="font-medium text-gray-800">
+                    <span className="font-medium text-gray-800 dark:text-gray-200">
                       Figma Prototype
                     </span>
                   </td>
-                  <td className="py-3 px-5 text-gray-600">UI/UX Design</td>
-                  <td className="py-3 px-5 text-gray-600">48/48</td>
+                  <td className="py-3 px-5 text-gray-600 dark:text-gray-300">UI/UX Design</td>
+                  <td className="py-3 px-5 text-gray-600 dark:text-gray-300">48/48</td>
                   <td className="py-3 px-5">
                     <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-teal-50 text-teal-700 border border-teal-100">
                       Completed
@@ -386,12 +386,12 @@ const AdminDashboard = () => {
                 </tr>
                 <tr className="hover:bg-gray-50 transition-colors">
                   <td className="py-3 px-5">
-                    <span className="font-medium text-gray-800">
+                    <span className="font-medium text-gray-800 dark:text-gray-200">
                       Data Cleaning
                     </span>
                   </td>
-                  <td className="py-3 px-5 text-gray-600">Data Science</td>
-                  <td className="py-3 px-5 text-gray-600">14/30</td>
+                  <td className="py-3 px-5 text-gray-600 dark:text-gray-300">Data Science</td>
+                  <td className="py-3 px-5 text-gray-600 dark:text-gray-300">14/30</td>
                   <td className="py-3 px-5">
                     <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-green-50 text-green-700 border border-green-100">
                       In Progress

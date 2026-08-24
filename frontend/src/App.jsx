@@ -10,8 +10,10 @@ import {
 } from "react-router-dom";
 import "./style.css";
 import API from "./api/axios";
-import { FiMenu, FiX, FiMoon, FiSun } from "react-icons/fi";
+import { FiMenu, FiX } from "react-icons/fi";
+import { Sun, Moon } from "lucide-react";
 import { useTheme } from "./context/ThemeContext.jsx";
+
 import calligraphy from "./assets/calligraphy.jpg";
 
 // Page Imports
@@ -237,7 +239,8 @@ function Header() {
             </a>
           ))}
         </nav>
-        <div className="nav-actions">
+        <div className="nav-actions flex items-center gap-3">
+          
           <button className="ghost-btn" onClick={() => navigate("/login")}>
             Login
           </button>
@@ -323,12 +326,12 @@ function Footer() {
                 instagram: "text-[#c13584]",
                 facebook: "text-[#1877f2]",
                 youtube: "text-[#ff0000]",
-                tiktok: "text-[#111]",
-                x: "text-[#111]",
+                tiktok: "text-[#111] dark:text-gray-200",
+                x: "text-[#111] dark:text-gray-200",
               };
               return (
                 <a
-                  className={`social social-${type} w-11 h-11 p-0 border border-[#cddedb] rounded-full grid place-items-center bg-white shadow-[0_8px_22px_-16px_rgba(19,64,66,0.5)] transition duration-200 hover:-translate-y-[3px] hover:scale-[1.04] hover:bg-[#f7fbfa] ${colorClasses[type] || "text-[#286d69]"}`}
+                  className={`social social-${type} w-11 h-11 p-0 border border-[#cddedb] dark:border-gray-700 rounded-full grid place-items-center bg-white dark:bg-gray-800 shadow-[0_8px_22px_-16px_rgba(19,64,66,0.5)] transition duration-200 hover:-translate-y-[3px] hover:scale-[1.04] hover:bg-[#f7fbfa] dark:hover:bg-gray-700 ${colorClasses[type] || "text-[#286d69]"}`}
                   href={url}
                   target="_blank"
                   rel="noreferrer"
@@ -411,7 +414,7 @@ function Home() {
         <div className="hero-fade" />
         <div className="container hero-inner">
           <div className="hero-copy">
-            <div className="arabic text-gray-600">بسم الله الرحمن الرحيم</div>
+            <div className="arabic text-gray-600 dark:text-gray-300">بسم الله الرحمن الرحيم</div>
             <div className="arabic-rule">
               <span></span>۞<span></span>
             </div>
@@ -541,17 +544,17 @@ function MentorCard({ m }) {
       .join("");
   };
   return (
-    <article className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm flex flex-col items-center text-center transition-transform hover:-translate-y-1 hover:shadow-md">
+    <article className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-sm flex flex-col items-center text-center transition-transform hover:-translate-y-1 hover:shadow-md">
       <div className="w-16 h-16 bg-teal-100 text-teal-700 rounded-full flex items-center justify-center text-xl font-bold mb-4">
         {getInitials(m.name)}
       </div>
-      <h3 className="text-lg font-bold text-gray-900 mb-1">{m.name}</h3>
+      <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-1">{m.name}</h3>
       <span className="text-sm font-medium text-teal-600 mb-4">{m.role}</span>
       <div className="flex flex-wrap justify-center gap-2">
         {m.expertise.map((skill, index) => (
           <span
             key={index}
-            className="inline-flex px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-600"
+            className="inline-flex px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-600 dark:text-gray-300"
           >
             {skill}
           </span>
@@ -731,7 +734,7 @@ function ContactPage() {
             <h2>Follow us</h2>
             <div className="socials contact-socials">
               <a
-                className="w-11 h-11 p-0 border border-[#cddedb] rounded-full grid place-items-center bg-white shadow-[0_8px_22px_-16px_rgba(19,64,66,0.5)] transition duration-200 hover:-translate-y-[3px] hover:scale-[1.04] hover:bg-[#f7fbfa] text-[#229ed9]"
+                className="w-11 h-11 p-0 border border-[#cddedb] dark:border-gray-700 rounded-full grid place-items-center bg-white dark:bg-gray-800 shadow-[0_8px_22px_-16px_rgba(19,64,66,0.5)] transition duration-200 hover:-translate-y-[3px] hover:scale-[1.04] hover:bg-[#f7fbfa] dark:hover:bg-gray-700 text-[#229ed9]"
                 href="https://t.me/astumsj"
                 target="_blank"
                 rel="noreferrer"
@@ -740,7 +743,7 @@ function ContactPage() {
                 <SocialIcon type="telegram" />
               </a>
               <a
-                className="w-11 h-11 p-0 border border-[#cddedb] rounded-full grid place-items-center bg-white shadow-[0_8px_22px_-16px_rgba(19,64,66,0.5)] transition duration-200 hover:-translate-y-[3px] hover:scale-[1.04] hover:bg-[#f7fbfa] text-[#c13584]"
+                className="w-11 h-11 p-0 border border-[#cddedb] dark:border-gray-700 rounded-full grid place-items-center bg-white dark:bg-gray-800 shadow-[0_8px_22px_-16px_rgba(19,64,66,0.5)] transition duration-200 hover:-translate-y-[3px] hover:scale-[1.04] hover:bg-[#f7fbfa] dark:hover:bg-gray-700 text-[#c13584]"
                 href="https://instagram.com/astumsj"
                 target="_blank"
                 rel="noreferrer"
@@ -749,7 +752,7 @@ function ContactPage() {
                 <SocialIcon type="instagram" />
               </a>
               <a
-                className="w-11 h-11 p-0 border border-[#cddedb] rounded-full grid place-items-center bg-white shadow-[0_8px_22px_-16px_rgba(19,64,66,0.5)] transition duration-200 hover:-translate-y-[3px] hover:scale-[1.04] hover:bg-[#f7fbfa] text-[#1877f2]"
+                className="w-11 h-11 p-0 border border-[#cddedb] dark:border-gray-700 rounded-full grid place-items-center bg-white dark:bg-gray-800 shadow-[0_8px_22px_-16px_rgba(19,64,66,0.5)] transition duration-200 hover:-translate-y-[3px] hover:scale-[1.04] hover:bg-[#f7fbfa] dark:hover:bg-gray-700 text-[#1877f2]"
                 href="https://facebook.com/astumsj"
                 target="_blank"
                 rel="noreferrer"
@@ -758,7 +761,7 @@ function ContactPage() {
                 <SocialIcon type="facebook" />
               </a>
               <a
-                className="w-11 h-11 p-0 border border-[#cddedb] rounded-full grid place-items-center bg-white shadow-[0_8px_22px_-16px_rgba(19,64,66,0.5)] transition duration-200 hover:-translate-y-[3px] hover:scale-[1.04] hover:bg-[#f7fbfa] text-[#ff0000]"
+                className="w-11 h-11 p-0 border border-[#cddedb] dark:border-gray-700 rounded-full grid place-items-center bg-white dark:bg-gray-800 shadow-[0_8px_22px_-16px_rgba(19,64,66,0.5)] transition duration-200 hover:-translate-y-[3px] hover:scale-[1.04] hover:bg-[#f7fbfa] dark:hover:bg-gray-700 text-[#ff0000]"
                 href="https://youtube.com/@astumsj"
                 target="_blank"
                 rel="noreferrer"
@@ -767,7 +770,7 @@ function ContactPage() {
                 <SocialIcon type="youtube" />
               </a>
               <a
-                className="w-11 h-11 p-0 border border-[#cddedb] rounded-full grid place-items-center bg-white shadow-[0_8px_22px_-16px_rgba(19,64,66,0.5)] transition duration-200 hover:-translate-y-[3px] hover:scale-[1.04] hover:bg-[#f7fbfa] text-[#111]"
+                className="w-11 h-11 p-0 border border-[#cddedb] dark:border-gray-700 rounded-full grid place-items-center bg-white dark:bg-gray-800 shadow-[0_8px_22px_-16px_rgba(19,64,66,0.5)] transition duration-200 hover:-translate-y-[3px] hover:scale-[1.04] hover:bg-[#f7fbfa] dark:hover:bg-gray-700 text-[#111] dark:text-gray-200"
                 href="https://vt.tiktok.com/ZSVak4cxQ/"
                 target="_blank"
                 rel="noreferrer"
@@ -776,7 +779,7 @@ function ContactPage() {
                 <SocialIcon type="tiktok" />
               </a>
               <a
-                className="w-11 h-11 p-0 border border-[#cddedb] rounded-full grid place-items-center bg-white shadow-[0_8px_22px_-16px_rgba(19,64,66,0.5)] transition duration-200 hover:-translate-y-[3px] hover:scale-[1.04] hover:bg-[#f7fbfa] text-[#111]"
+                className="w-11 h-11 p-0 border border-[#cddedb] dark:border-gray-700 rounded-full grid place-items-center bg-white dark:bg-gray-800 shadow-[0_8px_22px_-16px_rgba(19,64,66,0.5)] transition duration-200 hover:-translate-y-[3px] hover:scale-[1.04] hover:bg-[#f7fbfa] dark:hover:bg-gray-700 text-[#111] dark:text-gray-200"
                 href="https://x.com/astumsj"
                 target="_blank"
                 rel="noreferrer"
@@ -893,7 +896,7 @@ function ForgotPage() {
 
 function PublicLayout() {
   return (
-    <div className="app">
+    <div className="min-h-screen bg-gray-50 text-gray-900 dark:text-gray-100 dark:bg-gray-900 dark:text-gray-100">
       <Header />
       <Outlet />
       <Footer />
@@ -902,34 +905,11 @@ function PublicLayout() {
 }
 
 
-function GlobalThemeToggle() {
-  const { darkMode, toggleDarkMode } = useTheme();
 
-  return (
-    <button
-      className={`global-theme-toggle ${darkMode ? "is-dark" : ""}`}
-      type="button"
-      onClick={toggleDarkMode}
-      aria-label={
-        darkMode ? "Switch to light mode" : "Switch to dark mode"
-      }
-      title={darkMode ? "Switch to light mode" : "Switch to dark mode"}
-    >
-      <span className="global-theme-icon">
-        {darkMode ? <FiSun size={18} /> : <FiMoon size={18} />}
-      </span>
-
-      <span className="global-theme-label">
-        {darkMode ? "Light" : "Dark"}
-      </span>
-    </button>
-  );
-}
 
 function App() {
   return (
     <BrowserRouter>
-      <GlobalThemeToggle />
       <Routes>
         {/* Public Landing Pages wrapped with Header & Footer */}
         <Route element={<PublicLayout />}>
@@ -946,22 +926,23 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPage />} />
 
         {/* Student Dashboard */}
-        <Route path="/student-dashboard/*" element={<StudentDashboard />} />
+        <Route path="/student-dashboard/*" element={<ProtectedRoute allowedRoles={["student"]}><StudentDashboard /></ProtectedRoute>} />
 
-        {/* Dashboard */}
-        <Route path="/mentor-dashboard" element={<MentorDashboard />} />
-        {/* mystudents*/}
-        <Route path="/my-students" element={<MyStudents />} />
-        <Route path="/attendance" element={<Attendance />} />
-        <Route path="/progress" element={<Progress />} />
-        <Route path="/assignments" element={<Assignments />} />
-        <Route path="/grading" element={<Grading />} />
-        <Route path="/announcements" element={<Announcements />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/settings" element={<Settings />} />
-
+        {/* Mentor Dashboard */}
+        <Route path="/mentor-dashboard/*" element={<ProtectedRoute allowedRoles={["mentor"]}><MentorDashboard /></ProtectedRoute>} />
+        <Route element={<ProtectedRoute allowedRoles={["mentor"]} />}>
+          <Route path="/my-students" element={<MyStudents />} />
+          <Route path="/attendance" element={<Attendance />} />
+          <Route path="/progress" element={<Progress />} />
+          <Route path="/assignments" element={<Assignments />} />
+          <Route path="/grading" element={<Grading />} />
+          <Route path="/announcements" element={<Announcements />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/settings" element={<Settings />} />
+        </Route>
+        
         {/* Admin Routes */}
-        <Route path="/admin" element={<AdminLayout />}>
+        <Route path="/admin" element={<ProtectedRoute allowedRoles={["admin"]}><AdminLayout /></ProtectedRoute>}>
           <Route index element={<Navigate to="/admin/dashboard" replace />} />
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="batches" element={<BatchesPage />} />

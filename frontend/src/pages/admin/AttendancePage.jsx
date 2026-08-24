@@ -135,19 +135,19 @@ const AttendancePage = () => {
       )}
 
       {/* Header Controls */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
         <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-2 text-gray-700">
+          <div className="flex items-center space-x-2 text-gray-700 dark:text-gray-300">
             <Calendar size={20} className="text-teal-600" />
             <span className="font-medium">Date:</span>
             <input
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-teal-500 focus:border-teal-500"
+              className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1.5 text-sm focus:ring-teal-500 focus:border-teal-500"
             />
           </div>
-          <select className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-teal-500 focus:border-teal-500">
+          <select className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1.5 text-sm focus:ring-teal-500 focus:border-teal-500">
             <option>All Tracks (3x/Week Sessions)</option>
             <option>Web Dev Bootcamp</option>
             <option>DSA & CP</option>
@@ -164,7 +164,7 @@ const AttendancePage = () => {
         <select
           value={selectedBatch}
           onChange={(e) => setSelectedBatch(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-teal-500 focus:border-teal-500"
+          className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1.5 text-sm focus:ring-teal-500 focus:border-teal-500"
         >
           <option value="all">All Tracks</option>
           {batches.map((b) => (
@@ -177,46 +177,46 @@ const AttendancePage = () => {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-200 flex items-center space-x-4">
+        <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex items-center space-x-4">
           <div className="p-3 bg-green-100 text-green-700 rounded-lg">
             <CheckCircle size={24} />
           </div>
           <div>
             <p className="text-sm text-gray-500 font-medium">Present</p>
-            <p className="text-2xl font-bold text-gray-900">
+            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
               {records.filter((r) => r.status === "Present").length}
             </p>
           </div>
         </div>
-        <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-200 flex items-center space-x-4">
+        <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex items-center space-x-4">
           <div className="p-3 bg-red-100 text-red-700 rounded-lg">
             <XCircle size={24} />
           </div>
           <div>
             <p className="text-sm text-gray-500 font-medium">Absent</p>
-            <p className="text-2xl font-bold text-gray-900">
+            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
               {records.filter((r) => r.status === "Absent").length}
             </p>
           </div>
         </div>
-        <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-200 flex items-center space-x-4">
+        <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex items-center space-x-4">
           <div className="p-3 bg-yellow-100 text-yellow-700 rounded-lg">
             <Clock size={24} />
           </div>
           <div>
             <p className="text-sm text-gray-500 font-medium">Late</p>
-            <p className="text-2xl font-bold text-gray-900">
+            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
               {records.filter((r) => r.status === "Late").length}
             </p>
           </div>
         </div>
-        <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-200 flex items-center space-x-4">
+        <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex items-center space-x-4">
           <div className="p-3 bg-blue-100 text-blue-700 rounded-lg">
             <Shield size={24} />
           </div>
           <div>
             <p className="text-sm text-gray-500 font-medium">Excused</p>
-            <p className="text-2xl font-bold text-gray-900">
+            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
               {records.filter((r) => r.status === "Excused").length}
             </p>
           </div>
@@ -224,9 +224,9 @@ const AttendancePage = () => {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="p-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
-          <h3 className="font-semibold text-gray-800">Attendance Record</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 flex justify-between items-center">
+          <h3 className="font-semibold text-gray-800 dark:text-gray-200">Attendance Record</h3>
           <div className="relative">
             <Search className="h-4 w-4 text-gray-400 absolute left-3 top-2.5" />
             <input
@@ -234,23 +234,23 @@ const AttendancePage = () => {
               placeholder="Search student..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 pr-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-teal-500"
+              className="pl-9 pr-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-teal-500"
             />
           </div>
         </div>
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="border-b border-gray-200">
-              <th className="px-6 py-3 text-xs font-semibold text-gray-600 uppercase">
+            <tr className="border-b border-gray-200 dark:border-gray-700">
+              <th className="px-6 py-3 text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
                 Student
               </th>
-              <th className="px-6 py-3 text-xs font-semibold text-gray-600 uppercase">
+              <th className="px-6 py-3 text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
                 Track
               </th>
-              <th className="px-6 py-3 text-xs font-semibold text-gray-600 uppercase">
+              <th className="px-6 py-3 text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
                 Status
               </th>
-              <th className="px-6 py-3 text-xs font-semibold text-gray-600 uppercase text-right">
+              <th className="px-6 py-3 text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase text-right">
                 Action
               </th>
             </tr>
@@ -264,7 +264,7 @@ const AttendancePage = () => {
               )
               .map((record) => (
                 <tr key={record._id} className="hover:bg-gray-50">
-                  <td className="px-6 py-3 text-sm font-medium text-gray-900">
+                  <td className="px-6 py-3 text-sm font-medium text-gray-900 dark:text-gray-100">
                     {record.student?.name || "Unknown"}
                   </td>
                   <td className="px-6 py-3 text-sm text-gray-500">
@@ -287,7 +287,7 @@ const AttendancePage = () => {
                   </td>
                   <td className="px-6 py-3 text-right">
                     <select
-                      className="border border-gray-300 rounded text-xs py-1 px-2 focus:ring-teal-500"
+                      className="border border-gray-300 dark:border-gray-600 rounded text-xs py-1 px-2 focus:ring-teal-500"
                       value={record.status}
                       onChange={(e) =>
                         handleStatusChange(record._id, e.target.value)

@@ -4,7 +4,7 @@ import { FiMenu } from "react-icons/fi";
 
 const Navbar = () => {
   return (
-    <nav className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur-md">
+    <nav className="sticky top-0 z-50 border-b border-slate-200 bg-white dark:bg-gray-800/95 backdrop-blur-md">
       <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 lg:px-8">
 
         {/* Logo */}

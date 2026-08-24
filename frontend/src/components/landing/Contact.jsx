@@ -25,7 +25,7 @@ function Contact() {
             required
             value={formData.name}
             onChange={handleChange}
-            className="w-full border border-gray-300 rounded-lg px-4 py-3"
+            className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-3"
           />
           <input
             type="email"
@@ -34,7 +34,7 @@ function Contact() {
             required
             value={formData.email}
             onChange={handleChange}
-            className="w-full border border-gray-300 rounded-lg px-4 py-3"
+            className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-3"
           />
           <textarea
             name="message"
@@ -43,7 +43,7 @@ function Contact() {
             rows={4}
             value={formData.message}
             onChange={handleChange}
-            className="w-full border border-gray-300 rounded-lg px-4 py-3"
+            className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-3"
           />
           <button
             type="submit"

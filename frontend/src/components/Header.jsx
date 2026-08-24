@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Bell, Calendar, User } from 'lucide-react';
 import API from '../api/axios';
 
+
 const Header = ({ title, subtitle, userProfile = null }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
@@ -76,11 +77,13 @@ const Header = ({ title, subtitle, userProfile = null }) => {
   return (
     <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 relative">
       <div>
-        <h2 className="text-2xl font-bold text-gray-800">{title}</h2>
-        {subtitle && <p className="text-gray-500 text-sm mt-1">{subtitle}</p>}
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-white">{title}</h2>
+        {subtitle && <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">{subtitle}</p>}
       </div>
       <div className="flex items-center space-x-4 mt-4 md:mt-0">
-        <div className="flex items-center space-x-2 bg-white px-4 py-2 rounded-lg border border-gray-200 shadow-sm text-sm text-gray-600">
+        
+        
+        <div className="flex items-center space-x-2 bg-white dark:bg-gray-800 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm text-sm text-gray-600 dark:text-gray-300">
           <Calendar size={16} />
           <span>{dateString}</span>
         </div>
@@ -88,7 +91,7 @@ const Header = ({ title, subtitle, userProfile = null }) => {
         <div className="relative" ref={dropdownRef}>
           <button 
             onClick={handleNotificationClick}
-            className="relative p-2 bg-white rounded-lg border border-gray-200 shadow-sm text-gray-600 hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500"
+            className="relative p-2 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500"
           >
             <Bell size={20} />
             {unreadCount > 0 && (
@@ -100,22 +103,22 @@ const Header = ({ title, subtitle, userProfile = null }) => {
 
           {/* Notification Dropdown */}
           {isDropdownOpen && (
-            <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden z-50">
-              <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                <h3 className="font-semibold text-gray-800">Notifications</h3>
+            <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden z-50">
+              <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-700/50">
+                <h3 className="font-semibold text-gray-800 dark:text-gray-200">Notifications</h3>
                 <span onClick={markAllAsRead} className="text-xs text-teal-600 font-medium cursor-pointer hover:underline">Mark all as read</span>
               </div>
               <div className="max-h-96 overflow-y-auto">
                 {notifications.length > 0 ? notifications.map((notif) => (
-                  <div key={notif._id} onClick={(e) => markAsRead(notif._id, e)} className="p-4 border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer">
-                    <p className="text-sm text-gray-800">{notif.title || notif.text}</p>
+                  <div key={notif._id} onClick={(e) => markAsRead(notif._id, e)} className="p-4 border-b border-gray-50 dark:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer">
+                    <p className="text-sm text-gray-800 dark:text-gray-200">{notif.title || notif.text}</p>
                     <p className="text-xs text-gray-500 mt-1">{new Date(notif.publishDate).toLocaleDateString()}</p>
                   </div>
                 )) : (
                   <div className="p-4 text-center text-sm text-gray-500">No new notifications</div>
                 )}
               </div>
-              <div className="p-3 text-center border-t border-gray-100">
+              <div className="p-3 text-center border-t border-gray-100 dark:border-gray-700">
                 <button className="text-sm font-medium text-teal-600 hover:text-teal-700">View All Announcements</button>
               </div>
             </div>
@@ -128,10 +131,10 @@ const Header = ({ title, subtitle, userProfile = null }) => {
             <img
               src={userProfile.imageUrl}
               alt="Profile"
-              className="w-10 h-10 rounded-full object-cover border border-gray-200 shadow-sm"
+              className="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-gray-700 shadow-sm"
             />
           ) : (
-            <div className="w-10 h-10 rounded-full bg-gray-200 border border-gray-300 shadow-sm flex items-center justify-center text-gray-500">
+            <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 shadow-sm flex items-center justify-center text-gray-500">
               <User size={24} />
             </div>
           )}

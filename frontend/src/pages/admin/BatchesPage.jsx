@@ -117,7 +117,7 @@ const BatchesPage = () => {
           </div>
           <input
             type="text"
-            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500 text-sm"
+            className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-teal-500 focus:border-teal-500 text-sm"
             placeholder="Search batches..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -137,12 +137,12 @@ const BatchesPage = () => {
         {filteredBatches.map((batch) => (
           <div
             key={batch._id}
-            className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow relative group"
+            className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-md transition-shadow relative group"
           >
             {/* Delete button (shows on hover) */}
             <button
               onClick={() => handleDelete(batch._id)}
-              className="absolute top-4 right-4 p-1 bg-white rounded-md text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity hover:text-red-600 hover:bg-red-50 z-10"
+              className="absolute top-4 right-4 p-1 bg-white dark:bg-gray-800 rounded-md text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity hover:text-red-600 hover:bg-red-50 z-10"
               title="Delete batch"
             >
               <X size={16} />
@@ -151,7 +151,7 @@ const BatchesPage = () => {
             <div className="p-6">
               <div className="flex justify-between items-start mb-4 pr-6">
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900">
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
                     {batch.name || batch.track}
                   </h3>
                   <span
@@ -160,7 +160,7 @@ const BatchesPage = () => {
                         ? "bg-green-100 text-green-800"
                         : batch.status === "Upcoming"
                           ? "bg-blue-100 text-blue-800"
-                          : "bg-gray-100 text-gray-800"
+                          : "bg-gray-100 text-gray-800 dark:text-gray-200"
                     }`}
                   >
                     {batch.status || "Upcoming"}
@@ -169,18 +169,18 @@ const BatchesPage = () => {
               </div>
 
               <div className="space-y-3">
-                <div className="flex items-center text-sm text-gray-600">
+                <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
                   <Users className="w-4 h-4 mr-2 text-gray-400" />
                   <span>{batch.students?.length || 0} Students</span>
                 </div>
-                <div className="flex items-center text-sm text-gray-600">
+                <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
                   <Calendar className="w-4 h-4 mr-2 text-gray-400" />
                   <span>
                     {new Date(batch.startDate).toLocaleDateString()} -{" "}
                     {new Date(batch.endDate).toLocaleDateString()}
                   </span>
                 </div>
-                <div className="flex items-center text-sm text-gray-600">
+                <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
                   <UserIcon className="w-4 h-4 mr-2 text-gray-400" />
                   <span>
                     Instructor:{" "}
@@ -191,7 +191,7 @@ const BatchesPage = () => {
                 </div>
               </div>
             </div>
-            <div className="bg-gray-50 px-6 py-3 border-t border-gray-200">
+            <div className="bg-gray-50 px-6 py-3 border-t border-gray-200 dark:border-gray-700">
               <button
                 onClick={() => openBatchDetail(batch)}
                 className="text-teal-600 text-sm font-medium hover:text-teal-700"
@@ -211,19 +211,19 @@ const BatchesPage = () => {
       {/* Add Track Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-xl">
+          <div className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full p-6 shadow-xl">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-800">Add New Batch</h2>
+              <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">Add New Batch</h2>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="text-gray-500 hover:text-gray-800"
+                className="text-gray-500 hover:text-gray-800 dark:text-gray-200"
               >
                 <X size={20} />
               </button>
             </div>
             <form onSubmit={handleAddBatch} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Track Name
                 </label>
                 <input
@@ -239,7 +239,7 @@ const BatchesPage = () => {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Start Date
                   </label>
                   <input
@@ -253,7 +253,7 @@ const BatchesPage = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     End Date
                   </label>
                   <input
@@ -268,7 +268,7 @@ const BatchesPage = () => {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Instructor
                 </label>
                 <input
@@ -287,7 +287,7 @@ const BatchesPage = () => {
                 </datalist>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Status
                 </label>
                 <select
@@ -306,7 +306,7 @@ const BatchesPage = () => {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                  className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 rounded-lg"
                 >
                   Cancel
                 </button>
@@ -325,10 +325,10 @@ const BatchesPage = () => {
       {/* Detail Modal */}
       {isDetailModalOpen && selectedBatchForDetail && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-2xl w-full p-6 shadow-xl max-h-[90vh] flex flex-col">
+          <div className="bg-white dark:bg-gray-800 rounded-xl max-w-2xl w-full p-6 shadow-xl max-h-[90vh] flex flex-col">
             <div className="flex justify-between items-center mb-4">
               <div>
-                <h2 className="text-xl font-bold text-gray-800">
+                <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">
                   {selectedBatchForDetail.name || selectedBatchForDetail.track}
                 </h2>
                 <p className="text-sm text-gray-500 mt-1">
@@ -337,7 +337,7 @@ const BatchesPage = () => {
               </div>
               <button
                 onClick={() => setIsDetailModalOpen(false)}
-                className="text-gray-500 hover:text-gray-800"
+                className="text-gray-500 hover:text-gray-800 dark:text-gray-200"
               >
                 <X size={20} />
               </button>
@@ -360,7 +360,7 @@ const BatchesPage = () => {
                           {student.name.charAt(0)}
                         </div>
                         <div>
-                          <p className="font-medium text-gray-900">
+                          <p className="font-medium text-gray-900 dark:text-gray-100">
                             {student.name}
                           </p>
                           <p className="text-xs text-gray-500">
@@ -368,7 +368,7 @@ const BatchesPage = () => {
                           </p>
                         </div>
                       </div>
-                      <span className="text-xs font-medium bg-gray-200 text-gray-700 px-2 py-1 rounded">
+                      <span className="text-xs font-medium bg-gray-200 text-gray-700 dark:text-gray-300 px-2 py-1 rounded">
                         {student.gender || "N/A"}
                       </span>
                     </div>
@@ -379,7 +379,7 @@ const BatchesPage = () => {
             <div className="mt-4 pt-4 border-t flex justify-end">
               <button
                 onClick={() => setIsDetailModalOpen(false)}
-                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+                className="px-4 py-2 bg-gray-100 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200"
               >
                 Close
               </button>

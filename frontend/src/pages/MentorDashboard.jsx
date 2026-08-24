@@ -8,6 +8,7 @@ import StudentsAtRisk from "../components/mentor/StudentsAtRisk";
 import RecentAssignments from "../components/mentor/RecentAssignments";
 import QuickActions from "../components/mentor/QuickActions";
 
+
 function MentorDashboard() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -33,7 +34,7 @@ function MentorDashboard() {
   }, []);
 
   // if (loading) {
-  //   return <p className="p-8 text-gray-600">Loading dashboard...</p>;
+  //   return <p className="p-8 text-gray-600 dark:text-gray-300">Loading dashboard...</p>;
   // }
 
   // if (error) {
@@ -41,13 +42,13 @@ function MentorDashboard() {
   // }
 
   return (
-    <div className="flex flex-col md:flex-row bg-gray-50 min-h-screen relative">
+    <div className="flex flex-col md:flex-row min-h-screen bg-gray-50 text-gray-900 dark:text-gray-100 dark:bg-gray-900 dark:text-gray-100 relative">
       {/* Mobile Header with Hamburger */}
-      <div className="md:hidden flex items-center justify-between p-4 bg-white border-b border-gray-200">
+      <div className="md:hidden flex items-center justify-between p-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <h1 className="text-xl font-bold text-teal-900">ASTU MSJ</h1>
         <button
           onClick={() => setSidebarOpen(true)}
-          className="p-2 bg-gray-100 rounded-md text-gray-700"
+          className="p-2 bg-gray-100 rounded-md text-gray-700 dark:text-gray-300"
         >
           <svg
             className="w-6 h-6"
@@ -88,21 +89,22 @@ function MentorDashboard() {
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
               Mentor Dashboard
             </h1>
-            <p className="text-gray-500 text-sm">
+            <p className="text-gray-500 dark:text-gray-400 text-sm">
               Welcome back, Amir! Here's your track overview.
             </p>
           </div>
 
           <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end">
-            <div className="bg-white px-4 py-2 rounded-lg shadow-sm text-sm text-gray-600">
+            
+            <div className="bg-white dark:bg-gray-800 px-4 py-2 rounded-lg shadow-sm text-sm text-gray-600 dark:text-gray-300 border border-transparent dark:border-gray-700">
               May 15, 2026
             </div>
 
-            <button className="relative bg-white p-2.5 rounded-lg shadow-sm hover:bg-gray-50">
-              <Bell size={18} className="text-gray-600" />
+            <button className="relative bg-white dark:bg-gray-800 p-2.5 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 border border-transparent dark:border-gray-700">
+              <Bell size={18} className="text-gray-600 dark:text-gray-300" />
               <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
                 1
               </span>

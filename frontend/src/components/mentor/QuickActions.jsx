@@ -8,8 +8,8 @@ const actions = [
 
 function QuickActions() {
   return (
-    <div className="bg-white rounded-xl p-5 shadow-sm">
-      <h3 className="font-semibold text-gray-800 mb-4">Quick Actions</h3>
+    <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm">
+      <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-4">Quick Actions</h3>
       <div className="space-y-3">
         {actions.map((action) => (
           <button
