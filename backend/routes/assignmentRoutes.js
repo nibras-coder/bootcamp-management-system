@@ -11,28 +11,26 @@ const authorize = require(
 );
 
 const {
-  createAssignment,
-  getMentorAssignments,
+  getMyAssignments,
   getAssignmentById,
+  createAssignment,
   updateAssignment,
   deleteAssignment,
-} = require(
-  "../controllers/assignmentController"
-);
+} = require("../controllers/assignmentController");
 
-// Get mentor assignments
+// Get mentor or student assignments
 router.get(
   "/",
   protect,
-  authorize("mentor"),
-  getMentorAssignments
+  authorize("mentor", "student", "admin"),
+  getMyAssignments
 );
 
 // Get one assignment
 router.get(
   "/:id",
   protect,
-  authorize("mentor"),
+  authorize("mentor", "admin"),
   getAssignmentById
 );
 
@@ -40,7 +38,7 @@ router.get(
 router.post(
   "/",
   protect,
-  authorize("mentor"),
+  authorize("mentor", "admin"),
   createAssignment
 );
 
@@ -48,7 +46,7 @@ router.post(
 router.put(
   "/:id",
   protect,
-  authorize("mentor"),
+  authorize("mentor", "admin"),
   updateAssignment
 );
 
@@ -56,7 +54,7 @@ router.put(
 router.delete(
   "/:id",
   protect,
-  authorize("mentor"),
+  authorize("mentor", "admin"),
   deleteAssignment
 );
 

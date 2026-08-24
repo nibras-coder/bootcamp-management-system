@@ -1,52 +1,66 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { BookOpen, Plus, Trash2, X, Link as LinkIcon, Paperclip } from "lucide-react";
-
-const initialResources = [
-  {
-    id: 1,
-    title: "React Official Documentation",
-    description: "The best place to start learning React concepts.",
-    target: "Web Development",
-    date: "2026-08-10",
-    link: "https://react.dev",
-    attachedFile: "",
-  },
-  {
-    id: 2,
-    title: "Figma UI Kit",
-    description: "Standard UI kit to speed up your wireframing.",
-    target: "UI/UX Design",
-    date: "2026-08-12",
-    link: "",
-    attachedFile: "msj_ui_kit_v1.fig",
-  }
-];
+import API from "../../api/axios";
 
 const ResourcesPage = () => {
-  const [resources, setResources] = useState(initialResources);
+  const [resources, setResources] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newResource, setNewResource] = useState({
     title: "",
     description: "",
     target: "All Tracks",
     link: "",
-    attachedFile: "",
+    fileUrl: "",
   });
 
-  const handleAdd = (e) => {
-    e.preventDefault();
-    const date = new Date().toISOString().split("T")[0];
-    setResources([
-      { ...newResource, id: Date.now(), date },
-      ...resources,
-    ]);
-    setIsModalOpen(false);
-    setNewResource({ title: "", description: "", target: "All Tracks", link: "", attachedFile: "" });
+  useEffect(() => {
+    fetchResources();
+  }, []);
+
+  const fetchResources = async () => {
+    try {
+      const response = await API.get("/resources");
+      if (response.data.success) {
+        setResources(response.data.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch resources:", error);
+    }
   };
 
-  const handleDelete = (id) => {
+  const handleAdd = async (e) => {
+    e.preventDefault();
+    try {
+      const formData = new FormData();
+      formData.append("title", newResource.title);
+      formData.append("description", newResource.description);
+      formData.append("target", newResource.target);
+      if (newResource.link) formData.append("link", newResource.link);
+      if (newResource.file) formData.append("file", newResource.file);
+
+      const response = await API.post("/resources", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      if (response.data.success) {
+        setResources([response.data.data, ...resources]);
+        setIsModalOpen(false);
+        setNewResource({ title: "", description: "", target: "All Tracks", link: "", file: null });
+      }
+    } catch (error) {
+      console.error("Failed to add resource:", error);
+    }
+  };
+
+  const handleDelete = async (id) => {
     if (window.confirm("Delete this resource?")) {
-      setResources(resources.filter((r) => r.id !== id));
+      try {
+        await API.delete(`/resources/${id}`);
+        setResources(resources.filter((r) => r._id !== id));
+      } catch (error) {
+        console.error("Failed to delete resource:", error);
+      }
     }
   };
 
@@ -76,11 +90,11 @@ const ResourcesPage = () => {
       <div className="space-y-4">
         {resources.map((res) => (
           <div
-            key={res.id}
+            key={res._id}
             className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow group relative"
           >
             <button
-              onClick={() => handleDelete(res.id)}
+              onClick={() => handleDelete(res._id)}
               className="absolute top-4 right-4 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
             >
               <Trash2 size={18} />
@@ -99,11 +113,11 @@ const ResourcesPage = () => {
                   <span>{res.link}</span>
                 </a>
               )}
-              {res.attachedFile && (
-                <div className="flex items-center space-x-1 text-gray-500">
+              {res.fileUrl && (
+                <a href={res.fileUrl} target="_blank" rel="noopener noreferrer" className="flex items-center space-x-1 text-gray-500 hover:text-teal-600 hover:underline">
                   <Paperclip size={16} />
-                  <span>{res.attachedFile}</span>
-                </div>
+                  <span>Attached File</span>
+                </a>
               )}
             </div>
           </div>
@@ -197,9 +211,14 @@ const ResourcesPage = () => {
                 <input
                   type="file"
                   className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100"
-                  onChange={(e) =>
-                    setNewResource({ ...newResource, attachedFile: e.target.files[0]?.name || "" })
-                  }
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      setNewResource({ ...newResource, file });
+                    } else {
+                      setNewResource({ ...newResource, file: null });
+                    }
+                  }}
                 />
               </div>
 

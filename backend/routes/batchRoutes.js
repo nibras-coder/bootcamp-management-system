@@ -16,12 +16,18 @@ const {
   getBatchById,
   assignMentors,
   getBatchStudents,
-  getMentorBatches,
+  deleteBatch,
 } = require("../controllers/batchController");
 
-// ===============================
-// ADMIN ROUTES
-// ===============================
+// Admin
+
+// Delete batch
+router.delete(
+  "/:id",
+  protect,
+  authorize("admin"),
+  deleteBatch
+);
 
 // Create batch
 router.post(
@@ -31,17 +37,14 @@ router.post(
   createBatch
 );
 
-// Assign mentors to batch
+// Assign mentors
 router.put(
   "/:id/mentors",
   protect,
   authorize("admin"),
   assignMentors
 );
-
-// ===============================
-// AUTHENTICATED USER ROUTES
-// ===============================
+// Authenticated uers
 
 // Get all batches
 router.get(
@@ -50,27 +53,18 @@ router.get(
   getBatches
 );
 
-// Get batches assigned to logged-in mentor
-// IMPORTANT: This must come before /:id
-router.get(
-  "/mentor",
-  protect,
-  authorize("mentor"),
-  getMentorBatches
-);
-
-// Get students in a batch
-router.get(
-  "/:id/students",
-  protect,
-  getBatchStudents
-);
-
 // Get one batch
 router.get(
   "/:id",
   protect,
   getBatchById
+);
+
+// Get students in track
+router.get(
+  "/:id/students",
+  protect,
+  getBatchStudents
 );
 
 module.exports = router;

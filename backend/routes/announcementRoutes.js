@@ -14,69 +14,68 @@ const {
   createAnnouncement,
   getMentorAnnouncements,
   getAnnouncementById,
-  markAnnouncementAsViewed,
   updateAnnouncement,
   deleteAnnouncement,
+  getAllAnnouncements,
+  markAnnouncementRead,
 } = require(
   "../controllers/announcementController"
 );
 
-// ==========================================
-// GET MENTOR ANNOUNCEMENTS
-// ==========================================
+// Get all announcements (for admin)
+router.get(
+  "/all",
+  protect,
+  authorize("admin"),
+  getAllAnnouncements
+);
+
+// Get mentor announcements
 router.get(
   "/",
   protect,
-  authorize("mentor"),
+  authorize("mentor", "admin"),
   getMentorAnnouncements
 );
 
-// ==========================================
-// CREATE ANNOUNCEMENT
-// ==========================================
-router.post(
-  "/",
-  protect,
-  authorize("mentor"),
-  createAnnouncement
-);
-
-// ==========================================
-// MARK ANNOUNCEMENT AS VIEWED
-// ==========================================
-router.post(
-  "/:id/view",
-  protect,
-  authorize("student"),
-  markAnnouncementAsViewed
-);
-
-// ==========================================
-// GET ONE ANNOUNCEMENT
-// ==========================================
+// Get one announcement
 router.get(
   "/:id",
   protect,
-  authorize("mentor"),
+  authorize("mentor", "admin"),
   getAnnouncementById
 );
-// UPDATE ANNOUNCEMENT
 
+// Create announcement
+router.post(
+  "/",
+  protect,
+  authorize("mentor", "admin"),
+  createAnnouncement
+);
+
+// Update announcement
 router.put(
   "/:id",
   protect,
-  authorize("mentor"),
+  authorize("mentor", "admin"),
   updateAnnouncement
 );
 
-
-// DELETE ANNOUNCEMENT
-
+// Delete announcement
 router.delete(
   "/:id",
   protect,
-  authorize("mentor"),
+  authorize("mentor", "admin"),
   deleteAnnouncement
+);
+
+// Mark as read
+router.patch(
+  "/:id/read",
+  protect,
+  authorize("admin", "mentor"),
+  markAnnouncementRead
 );
 
 module.exports = router;

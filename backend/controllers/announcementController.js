@@ -1,10 +1,9 @@
-const Announcement = require("../models/Announcement");
+const Announcement = require("../models/announcement");
 const Batch = require("../models/Batch");
 const User = require("../models/User");
 
-// ==========================================
-// CREATE ANNOUNCEMENT
-// ==========================================
+// Create announcement
+
 const createAnnouncement = async (req, res) => {
   try {
     const mentorId = req.user.id;
@@ -17,77 +16,85 @@ const createAnnouncement = async (req, res) => {
       publishDate,
     } = req.body;
 
-    if (!title || !content || !batch) {
+    if (!title || !content) {
       return res.status(400).json({
         success: false,
-        message: "Title, content and batch are required",
+        message:
+          "Title and content are required",
       });
     }
 
-    // Check mentor is assigned to this batch
-    const mentorBatch = await Batch.findOne({
-      _id: batch,
-      mentors: mentorId,
-    });
-
-    if (!mentorBatch) {
-      return res.status(403).json({
+    if (!batch && req.user.role !== 'admin') {
+      return res.status(400).json({
         success: false,
-        message: "You are not assigned to this batch",
+        message: "Batch is required for mentors",
       });
     }
 
-    const announcement = await Announcement.create({
-      title,
-      content,
-      targetAudience: targetAudience || "students",
-      batch,
-      author: mentorId,
-      publishDate: publishDate || new Date(),
-      views: [],
-    });
+    // Check mentor is assigned to batch
+    if (req.user.role !== 'admin' && batch) {
+      const mentorBatch = await Batch.findOne({
+        _id: batch,
+        mentors: req.user.id,
+      });
+
+      if (!mentorBatch) {
+        return res.status(403).json({
+          success: false,
+          message:
+            "You are not assigned to this batch",
+        });
+      }
+    }
+
+    const announcement =
+      await Announcement.create({
+        title,
+        content,
+        targetAudience:
+          targetAudience || "students",
+        batch: batch || null,
+        author: mentorId,
+        publishDate:
+          publishDate || new Date(),
+      });
 
     const populatedAnnouncement =
-      await Announcement.findById(announcement._id)
+      await Announcement.findById(
+        announcement._id
+      )
         .populate("batch", "name track")
         .populate("author", "name email");
 
-    // Count active students in the batch
-    const totalStudents = await User.countDocuments({
-      role: "student",
-      batch: batch,
-      isActive: true,
-    });
-
     res.status(201).json({
       success: true,
-      message: "Announcement created successfully",
-      data: {
-        ...populatedAnnouncement.toObject(),
-        totalStudents,
-        viewedStudents: 0,
-        viewPercentage: 0,
-      },
+      message:
+        "Announcement created successfully",
+      data: populatedAnnouncement,
     });
   } catch (error) {
-    console.error("Create announcement error:", error);
+    console.error(
+      "Create announcement error:",
+      error
+    );
 
     res.status(500).json({
       success: false,
-      message: "Failed to create announcement",
+      message:
+        "Failed to create announcement",
       error: error.message,
     });
   }
 };
+// Get mentor announcement
 
-// ==========================================
-// GET MENTOR ANNOUNCEMENTS
-// ==========================================
-const getMentorAnnouncements = async (req, res) => {
+const getMentorAnnouncements = async (
+  req,
+  res
+) => {
   try {
     const mentorId = req.user.id;
 
-    // Find batches assigned to this mentor
     const batches = await Batch.find({
       mentors: mentorId,
     }).select("_id");
@@ -96,56 +103,22 @@ const getMentorAnnouncements = async (req, res) => {
       (batch) => batch._id
     );
 
-    // Find announcements
-    const announcements = await Announcement.find({
-      batch: { $in: batchIds },
-    })
-      .populate("batch", "name track")
-      .populate("author", "name email")
-      .populate(
-        "views.student",
-        "name email"
-      )
-      .sort({
-        publishDate: -1,
-      });
-
-    // Add view statistics
-    const announcementsWithStats =
-      await Promise.all(
-        announcements.map(async (announcement) => {
-          const totalStudents =
-            await User.countDocuments({
-              role: "student",
-              batch: announcement.batch._id,
-              isActive: true,
-            });
-
-          const viewedStudents =
-            announcement.views?.length || 0;
-
-          const viewPercentage =
-            totalStudents > 0
-              ? Math.round(
-                  (viewedStudents /
-                    totalStudents) *
-                    100
-                )
-              : 0;
-
-          return {
-            ...announcement.toObject(),
-            totalStudents,
-            viewedStudents,
-            viewPercentage,
-          };
-        })
-      );
+    const announcements =
+      await Announcement.find({
+        batch: {
+          $in: batchIds,
+        },
+      })
+        .populate("batch", "name track")
+        .populate("author", "name email")
+        .sort({
+          publishDate: -1,
+        });
 
     res.status(200).json({
       success: true,
-      count: announcementsWithStats.length,
-      data: announcementsWithStats,
+      count: announcements.length,
+      data: announcements,
     });
   } catch (error) {
     console.error(
@@ -155,15 +128,37 @@ const getMentorAnnouncements = async (req, res) => {
 
     res.status(500).json({
       success: false,
-      message: "Failed to get announcements",
+      message:
+        "Failed to get announcements",
+      error: error.message,
+    });
+  }
+};
+// Get all announcements (for admin)
+const getAllAnnouncements = async (req, res) => {
+  try {
+    const announcements = await Announcement.find()
+      .populate("batch", "name track")
+      .populate("author", "name email")
+      .sort({ publishDate: -1 });
+
+    res.status(200).json({
+      success: true,
+      count: announcements.length,
+      data: announcements,
+    });
+  } catch (error) {
+    console.error("Get all announcements error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to get all announcements",
       error: error.message,
     });
   }
 };
 
-// ==========================================
-// GET ONE ANNOUNCEMENT
-// ==========================================
+// Get one announcement
+
 const getAnnouncementById = async (
   req,
   res
@@ -175,20 +170,16 @@ const getAnnouncementById = async (
     const announcement =
       await Announcement.findById(id)
         .populate("batch", "name track")
-        .populate("author", "name email")
-        .populate(
-          "views.student",
-          "name email"
-        );
+        .populate("author", "name email");
 
     if (!announcement) {
       return res.status(404).json({
         success: false,
-        message: "Announcement not found",
+        message:
+          "Announcement not found",
       });
     }
 
-    // Check mentor access
     const mentorBatch =
       await Batch.findOne({
         _id: announcement.batch._id,
@@ -203,34 +194,9 @@ const getAnnouncementById = async (
       });
     }
 
-    // Count active students
-    const totalStudents =
-      await User.countDocuments({
-        role: "student",
-        batch: announcement.batch._id,
-        isActive: true,
-      });
-
-    const viewedStudents =
-      announcement.views?.length || 0;
-
-    const viewPercentage =
-      totalStudents > 0
-        ? Math.round(
-            (viewedStudents /
-              totalStudents) *
-              100
-          )
-        : 0;
-
     res.status(200).json({
       success: true,
-      data: {
-        ...announcement.toObject(),
-        totalStudents,
-        viewedStudents,
-        viewPercentage,
-      },
+      data: announcement,
     });
   } catch (error) {
     console.error(
@@ -240,130 +206,92 @@ const getAnnouncementById = async (
 
     res.status(500).json({
       success: false,
-      message: "Failed to get announcement",
+      message:
+        "Failed to get announcement",
       error: error.message,
     });
   }
 };
 
-// ==========================================
-// MARK ANNOUNCEMENT AS VIEWED
-// ==========================================
-const markAnnouncementAsViewed = async (
+const getMyAnnouncements = async (
   req,
   res
 ) => {
   try {
+    // Get logged-in student's ID
     const studentId = req.user.id;
-    const { id } = req.params;
 
-    // Find announcement
-    const announcement =
-      await Announcement.findById(id);
+    // Find logged-in student
 
-    if (!announcement) {
-      return res.status(404).json({
-        success: false,
-        message: "Announcement not found",
-      });
-    }
-
-    // Make sure logged-in user is a student
     const student = await User.findOne({
       _id: studentId,
       role: "student",
-    });
+    }).populate("batch", "name track");
 
     if (!student) {
-      return res.status(403).json({
+      return res.status(404).json({
+        success: false,
+        message: "Student not found",
+      });
+    }
+    // Student must have a batch
+
+    if (!student.batch) {
+      return res.status(404).json({
         success: false,
         message:
-          "Only students can view announcements",
+          "Student is not assigned to a batch",
       });
     }
-
-    // Check student belongs to the batch
-    if (
-      !student.batch ||
-      student.batch.toString() !==
-        announcement.batch.toString()
-    ) {
-      return res.status(403).json({
-        success: false,
-        message:
-          "You are not a member of this announcement batch",
-      });
-    }
-
-    // Check if student already viewed it
-    const alreadyViewed =
-      announcement.views.some(
-        (view) =>
-          view.student.toString() ===
-          studentId.toString()
-      );
-
-    // Add view only once
-    if (!alreadyViewed) {
-      announcement.views.push({
-        student: studentId,
-        viewedAt: new Date(),
-      });
-
-      await announcement.save();
-    }
-
-    // Count active students
-    const totalStudents =
-      await User.countDocuments({
-        role: "student",
-        batch: announcement.batch,
-        isActive: true,
-      });
-
-    const viewedStudents =
-      announcement.views.length;
-
-    const viewPercentage =
-      totalStudents > 0
-        ? Math.round(
-            (viewedStudents /
-              totalStudents) *
-              100
-          )
-        : 0;
+    // Find announcements for student's batch
+  
+    const announcements =
+      await Announcement.find({
+        batch: student.batch._id,
+        targetAudience: {
+          $in: ["students", "all"],
+        },
+        publishDate: {
+          $lte: new Date(),
+        },
+      })
+        .populate("batch", "name track")
+        .populate("author", "name email")
+        .sort({
+          publishDate: -1,
+        });
 
     res.status(200).json({
       success: true,
-      message: alreadyViewed
-        ? "Announcement already viewed"
-        : "Announcement marked as viewed",
+      count: announcements.length,
+
       data: {
-        announcementId: announcement._id,
-        viewedStudents,
-        totalStudents,
-        viewPercentage,
-        alreadyViewed,
+        student: {
+          id: student._id,
+          name: student.name,
+          email: student.email,
+          batch: student.batch,
+        },
+
+        announcements,
       },
     });
   } catch (error) {
     console.error(
-      "Mark announcement viewed error:",
+      "Get my announcements error:",
       error
     );
 
     res.status(500).json({
       success: false,
       message:
-        "Failed to mark announcement as viewed",
+        "Failed to get your announcements",
       error: error.message,
     });
   }
 };
+// Update announcement -> Mentor
 
-// ==========================================
-// UPDATE ANNOUNCEMENT
-// ==========================================
 const updateAnnouncement = async (
   req,
   res
@@ -378,18 +306,18 @@ const updateAnnouncement = async (
     if (!announcement) {
       return res.status(404).json({
         success: false,
-        message: "Announcement not found",
+        message:
+          "Announcement not found",
       });
     }
 
-    // Check mentor access
     const mentorBatch =
       await Batch.findOne({
         _id: announcement.batch,
         mentors: mentorId,
       });
 
-    if (!mentorBatch) {
+    if (req.user.role !== "admin" && !mentorBatch) {
       return res.status(403).json({
         success: false,
         message:
@@ -427,41 +355,13 @@ const updateAnnouncement = async (
     const updatedAnnouncement =
       await Announcement.findById(id)
         .populate("batch", "name track")
-        .populate("author", "name email")
-        .populate(
-          "views.student",
-          "name email"
-        );
-
-    const totalStudents =
-      await User.countDocuments({
-        role: "student",
-        batch: updatedAnnouncement.batch._id,
-        isActive: true,
-      });
-
-    const viewedStudents =
-      updatedAnnouncement.views?.length || 0;
-
-    const viewPercentage =
-      totalStudents > 0
-        ? Math.round(
-            (viewedStudents /
-              totalStudents) *
-              100
-          )
-        : 0;
+        .populate("author", "name email");
 
     res.status(200).json({
       success: true,
       message:
         "Announcement updated successfully",
-      data: {
-        ...updatedAnnouncement.toObject(),
-        totalStudents,
-        viewedStudents,
-        viewPercentage,
-      },
+      data: updatedAnnouncement,
     });
   } catch (error) {
     console.error(
@@ -477,8 +377,7 @@ const updateAnnouncement = async (
     });
   }
 };
-
-// DELETE ANNOUNCEMENT
+// Delete announcement
 
 const deleteAnnouncement = async (
   req,
@@ -494,11 +393,11 @@ const deleteAnnouncement = async (
     if (!announcement) {
       return res.status(404).json({
         success: false,
-        message: "Announcement not found",
+        message:
+          "Announcement not found",
       });
     }
 
-    // Check mentor access
     const mentorBatch =
       await Batch.findOne({
         _id: announcement.batch,
@@ -535,14 +434,54 @@ const deleteAnnouncement = async (
   }
 };
 
+module.exports = {
+  createAnnouncement,
+  getMentorAnnouncements,
+  getAnnouncementById,
+  getMyAnnouncements,
+  updateAnnouncement,
+  deleteAnnouncement,
+};
 
-// EXPORT CONTROLLERS
+const markAnnouncementRead = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { id } = req.params;
+
+    const announcement = await Announcement.findById(id);
+
+    if (!announcement) {
+      return res.status(404).json({
+        success: false,
+        message: "Announcement not found",
+      });
+    }
+
+    if (!announcement.readBy.includes(userId)) {
+      announcement.readBy.push(userId);
+      await announcement.save();
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Announcement marked as read",
+    });
+  } catch (error) {
+    console.error("Mark announcement read error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to mark announcement as read",
+      error: error.message,
+    });
+  }
+};
 
 module.exports = {
   createAnnouncement,
   getMentorAnnouncements,
   getAnnouncementById,
-  markAnnouncementAsViewed,
   updateAnnouncement,
   deleteAnnouncement,
+  markAnnouncementRead,
+  getAllAnnouncements,
 };

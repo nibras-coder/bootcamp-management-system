@@ -1,204 +1,177 @@
 const User = require("../models/User");
 const Batch = require("../models/Batch");
-const cloudinary = require("../config/cloudinary");
+const asyncHandler = require("../utils/asyncHandler");
 
-// Get all users
-const getUsers = async (req, res) => {
-  res.status(200).json({
-    message: "Not implemented yet",
+const getUsers = asyncHandler(async (req, res) => {
+  const { role, search } = req.query;
+  const query = {};
+  if (role) query.role = role;
+  if (search) {
+    query.$or = [
+      { name: { $regex: search, $options: "i" } },
+      { email: { $regex: search, $options: "i" } },
+    ];
+  }
+
+  const users = await User.find(query)
+    .select("-password")
+    .populate("batch", "name track")
+    .sort({ createdAt: -1 });
+
+  res.status(200).json({ success: true, count: users.length, data: users });
+});
+
+const getUserById = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.params.id)
+    .select("-password")
+    .populate("batch", "name track");
+
+  if (!user) return res.status(404).json({ success: false, message: "User not found" });
+  res.status(200).json({ success: true, data: user });
+});
+
+const createUser = asyncHandler(async (req, res) => {
+  const { name, fullName, email, password, role, batch } = req.body;
+  const userName = name || fullName;
+
+  if (!userName || !email || !password || !role) {
+    return res.status(400).json({
+      success: false,
+      message: "Missing required fields",
+    });
+  }
+  const existing = await User.findOne({
+    email: email.toLowerCase(),
   });
-};
 
-// Create user
-const createUser = async (req, res) => {
-  res.status(200).json({
-    message: "Not implemented yet",
+  const existing = await User.findOne({ email: email.toLowerCase().trim() });
+  if (existing) return res.status(400).json({ success: false, message: "Email already in use" });
+
+  const user = await User.create({
+    name: userName,
+    email: email.toLowerCase().trim(),
+    password,
+    role,
+    batch: batch || null,
   });
-};
 
-// Update user
-const updateUser = async (req, res) => {
-  res.status(200).json({
-    message: "Not implemented yet",
+  res.status(201).json({
+    success: true,
+    message: "User created",
+    user: user.toObject({ transform: (_, value) => {
+      delete value.password;
+      return value;
+    } }),
   });
-};
+});
 
-// Delete user
-const deleteUser = async (req, res) => {
+const updateUser = asyncHandler(async (req, res) => {
+  const { name, fullName, email, role, batch } = req.body;
+  const user = await User.findById(req.params.id);
+  if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      message: "User not found",
+    });
+  }
+
+  if (name !== undefined || fullName !== undefined) {
+    user.name = name !== undefined ? name : fullName;
+  }
+
+  if (email !== undefined) {
+    user.email = email.toLowerCase();
+  }
+
+  if (role !== undefined) {
+    user.role = role;
+  }
+
+  if (batch !== undefined) {
+    user.batch = batch;
+  }
+
+  await user.save();
+
   res.status(200).json({
-    message: "Not implemented yet",
+    success: true,
+    message: "User updated",
+    user: user.toObject({ transform: (_, value) => {
+      delete value.password;
+      return value;
+    } }),
   });
-};
+});
 
-// Get all students
+const deleteUser = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.params.id);
+  if (!user) return res.status(404).json({ success: false, message: "User not found" });
+  await user.deleteOne();
+  res.status(200).json({ success: true, message: "User deleted" });
+});
+
 const getStudents = async (req, res) => {
   try {
-    const students = await User.find({
-      role: "student",
-    })
-      .select("-password")
-      .populate("batch", "name track");
-
-    res.status(200).json({
-      success: true,
-      count: students.length,
-      data: students,
-    });
-  } catch (error) {
-    console.error("Get students error:", error);
-
-    res.status(500).json({
-      success: false,
-      message: "Failed to get students",
-      error: error.message,
-    });
-  }
-};
-
-// Get one user
-const getUserById = async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id)
-      .select("-password")
-      .populate("batch", "name track");
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
+    const filter = { role: "student" };
+    if (req.query.gender) {
+      filter.gender = req.query.gender;
+    }
+    if (req.query.batch) {
+      filter.batch = req.query.batch;
     }
 
-    res.status(200).json({
-      success: true,
-      data: user,
-    });
+    const students = await User.find(filter)
+      .select("-password")
+      .populate("batch", "name track");
+    res.status(200).json({ success: true, count: students.length, data: students });
   } catch (error) {
-    console.error("Get user error:", error);
-
-    res.status(500).json({
-      success: false,
-      message: "Failed to get user",
-      error: error.message,
-    });
+    res.status(500).json({ success: false, message: "Failed to get students", error: error.message });
   }
 };
+const warnStudent = async (req, res) => {
+  try {
+    const { message } = req.body;
+    if (!message) {
+      return res.status(400).json({ success: false, message: "Warning message is required" });
+    }
 
-// Get mentor's students
+    const student = await User.findOneAndUpdate(
+      { _id: req.params.id, role: "student" },
+      { $push: { warnings: { message } } },
+      { new: true }
+    ).select("-password");
+
+    if (!student) {
+      return res.status(404).json({ success: false, message: "Student not found" });
+    }
+
+    res.status(200).json({ success: true, message: "Warning added successfully", data: student });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Failed to warn student", error: error.message });
+  }
+};
+// Get students assigned to the logged-in mentor
 const getMentorStudents = async (req, res) => {
   try {
-    const mentorId = req.user.id;
-
-    const batches = await Batch.find({
-      mentors: mentorId,
-    }).select("_id name track");
-
-    const batchIds = batches.map(
-      (batch) => batch._id
-    );
-
-    const students = await User.find({
-      role: "student",
-      batch: { $in: batchIds },
-    })
+    const batches = await Batch.find({ mentors: req.user.id }).select("_id name track");
+    const students = await User.find({ role: "student", batch: { $in: batches.map((b) => b._id) } })
       .select("-password")
       .populate("batch", "name track");
-
-    res.status(200).json({
-      success: true,
-      count: students.length,
-      data: students,
-    });
+    res.status(200).json({ success: true, count: students.length, data: students });
   } catch (error) {
-    console.error(
-      "Get mentor students error:",
-      error
-    );
-
-    res.status(500).json({
-      success: false,
-      message: "Failed to get mentor students",
-      error: error.message,
-    });
-  }
-};
-
-// Upload profile photo
-const uploadProfilePhoto = async (req, res) => {
-  try {
-    const userId = req.user.id;
-
-    if (!req.file) {
-      return res.status(400).json({
-        success: false,
-        message: "Please select an image",
-      });
-    }
-
-    const user = await User.findById(userId);
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-    }
-
-    const uploadResult = await new Promise(
-      (resolve, reject) => {
-        const uploadStream =
-          cloudinary.uploader.upload_stream(
-            {
-              folder: "bootcamp-management/profiles",
-              public_id: `user-${userId}`,
-              overwrite: true,
-              resource_type: "image",
-            },
-            (error, result) => {
-              if (error) {
-                reject(error);
-              } else {
-                resolve(result);
-              }
-            }
-          );
-
-        uploadStream.end(req.file.buffer);
-      }
-    );
-
-    user.avatarUrl = uploadResult.secure_url;
-
-    await user.save();
-
-    res.status(200).json({
-      success: true,
-      message: "Profile photo updated successfully",
-      data: {
-        avatarUrl: user.avatarUrl,
-      },
-    });
-  } catch (error) {
-    console.error(
-      "Upload profile photo error:",
-      error
-    );
-
-    res.status(500).json({
-      success: false,
-      message: "Failed to upload profile photo",
-      error: error.message,
-    });
+    res.status(500).json({ success: false, message: "Failed to get mentor students", error: error.message });
   }
 };
 
 module.exports = {
   getUsers,
+  getUserById,
   createUser,
   updateUser,
   deleteUser,
   getStudents,
-  getUserById,
   getMentorStudents,
-  uploadProfilePhoto,
+  warnStudent,
 };

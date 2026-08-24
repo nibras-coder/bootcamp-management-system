@@ -6,7 +6,7 @@ const UsersTable = () => {
     {
       id: 1,
       name: "Hanan Mohammed",
-      email: "hayat@gmail.com",
+      email: "hanan@gmail.com",
       role: "Student",
       batch: "Web Dev Trach 2",
       status: "Active",
@@ -21,8 +21,8 @@ const UsersTable = () => {
     },
     {
       id: 3,
-      name: "Sumeya Abdulfetah",
-      email: "sumeya@gmail.com",
+      name: "Samiya Fuad",
+      email: "samiya@gmail.com",
       role: "Mentor",
       batch: "Web Dev Track 2",
       status: "Active",

@@ -1,191 +1,224 @@
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
 import Sidebar from "../components/mentor/Sidebar";
-import api from "../api/axios";
+import { X } from "lucide-react";
+
+const initialSubmissions = [
+  {
+    id: 1,
+    student: "Huda Temam",
+    assignment: "React Components",
+    githubUrl: "https://github.com/huda/react-components",
+    liveDemoUrl: "https://huda-demo.vercel.app",
+    notes: "Used custom hooks for state management.",
+    status: "submitted",
+    score: null,
+    feedback: "",
+  },
+  {
+    id: 2,
+    student: "Mahi Awel",
+    assignment: "API Integration",
+    githubUrl: "https://github.com/mahi/api-integration",
+    liveDemoUrl: "",
+    notes: "",
+    status: "submitted",
+    score: null,
+    feedback: "",
+  },
+  {
+    id: 3,
+    student: "Daniya Abdu",
+    assignment: "React Components",
+    githubUrl: "https://github.com/daniya/react-components",
+    liveDemoUrl: "https://daniya-demo.vercel.app",
+    notes: "Deployed a bit late, sorry!",
+    status: "graded",
+    score: 88,
+    feedback: "Great work, clean components.",
+  },
+];
+
+const statusColors = {
+  submitted: "bg-orange-50 text-orange-500",
+  graded: "bg-teal-50 text-teal-700",
+  resubmission_requested: "bg-red-50 text-red-600",
+};
 
 function Grading() {
-  const [submissions, setSubmissions] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [submissions, setSubmissions] = useState(initialSubmissions);
+  const [selected, setSelected] = useState(null);
+  const [score, setScore] = useState("");
+  const [feedback, setFeedback] = useState("");
 
-  useEffect(() => {
-    fetchPendingSubmissions();
-  }, []);
+  const openSubmission = (submission) => {
+    setSelected(submission);
+    setScore(submission.score ?? "");
+    setFeedback(submission.feedback ?? "");
+  };
 
-  const fetchPendingSubmissions = async () => {
-    try {
-      setLoading(true);
-      setError("");
+  const closeModal = () => {
+    setSelected(null);
+    setScore("");
+    setFeedback("");
+  };
 
-      const response = await api.get("/submissions/pending");
-
-      console.log("Pending submissions:", response.data);
-
-      setSubmissions(response.data.data || []);
-    } catch (err) {
-      console.error("Error fetching submissions:", err);
-
-      setError(
-        err.response?.data?.message ||
-          "Failed to load student submissions."
-      );
-    } finally {
-      setLoading(false);
-    }
+  const handleGrade = (newStatus) => {
+    // TODO: send { score, feedback, status } to backend via PUT /api/submissions/:id
+    setSubmissions((prev) =>
+      prev.map((sub) =>
+        sub.id === selected.id
+          ? {
+              ...sub,
+              score: score ? Number(score) : null,
+              feedback,
+              status: newStatus,
+            }
+          : sub,
+      ),
+    );
+    closeModal();
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex bg-gray-50 min-h-screen">
       <Sidebar />
 
       <main className="flex-1 p-8">
-        <h1 className="text-2xl font-bold text-gray-900">
-          Grading
-        </h1>
-
-        <p className="text-gray-500 mt-2">
+        <h1 className="text-2xl font-bold text-gray-900 mb-1">Grading</h1>
+        <p className="text-gray-500 text-sm mb-6">
           Review and grade student submissions.
         </p>
 
-        {/* Loading */}
-        {loading && (
-          <div className="mt-6 bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-            <p className="text-gray-500">
-              Loading submissions...
-            </p>
-          </div>
-        )}
-
-        {/* Error */}
-        {!loading && error && (
-          <div className="mt-6 bg-red-50 border border-red-200 rounded-xl p-6">
-            <p className="text-red-600">{error}</p>
-
-            <button
-              onClick={fetchPendingSubmissions}
-              className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg"
-            >
-              Try Again
-            </button>
-          </div>
-        )}
-
-        {/* No submissions */}
-        {!loading && !error && submissions.length === 0 && (
-          <div className="mt-6 bg-white rounded-xl p-8 shadow-sm border border-gray-100 text-center">
-            <h2 className="text-lg font-semibold text-gray-800">
-              No pending submissions
-            </h2>
-
-            <p className="text-gray-500 mt-2">
-              There are currently no student submissions waiting for grading.
-            </p>
-          </div>
-        )}
-
-        {/* Submissions */}
-        {!loading && !error && submissions.length > 0 && (
-          <div className="mt-6 space-y-4">
-            {submissions.map((submission) => (
-              <div
-                key={submission._id}
-                className="bg-white rounded-xl p-6 shadow-sm border border-gray-100"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <h2 className="text-lg font-bold text-gray-900">
-                      {submission.student?.name}
-                    </h2>
-
-                    <p className="text-sm text-gray-500 mt-1">
-                      {submission.student?.email}
-                    </p>
-                  </div>
-
-                  <span className="px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-700">
-                    {submission.status}
-                  </span>
-                </div>
-
-                <div className="mt-5">
-                  <h3 className="font-semibold text-gray-800">
-                    {submission.assignment?.title}
-                  </h3>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4 text-sm">
-                    <div>
-                      <span className="text-gray-500">
-                        Maximum Score:
-                      </span>
-
-                      <span className="ml-2 font-medium text-gray-800">
-                        {submission.assignment?.maxScore}
-                      </span>
-                    </div>
-
-                    <div>
-                      <span className="text-gray-500">
-                        Submitted:
-                      </span>
-
-                      <span className="ml-2 font-medium text-gray-800">
-                        {submission.submittedAt
-                          ? new Date(
-                              submission.submittedAt
-                            ).toLocaleDateString()
-                          : "N/A"}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {submission.notes && (
-                  <div className="mt-4">
-                    <p className="text-sm font-medium text-gray-700">
-                      Student Notes
-                    </p>
-
-                    <p className="text-sm text-gray-500 mt-1">
-                      {submission.notes}
-                    </p>
-                  </div>
-                )}
-
-                <div className="flex flex-wrap gap-3 mt-5">
-                  {submission.githubUrl && (
-                    <a
-                      href={submission.githubUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm hover:bg-gray-800"
+        <div className="bg-white rounded-xl shadow-sm p-5">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left text-gray-400 border-b border-gray-100">
+                <th className="pb-3 font-normal">Student</th>
+                <th className="pb-3 font-normal">Assignment</th>
+                <th className="pb-3 font-normal">Score</th>
+                <th className="pb-3 font-normal">Status</th>
+                <th className="pb-3 font-normal"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {submissions.map((sub) => (
+                <tr
+                  key={sub.id}
+                  className="border-b border-gray-50 last:border-0"
+                >
+                  <td className="py-3 text-gray-800">{sub.student}</td>
+                  <td className="py-3 text-gray-600">{sub.assignment}</td>
+                  <td className="py-3 text-gray-600">{sub.score ?? "—"}</td>
+                  <td className="py-3">
+                    <span
+                      className={`text-xs px-2 py-1 rounded-full capitalize ${statusColors[sub.status]}`}
                     >
-                      View GitHub
-                    </a>
-                  )}
-
-                  {submission.liveDemoUrl && (
-                    <a
-                      href={submission.liveDemoUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700"
+                      {sub.status.replace("_", " ")}
+                    </span>
+                  </td>
+                  <td className="py-3 text-right">
+                    <button
+                      onClick={() => openSubmission(sub)}
+                      className="text-teal-700 text-sm hover:underline"
                     >
-                      View Live Demo
-                    </a>
-                  )}
+                      Review
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
-                  <button
-                    className="px-4 py-2 bg-teal-600 text-white rounded-lg text-sm hover:bg-teal-700"
-                    onClick={() =>
-                      alert(
-                        `Grading ${submission.student?.name}'s submission`
-                      )
-                    }
+        {/* Review modal */}
+        {selected && (
+          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+            <div className="bg-white rounded-xl p-6 w-full max-w-lg">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="font-semibold text-gray-800">
+                  {selected.student} — {selected.assignment}
+                </h3>
+                <button onClick={closeModal}>
+                  <X size={18} className="text-gray-400" />
+                </button>
+              </div>
+
+              <div className="space-y-2 mb-4 text-sm">
+                <p>
+                  <span className="text-gray-500">GitHub: </span>
+                  <a
+                    href={selected.githubUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-teal-700 hover:underline"
                   >
-                    Grade Submission
+                    {selected.githubUrl}
+                  </a>
+                </p>
+                {selected.liveDemoUrl && (
+                  <p>
+                    <span className="text-gray-500">Live Demo: </span>
+                    <a
+                      href={selected.liveDemoUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-teal-700 hover:underline"
+                    >
+                      {selected.liveDemoUrl}
+                    </a>
+                  </p>
+                )}
+                {selected.notes && (
+                  <p>
+                    <span className="text-gray-500">Student Notes: </span>
+                    {selected.notes}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm text-gray-600 mb-1">
+                    Score
+                  </label>
+                  <input
+                    type="number"
+                    value={score}
+                    onChange={(e) => setScore(e.target.value)}
+                    placeholder="e.g. 85"
+                    className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm text-gray-600 mb-1">
+                    Feedback
+                  </label>
+                  <textarea
+                    value={feedback}
+                    onChange={(e) => setFeedback(e.target.value)}
+                    rows={3}
+                    placeholder="Write feedback for the student..."
+                    className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm"
+                  />
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => handleGrade("graded")}
+                    className="flex-1 bg-teal-800 text-white py-2.5 rounded-lg text-sm hover:bg-teal-900"
+                  >
+                    Save Grade
+                  </button>
+                  <button
+                    onClick={() => handleGrade("resubmission_requested")}
+                    className="flex-1 border border-red-200 text-red-600 py-2.5 rounded-lg text-sm hover:bg-red-50"
+                  >
+                    Request Resubmission
                   </button>
                 </div>
               </div>
-            ))}
+            </div>
           </div>
         )}
       </main>

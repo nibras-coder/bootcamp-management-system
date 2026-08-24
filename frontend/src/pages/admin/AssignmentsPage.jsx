@@ -1,62 +1,78 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Plus, FileText, Clock, CheckCircle, X } from "lucide-react";
-
-const initialAssignments = [
-  {
-    id: 1,
-    title: "DSA Weekly Contest #1 (Codeforces)",
-    batch: "DSA & Competitive Programming",
-    dueDate: "2026-08-20",
-    status: "Active",
-    submissions: 32,
-    total: 45,
-  },
-  {
-    id: 2,
-    title: "React UI Clone",
-    batch: "Web Dev Bootcamp",
-    dueDate: "2026-08-15",
-    status: "Grading",
-    submissions: 40,
-    total: 45,
-  },
-  {
-    id: 3,
-    title: "Database Design",
-    batch: "Backend Masterclass",
-    dueDate: "2026-08-25",
-    status: "Active",
-    submissions: 10,
-    total: 30,
-  },
-];
+import API from "../../api/axios";
 
 const AssignmentsPage = () => {
-  const [assignments, setAssignments] = useState(initialAssignments);
+  const [assignments, setAssignments] = useState([]);
+  const [batches, setBatches] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isGradingModalOpen, setIsGradingModalOpen] = useState(false);
   const [newAssignment, setNewAssignment] = useState({
     title: "",
+    description: "",
     batch: "",
-    dueDate: "",
-    status: "Active",
-    submissions: 0,
-    total: 45,
+    deadline: "",
+    maxScore: 100,
   });
   const [activeGradingId, setActiveGradingId] = useState(null);
 
-  const handleAddAssignment = (e) => {
+  useEffect(() => {
+    fetchAssignments();
+    fetchBatches();
+  }, []);
+
+  const fetchAssignments = async () => {
+    try {
+      const response = await API.get("/assignments");
+      if (response.data.success) {
+        setAssignments(response.data.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch assignments:", error);
+    }
+  };
+
+  const fetchBatches = async () => {
+    try {
+      const response = await API.get("/batches");
+      if (response.data.success) {
+        setBatches(response.data.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch batches:", error);
+    }
+  };
+
+  const handleAddAssignment = async (e) => {
     e.preventDefault();
-    setAssignments([...assignments, { ...newAssignment, id: Date.now() }]);
-    setIsModalOpen(false);
-    setNewAssignment({
-      title: "",
-      batch: "",
-      dueDate: "",
-      status: "Active",
-      submissions: 0,
-      total: 45,
-    });
+    try {
+      const payload = {
+        title: newAssignment.title,
+        batch: newAssignment.batch,
+        deadline: newAssignment.deadline,
+        maxScore: newAssignment.maxScore,
+        description: newAssignment.description || newAssignment.title, // Add default description if missing
+        link: newAssignment.link,
+      };
+
+      const response = await API.post("/assignments", payload);
+      if (response.data.success) {
+        // Refresh assignments to get populated batch
+        fetchAssignments();
+        setIsModalOpen(false);
+        setNewAssignment({
+          title: "",
+          description: "",
+          batch: "",
+          deadline: "",
+          maxScore: 100,
+          link: "",
+        });
+      }
+    } catch (error) {
+      console.error("Failed to add assignment:", error);
+      alert(error.response?.data?.message || "Failed to add assignment");
+    }
   };
 
   const openGrading = (id) => {
@@ -65,11 +81,8 @@ const AssignmentsPage = () => {
   };
 
   const completeGrading = () => {
-    setAssignments(
-      assignments.map((a) =>
-        a.id === activeGradingId ? { ...a, status: "Completed" } : a,
-      ),
-    );
+    // For now, since grade updating isn't fully set up in backend MVP,
+    // just close the modal.
     setIsGradingModalOpen(false);
     setActiveGradingId(null);
   };
@@ -92,7 +105,7 @@ const AssignmentsPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {assignments.map((assignment) => (
           <div
-            key={assignment.id}
+            key={assignment._id}
             className="bg-white p-6 rounded-xl shadow-sm border border-gray-200"
           >
             <div className="flex justify-between items-start mb-4">
@@ -101,7 +114,10 @@ const AssignmentsPage = () => {
                   {assignment.title}
                 </h3>
                 <p className="text-sm text-gray-500 mt-1">
-                  Batch: {assignment.batch}
+                  Batch:{" "}
+                  {assignment.batch?.name ||
+                    assignment.batch?.track ||
+                    "Unknown"}
                 </p>
               </div>
               <span
@@ -113,41 +129,30 @@ const AssignmentsPage = () => {
                       : "bg-green-100 text-green-800"
                 }`}
               >
-                {assignment.status}
+                {assignment.status || "Active"}
               </span>
             </div>
 
             <div className="flex items-center text-sm text-gray-600 mb-4 space-x-4">
               <div className="flex items-center space-x-1">
                 <Clock size={16} className="text-gray-400" />
-                <span>Due: {assignment.dueDate}</span>
+                <span>
+                  Due: {new Date(assignment.deadline).toLocaleDateString()}
+                </span>
               </div>
               <div className="flex items-center space-x-1">
                 <FileText size={16} className="text-gray-400" />
-                <span>
-                  {assignment.submissions} / {assignment.total} Submissions
-                </span>
+                <span>{assignment.submissions || 0} Submissions</span>
               </div>
             </div>
 
-            <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
-              <div
-                className="bg-teal-500 h-2 rounded-full transition-all duration-500"
-                style={{
-                  width: `${(assignment.submissions / assignment.total) * 100}%`,
-                }}
-              ></div>
-            </div>
-
             <div className="flex justify-end space-x-3 mt-4 pt-4 border-t border-gray-100">
-              <button className="text-teal-600 font-medium text-sm hover:underline">
-                View Details
-              </button>
               {(assignment.status === "Active" ||
-                assignment.status === "Grading") && (
+                assignment.status === "Grading" ||
+                true) && (
                 <button
-                  onClick={() => openGrading(assignment.id)}
-                  className="bg-teal-50 text-teal-700 px-3 py-1.5 rounded-md text-sm font-medium hover:bg-teal-100"
+                  onClick={() => openGrading(assignment._id)}
+                  className="bg-teal-50 text-teal-700 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-teal-100"
                 >
                   Grade Submissions
                 </button>
@@ -207,13 +212,11 @@ const AssignmentsPage = () => {
                   className="w-full px-3 py-2 border rounded-lg focus:ring-teal-500"
                 >
                   <option value="">Select Track...</option>
-                  <option value="Web Dev Bootcamp">Web Dev Bootcamp</option>
-                  <option value="DSA & Competitive Programming">
-                    DSA & Competitive Programming
-                  </option>
-                  <option value="Backend Masterclass">
-                    Backend Masterclass
-                  </option>
+                  {batches.map((b) => (
+                    <option key={b._id} value={b._id}>
+                      {b.name || b.track}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div>
@@ -223,11 +226,11 @@ const AssignmentsPage = () => {
                 <input
                   required
                   type="date"
-                  value={newAssignment.dueDate}
+                  value={newAssignment.deadline}
                   onChange={(e) =>
                     setNewAssignment({
                       ...newAssignment,
-                      dueDate: e.target.value,
+                      deadline: e.target.value,
                     })
                   }
                   className="w-full px-3 py-2 border rounded-lg focus:ring-teal-500"
@@ -249,16 +252,19 @@ const AssignmentsPage = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Max Score / Points
+                  Score/Points
                 </label>
                 <input
                   type="number"
                   min="0"
-                  placeholder="100"
+                  placeholder="20"
                   className="w-full px-3 py-2 border rounded-lg focus:ring-teal-500"
                   value={newAssignment.maxScore || ""}
                   onChange={(e) =>
-                    setNewAssignment({ ...newAssignment, maxScore: e.target.value })
+                    setNewAssignment({
+                      ...newAssignment,
+                      maxScore: e.target.value,
+                    })
                   }
                 />
               </div>

@@ -7,70 +7,25 @@ const {
   createUser,
   updateUser,
   deleteUser,
-  getStudents,
+  getStudents,  
   getMentorStudents,
-  uploadProfilePhoto,
+  warnStudent
 } = require("../controllers/userController");
 
-const {
-  protect,
-  authorize,
-} = require("../middleware/authMiddleware");
+const { protect, authorize } = require("../middleware/authMiddleware");
 
-const uploadProfilePhotoMiddleware = require(
-  "../middleware/uploadMiddleware"
-);
+router.get("/students", protect, authorize("admin"), getStudents);
+router.post("/students/:id/warn", protect, authorize("admin"), warnStudent);
 
-router.get(
-  "/students",
-  protect,
-  authorize("admin"),
-  getStudents
-);
+router.get("/mentor/students", protect, authorize("mentor"), getMentorStudents);
 
-router.get(
-  "/mentor/students",
-  protect,
-  authorize("mentor"),
-  getMentorStudents
-);
+router.route("/")
+  .get(protect, authorize("admin"), getUsers)
+  .post(protect, authorize("admin"), createUser);
 
-router.post(
-  "/profile/photo",
-  protect,
-  authorize("mentor"),
-  uploadProfilePhotoMiddleware.single("photo"),
-  uploadProfilePhoto
-);
-
-router
-  .route("/")
-  .get(
-    protect,
-    authorize("admin"),
-    getUsers
-  )
-  .post(
-    protect,
-    authorize("admin"),
-    createUser
-  );
-
-router
-  .route("/:id")
-  .get(
-    protect,
-    getUserById
-  )
-  .put(
-    protect,
-    authorize("admin"),
-    updateUser
-  )
-  .delete(
-    protect,
-    authorize("admin"),
-    deleteUser
-  );
+router.route("/:id")
+  .get(protect, getUserById) // Anyone logged in can get a user by ID
+  .put(protect, authorize("admin"), updateUser) // Only admin can update
+  .delete(protect, authorize("admin"), deleteUser); // Only admin can delete
 
 module.exports = router;

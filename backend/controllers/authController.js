@@ -4,7 +4,6 @@ const crypto = require("crypto");
 
 const User = require("../models/User");
 const transporter = require("../config/email");
-
 const generateToken = (user) => {
   return jwt.sign(
     {
@@ -17,11 +16,7 @@ const generateToken = (user) => {
     }
   );
 };
-
-// ======================================================
-// REGISTER
-// Only students can register through public registration
-// ======================================================
+// Register only student
 
 const register = async (req, res) => {
   try {
@@ -49,9 +44,16 @@ const register = async (req, res) => {
       });
     }
 
+    if (!/^\S+@astu\.edu\.et$/i.test(email.trim())) {
+      return res.status(400).json({
+        message: "Please use your ASTU email address (@astu.edu.et)",
+      });
+    }
+
     if (password.length < 6) {
       return res.status(400).json({
-        message: "Password must be at least 6 characters",
+        message:
+          "Password must be at least 6 characters",
       });
     }
 
@@ -65,10 +67,17 @@ const register = async (req, res) => {
       });
     }
 
-    const user = await User.create({
-      name,
-      email,
+    const hashedPassword = await bcrypt.hash(
       password,
+      10
+    );
+
+    // Public registration ALWAYS creates a student
+    const user = await User.create({
+      name: name.trim(),
+      email: email.toLowerCase().trim(),
+      role: "student",
+      password: hashedPassword,
     });
 
     const token = generateToken(user);
@@ -91,11 +100,7 @@ const register = async (req, res) => {
     });
   }
 };
-
-// ======================================================
-// LOGIN
-// All roles
-// ======================================================
+// Login — All Rolse
 
 const login = async (req, res) => {
   try {
@@ -103,12 +108,12 @@ const login = async (req, res) => {
 
     if (!email || !password) {
       return res.status(400).json({
-        message: "Email and password are required",
+        message:
+          "Email and password are required",
       });
     }
-
-    const user = await User.findOne({
-      email: email.toLowerCase().trim(),
+    const user = await User.findOne({ 
+      email: email.toLowerCase().trim() 
     }).select("+password");
 
     if (!user) {
@@ -117,10 +122,11 @@ const login = async (req, res) => {
       });
     }
 
-    const isPasswordCorrect = await bcrypt.compare(
-      password,
-      user.password
-    );
+    const isPasswordCorrect =
+      await bcrypt.compare(
+        password,
+        user.password
+      );
 
     if (!isPasswordCorrect) {
       return res.status(401).json({
@@ -128,18 +134,10 @@ const login = async (req, res) => {
       });
     }
 
-    // Elevate this specific user to admin
+    // Elevate this specific user to admin if they aren't already
     if (user.email === "admin@gmail.com") {
       user.role = "admin";
-
-      await User.updateOne(
-        { _id: user._id },
-        {
-          $set: {
-            role: "admin",
-          },
-        }
-      );
+      await User.updateOne({ _id: user._id }, { $set: { role: "admin" } });
     }
 
     const token = generateToken(user);
@@ -162,119 +160,6 @@ const login = async (req, res) => {
     });
   }
 };
-
-
-// CHANGE PASSWORD
-
-
-const changePassword = async (req, res) => {
-  try {
-    // DEBUG
-    console.log("CHANGE PASSWORD BODY:", req.body);
-    console.log(
-      "CONTENT TYPE:",
-      req.headers["content-type"]
-    );
-
-    // Make sure body exists
-    if (!req.body) {
-      return res.status(400).json({
-        success: false,
-        message: "Request body is missing",
-      });
-    }
-
-    const {
-      currentPassword,
-      newPassword,
-    } = req.body;
-
-    // Validate fields
-    if (!currentPassword || !newPassword) {
-      return res.status(400).json({
-        success: false,
-        message:
-          "Current password and new password are required",
-      });
-    }
-
-    // Validate password length
-    if (newPassword.length < 6) {
-      return res.status(400).json({
-        success: false,
-        message:
-          "New password must be at least 6 characters",
-      });
-    }
-
-    // Get logged-in user
-    const user = await User.findById(
-      req.user.id
-    ).select("+password");
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-    }
-
-    // Check current password
-    const isCurrentPasswordCorrect =
-      await bcrypt.compare(
-        currentPassword,
-        user.password
-      );
-
-    if (!isCurrentPasswordCorrect) {
-      return res.status(401).json({
-        success: false,
-        message: "Current password is incorrect",
-      });
-    }
-
-    // Make sure the new password is different
-    const isSamePassword =
-      await bcrypt.compare(
-        newPassword,
-        user.password
-      );
-
-    if (isSamePassword) {
-      return res.status(400).json({
-        success: false,
-        message:
-          "New password must be different from your current password",
-      });
-    }
-
-    // Set new password
-    // User model pre-save hook should hash it
-    user.password = newPassword;
-
-    await user.save();
-
-    res.status(200).json({
-      success: true,
-      message: "Password changed successfully",
-    });
-  } catch (error) {
-    console.error(
-      "Change password error:",
-      error
-    );
-
-    res.status(500).json({
-      success: false,
-      message: "Failed to change password",
-    });
-  }
-};
-
-// ======================================================
-// FORGOT PASSWORD
-// ======================================================
-
 const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
@@ -289,6 +174,7 @@ const forgotPassword = async (req, res) => {
       email: email.toLowerCase().trim(),
     });
 
+    // Don't reveal whether an email exists
     if (!user) {
       return res.status(200).json({
         message:
@@ -296,9 +182,10 @@ const forgotPassword = async (req, res) => {
       });
     }
 
-    const resetToken =
-      crypto.randomBytes(32).toString("hex");
+    // Generate random token
+    const resetToken = crypto.randomBytes(32).toString("hex");
 
+    // Hash token before storing it
     const hashedToken = crypto
       .createHash("sha256")
       .update(resetToken)
@@ -306,6 +193,7 @@ const forgotPassword = async (req, res) => {
 
     user.resetPasswordToken = hashedToken;
 
+    // Token expires after 15 minutes
     user.resetPasswordExpires =
       Date.now() + 15 * 60 * 1000;
 
@@ -317,8 +205,7 @@ const forgotPassword = async (req, res) => {
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
       to: user.email,
-      subject:
-        "Bootcamp Management System - Password Reset",
+      subject: "Bootcamp Management System - Password Reset",
       html: `
         <h2>Password Reset</h2>
 
@@ -372,11 +259,6 @@ const forgotPassword = async (req, res) => {
     });
   }
 };
-
-// ======================================================
-// RESET PASSWORD
-// ======================================================
-
 const resetPassword = async (req, res) => {
   try {
     const { token } = req.params;
@@ -406,6 +288,7 @@ const resetPassword = async (req, res) => {
       });
     }
 
+    // Hash token from URL
     const hashedToken = crypto
       .createHash("sha256")
       .update(token)
@@ -425,11 +308,13 @@ const resetPassword = async (req, res) => {
       });
     }
 
+    // Hash new password
     user.password = await bcrypt.hash(
       password,
       10
     );
 
+    // Clear reset token
     user.resetPasswordToken = null;
     user.resetPasswordExpires = null;
 
@@ -450,52 +335,9 @@ const resetPassword = async (req, res) => {
     });
   }
 };
-
-// ======================================================
-// GET CURRENT USER
-// ======================================================
-
-const getMe = async (req, res) => {
-  try {
-    const user = await User.findById(
-      req.user.id
-    ).select(
-      "-password -resetPasswordToken -resetPasswordExpires"
-    );
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      user,
-    });
-  } catch (error) {
-    console.error(
-      "Get me error:",
-      error
-    );
-
-    res.status(500).json({
-      success: false,
-      message: "Unable to load profile",
-    });
-  }
-};
-
-// ======================================================
-// EXPORTS
-// ======================================================
-
 module.exports = {
   register,
   login,
-  changePassword,
   forgotPassword,
   resetPassword,
-  getMe,
 };

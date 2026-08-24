@@ -33,35 +33,35 @@ router.post(
 router.get(
   "/",
   protect,
-  authorize("mentor"),
+  authorize("mentor", "admin"),
   getMentorSubmissions
 );
 
 router.get(
   "/pending",
   protect,
-  authorize("mentor"),
+  authorize("mentor", "admin"),
   getPendingSubmissions
 );
 
 router.get(
   "/:id",
   protect,
-  authorize("mentor"),
+  authorize("mentor", "admin"),
   getSubmissionById
 );
 
 router.put(
   "/:id/grade",
   protect,
-  authorize("mentor"),
+  authorize("mentor", "admin"),
   gradeSubmission
 );
 
 router.put(
   "/:id/resubmit",
   protect,
-  authorize("mentor"),
+  authorize("mentor", "admin"),
   requestResubmission
 );
 

@@ -1,52 +1,60 @@
 import React, { useState, useMemo } from "react";
-import { Search, Plus, Mail, Phone, Trash2, X, Filter } from "lucide-react";
-
-const initialMentors = [
-  {
-    id: 1,
-    name: "Yasmin Ali",
-    gender: "Female",
-    email: "jazmin@gmail.com",
-    phone: "+1 234 567 8900",
-    role: "Web Dev Mentor",
-    expertise: ["React", "Node.js", "MongoDB"],
-    status: "Active",
-  },
-  {
-    id: 2,
-    name: "Ahmed Sani",
-    gender: "Male",
-    email: "ahmed.sani@gmail.com",
-    phone: "+1 234 567 8901",
-    role: "CP Mentor",
-    expertise: ["C++", "Algorithms", "Codeforces"],
-    status: "Active",
-  },
-  {
-    id: 3,
-    name: "Sara Seid",
-    gender: "Female",
-    email: "sara.seid@gmail.com",
-    phone: "+1 234 567 8902",
-    role: "Backend Mentor",
-    expertise: ["Python", "Django", "PostgreSQL"],
-    status: "On Leave",
-  },
-];
+import {
+  Search,
+  Plus,
+  Mail,
+  Phone,
+  Trash2,
+  X,
+  Filter,
+  Edit,
+  Eye,
+  EyeOff,
+} from "lucide-react";
+import API from "../../api/axios";
 
 const MentorsPage = () => {
-  const [mentors, setMentors] = useState(initialMentors);
+  const [mentors, setMentors] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingMentor, setEditingMentor] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   // Filtering
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [genderFilter, setGenderFilter] = useState("All");
 
+  React.useEffect(() => {
+    const fetchMentors = async () => {
+      try {
+        const response = await API.get("/users?role=mentor");
+        if (response.data.success) {
+          // Map backend fields to frontend expected fields
+          const fetchedMentors = response.data.data.map((m) => ({
+            id: m._id,
+            name: m.name,
+            gender: m.gender || "Male",
+            email: m.email,
+            phone: m.phone || "",
+            role: m.mentorRole || "Mentor",
+            expertise: m.expertise || [],
+            status: m.isActive ? "Active" : "Inactive",
+          }));
+          setMentors(fetchedMentors);
+        }
+      } catch (error) {
+        console.error("Failed to fetch mentors:", error);
+      }
+    };
+    fetchMentors();
+  }, []);
+
   const [newMentor, setNewMentor] = useState({
     name: "",
     gender: "Male",
     email: "",
+    password: "",
     phone: "",
     role: "",
     expertise: "",
@@ -64,31 +72,97 @@ const MentorsPage = () => {
     });
   }, [mentors, searchTerm, genderFilter]);
 
-  const handleAddMentor = (e) => {
+  const handleAddMentor = async (e) => {
     e.preventDefault();
-    const expertiseArray = newMentor.expertise
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean);
-    setMentors([
-      ...mentors,
-      { ...newMentor, expertise: expertiseArray, id: Date.now() },
-    ]);
-    setIsModalOpen(false);
-    setNewMentor({
-      name: "",
-      gender: "Male",
-      email: "",
-      phone: "",
-      role: "",
-      expertise: "",
-      status: "Active",
-    });
+    try {
+      const expertiseArray = newMentor.expertise
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+
+      // Post to backend
+      const response = await API.post("/users", {
+        ...newMentor,
+        expertise: expertiseArray,
+      });
+
+      // Update local state with returned user
+      const m = response.data.data;
+      const addedMentor = m
+        ? {
+            id: m._id,
+            name: m.name,
+            gender: m.gender || "Male",
+            email: m.email,
+            phone: m.phone || "",
+            role: m.mentorRole || "Mentor",
+            expertise: m.expertise || [],
+            status: m.isActive ? "Active" : "Inactive",
+          }
+        : { ...newMentor, expertise: expertiseArray, id: Date.now() };
+
+      setMentors([...mentors, addedMentor]);
+      setIsModalOpen(false);
+      setNewMentor({
+        name: "",
+        gender: "Male",
+        email: "",
+        password: "",
+        phone: "",
+        role: "",
+        expertise: "",
+        status: "Active",
+      });
+    } catch (error) {
+      console.error("Failed to add mentor:", error);
+      alert(error.response?.data?.message || "Failed to add mentor");
+    }
   };
 
-  const handleDelete = (id) => {
+  const handleUpdateMentor = async (e) => {
+    e.preventDefault();
+    try {
+      const expertiseArray = typeof editingMentor.expertise === "string" 
+        ? editingMentor.expertise.split(",").map((s) => s.trim()).filter(Boolean)
+        : editingMentor.expertise;
+
+      const response = await API.put(`/users/${editingMentor.id}`, {
+        name: editingMentor.name,
+        gender: editingMentor.gender,
+        email: editingMentor.email,
+        phone: editingMentor.phone,
+        mentorRole: editingMentor.role,
+        expertise: expertiseArray,
+        isActive: editingMentor.status === "Active",
+      });
+
+      const updated = response.data.data;
+      setMentors(mentors.map(m => m.id === updated._id ? {
+        id: updated._id,
+        name: updated.name,
+        gender: updated.gender || "Male",
+        email: updated.email,
+        phone: updated.phone || "",
+        role: updated.mentorRole || "Mentor",
+        expertise: updated.expertise || [],
+        status: updated.isActive ? "Active" : "Inactive",
+      } : m));
+
+      setIsEditModalOpen(false);
+      setEditingMentor(null);
+    } catch (error) {
+      console.error("Failed to update mentor:", error);
+      alert(error.response?.data?.message || "Failed to update mentor");
+    }
+  };
+  const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to remove this mentor?")) {
-      setMentors(mentors.filter((m) => m.id !== id));
+      try {
+        await API.delete(`/users/${id}`);
+        setMentors(mentors.filter((m) => m.id !== id));
+      } catch (error) {
+        console.error("Failed to delete mentor:", error);
+      }
     }
   };
 
@@ -154,16 +228,16 @@ const MentorsPage = () => {
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200">
                 <th className="px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Mentor
+                  Profile
                 </th>
                 <th className="px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Contact Info
+                  Name
                 </th>
                 <th className="px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Expertise
+                  Email
                 </th>
                 <th className="px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Status
+                  Track/Expertise
                 </th>
                 <th className="px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider text-right">
                   Actions
@@ -171,80 +245,84 @@ const MentorsPage = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {filteredMentors.map((mentor) => (
-                <tr
-                  key={mentor.id}
-                  className="hover:bg-gray-50 transition-colors group"
-                >
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="h-10 w-10 flex-shrink-0 bg-teal-100 rounded-full flex items-center justify-center text-teal-700 font-bold">
-                        {mentor.name.charAt(0)}
-                      </div>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">
-                          {mentor.name}{" "}
-                          <span className="text-xs text-gray-400 ml-1">
-                            ({mentor.gender})
-                          </span>
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {mentor.role}
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900 flex items-center space-x-2">
-                      <Mail size={14} className="text-gray-400" />
-                      <span>{mentor.email}</span>
-                    </div>
-                    <div className="text-xs text-gray-500 flex items-center space-x-2 mt-1">
-                      <Phone size={14} className="text-gray-400" />
-                      <span>{mentor.phone}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex flex-wrap gap-1">
-                      {mentor.expertise.map((skill, index) => (
-                        <span
-                          key={index}
-                          className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800"
-                        >
-                          {skill}
-                        </span>
-                      ))}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        mentor.status === "Active"
-                          ? "bg-green-100 text-green-800"
-                          : "bg-yellow-100 text-yellow-800"
-                      }`}
-                    >
-                      {mentor.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button
-                      onClick={() => handleDelete(mentor.id)}
-                      className="text-gray-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <Trash2 size={18} />
-                    </button>
+              {filteredMentors.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan="5"
+                    className="px-6 py-8 text-center text-gray-500"
+                  >
+                    <p>No mentors found. Add a mentor to get started.</p>
                   </td>
                 </tr>
-              ))}
+              ) : (
+                filteredMentors.map((mentor) => (
+                  <tr
+                    key={mentor.id}
+                    className="hover:bg-gray-50 transition-colors group"
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="h-10 w-10 flex-shrink-0 bg-teal-100 rounded-full flex items-center justify-center text-teal-700 font-bold shadow-sm">
+                        {mentor.name.charAt(0)}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">
+                        {mentor.name}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {mentor.gender}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900 flex items-center space-x-2">
+                        <Mail size={14} className="text-gray-400" />
+                        <span>{mentor.email}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm text-gray-900 font-medium mb-1">
+                        {mentor.role}
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {mentor.expertise.map((skill, index) => (
+                          <span
+                            key={index}
+                            className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-600"
+                          >
+                            {skill}
+                          </span>
+                        ))}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex justify-end space-x-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          title="Edit Mentor"
+                          onClick={() => {
+                            setEditingMentor({
+                              ...mentor,
+                              expertise: mentor.expertise.join(", ")
+                            });
+                            setIsEditModalOpen(true);
+                          }}
+                          className="text-gray-400 hover:text-teal-600 transition-colors"
+                        >
+                          <Edit size={18} />
+                        </button>
+                        <button
+                          title="Delete Mentor"
+                          onClick={() => handleDelete(mentor.id)}
+                          className="text-gray-400 hover:text-red-600 transition-colors"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
-
-          {filteredMentors.length === 0 && (
-            <div className="p-8 text-center text-gray-500">
-              No mentors found matching your filters.
-            </div>
-          )}
         </div>
       </div>
 
@@ -315,6 +393,30 @@ const MentorsPage = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      required
+                      type={showPassword ? "text" : "password"}
+                      value={newMentor.password}
+                      onChange={(e) =>
+                        setNewMentor({ ...newMentor, password: e.target.value })
+                      }
+                      className="w-full pl-3 pr-10 py-2 border rounded-lg focus:ring-teal-500"
+                      placeholder="Set a password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                    >
+                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Phone
                   </label>
                   <input
@@ -372,6 +474,132 @@ const MentorsPage = () => {
                   className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700"
                 >
                   Add Mentor
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Mentor Modal */}
+      {isEditModalOpen && editingMentor && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-xl">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-gray-800">
+                Edit Mentor
+              </h2>
+              <button
+                onClick={() => setIsEditModalOpen(false)}
+                className="text-gray-500 hover:text-gray-800"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <form onSubmit={handleUpdateMentor} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Full Name
+                  </label>
+                  <input
+                    required
+                    type="text"
+                    value={editingMentor.name}
+                    onChange={(e) =>
+                      setEditingMentor({ ...editingMentor, name: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border rounded-lg focus:ring-teal-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Gender
+                  </label>
+                  <select
+                    required
+                    value={editingMentor.gender}
+                    onChange={(e) =>
+                      setEditingMentor({ ...editingMentor, gender: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border rounded-lg focus:ring-teal-500"
+                  >
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                  </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Email
+                  </label>
+                  <input
+                    required
+                    type="email"
+                    value={editingMentor.email}
+                    onChange={(e) =>
+                      setEditingMentor({ ...editingMentor, email: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border rounded-lg focus:ring-teal-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Phone
+                  </label>
+                  <input
+                    required
+                    type="tel"
+                    value={editingMentor.phone}
+                    onChange={(e) =>
+                      setEditingMentor({ ...editingMentor, phone: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border rounded-lg focus:ring-teal-500"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Role
+                </label>
+                <input
+                  required
+                  type="text"
+                  value={editingMentor.role}
+                  onChange={(e) =>
+                    setEditingMentor({ ...editingMentor, role: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-teal-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Expertise (comma separated)
+                </label>
+                <input
+                  required
+                  type="text"
+                  value={editingMentor.expertise}
+                  onChange={(e) =>
+                    setEditingMentor({ ...editingMentor, expertise: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-teal-500"
+                />
+              </div>
+              <div className="flex justify-end space-x-3 mt-6">
+                <button
+                  type="button"
+                  onClick={() => setIsEditModalOpen(false)}
+                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700"
+                >
+                  Save Changes
                 </button>
               </div>
             </form>

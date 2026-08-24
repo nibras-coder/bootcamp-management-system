@@ -14,24 +14,37 @@ import {
   X,
 } from "lucide-react";
 
-const navItems = [
-  { label: "Dashboard", icon: LayoutDashboard, path: "/mentor/dashboard" },
-  { label: "My Students", icon: Users, path: "/mentor/students" },
-  { label: "Attendance", icon: Calendar, path: "/mentor/attendance" },
-  { label: "Progress", icon: TrendingUp, path: "/mentor/progress" },
-  { label: "Assignments", icon: FileText, path: "/mentor/assignments" },
-  { label: "Grading", icon: Award, path: "/mentor/grading" },
-  { label: "Announcements", icon: Megaphone, path: "/mentor/announcements" },
-  { label: "Profile", icon: User, path: "/mentor/profile" },
-  { label: "Settings", icon: Settings, path: "/mentor/settings" },
-];
-
 function Sidebar({ onClose }) {
   const location = useLocation();
   const navigate = useNavigate();
 
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const isStudent = user.role === "student";
+
+  const studentNavItems = [
+    { label: "Dashboard", icon: LayoutDashboard, path: "/student-dashboard" },
+    { label: "My Attendance", icon: Calendar, path: "/student-dashboard/attendance" },
+    { label: "Assignments", icon: FileText, path: "/student-dashboard/assignments" },
+    { label: "Progress", icon: TrendingUp, path: "/student-dashboard/progress" },
+  ];
+
+  const mentorNavItems = [
+    { label: "Dashboard", icon: LayoutDashboard, path: "/mentor-dashboard" },
+    { label: "My Students", icon: Users, path: "/my-students" },
+    { label: "Attendance", icon: Calendar, path: "/attendance" },
+    { label: "Progress", icon: TrendingUp, path: "/progress" },
+    { label: "Assignments", icon: FileText, path: "/assignments" },
+    { label: "Grading", icon: Award, path: "/grading" },
+    { label: "Announcements", icon: Megaphone, path: "/announcements" },
+    { label: "Profile", icon: User, path: "/profile" },
+    { label: "Settings", icon: Settings, path: "/settings" },
+  ];
+
+  const navItems = isStudent ? studentNavItems : mentorNavItems;
+
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
     navigate("/login");
   };
 
@@ -92,10 +105,12 @@ function Sidebar({ onClose }) {
           Logout
         </button>
         <div className="flex items-center gap-3 mt-3 px-2">
-          <div className="w-9 h-9 rounded-full bg-teal-700" />
+          <div className="w-9 h-9 rounded-full bg-teal-700 flex items-center justify-center text-white font-bold">
+            {user.name ? user.name.charAt(0).toUpperCase() : "U"}
+          </div>
           <div>
-            <p className="text-sm font-medium">Yonas Mekonnen</p>
-            <p className="text-xs text-teal-300">Mentor</p>
+            <p className="text-sm font-medium truncate w-32">{user.name || (isStudent ? "Student" : "Mentor")}</p>
+            <p className="text-xs text-teal-300 capitalize">{user.role || (isStudent ? "student" : "mentor")}</p>
           </div>
         </div>
       </div>

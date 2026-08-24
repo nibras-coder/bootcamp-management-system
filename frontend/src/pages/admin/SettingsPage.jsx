@@ -1,27 +1,93 @@
-import React, { useState } from "react";
-import { Save, User, Bell, Lock, Loader, CheckCircle } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import {
+  User,
+  Bell,
+  Lock,
+  Globe,
+  Monitor,
+  Smartphone,
+  Save,
+  Loader,
+  Eye,
+  EyeOff,
+  CheckCircle,
+} from "lucide-react";
+import API from "../../api/axios";
 
 const SettingsPage = () => {
   const [activeTab, setActiveTab] = useState("profile");
   const [isSaving, setIsSaving] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const [profile, setProfile] = useState({
+    name: user.name || "",
+    email: user.email || "",
+    phone: user.phone || "",
+    password: "",
+  });
 
-  const handleSave = (e) => {
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const response = await API.get(`/users/${user.id}`);
+        if (response.data.success) {
+          const fetchedUser = response.data.data;
+          setProfile({
+            name: fetchedUser.name || "",
+            email: fetchedUser.email || "",
+            phone: fetchedUser.phone || "",
+            password: "",
+          });
+          // sync localstorage just in case
+          localStorage.setItem("user", JSON.stringify({ ...user, name: fetchedUser.name, email: fetchedUser.email, phone: fetchedUser.phone }));
+        }
+      } catch (err) {
+        console.error("Failed to fetch latest profile data", err);
+      }
+    };
+    if (user.id) {
+      fetchProfile();
+    }
+  }, []);
+
+  const handleSave = async (e) => {
     if (e) e.preventDefault();
     setIsSaving(true);
     setSaveSuccess(false);
-    // Simulate API save
-    setTimeout(() => {
+    
+    try {
+      const updateData = {
+        name: profile.name,
+        email: profile.email,
+        phone: profile.phone,
+      };
+      if (profile.password) {
+        updateData.password = profile.password;
+      }
+      
+      const response = await API.put(`/users/${user.id}`, updateData);
+      if (response.data.success) {
+        setSaveSuccess(true);
+        // update local storage
+        localStorage.setItem("user", JSON.stringify({ ...user, name: profile.name, email: profile.email, phone: profile.phone }));
+        setTimeout(() => setSaveSuccess(false), 3000);
+      }
+    } catch (error) {
+      console.error("Failed to save settings:", error);
+      alert(error.response?.data?.message || "Failed to update profile");
+    } finally {
       setIsSaving(false);
-      setSaveSuccess(true);
-      setTimeout(() => setSaveSuccess(false), 3000);
-    }, 1000);
+    }
   };
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden relative">
       {saveSuccess && (
-        <div className="absolute top-4 right-4 bg-green-50 text-green-700 p-3 rounded-lg border border-green-200 text-sm font-medium flex items-center shadow-sm">
+        <div className="absolute top-4 right-4 z-50 bg-green-50 text-green-700 p-3 rounded-lg border border-green-200 text-sm font-medium flex items-center shadow-sm">
           <CheckCircle size={16} className="mr-2" />
           Settings saved successfully!
         </div>
@@ -65,7 +131,8 @@ const SettingsPage = () => {
                 <input
                   required
                   type="text"
-                  defaultValue="Student"
+                  value={profile.name}
+                  onChange={(e) => setProfile({...profile, name: e.target.value})}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500"
                 />
               </div>
@@ -76,7 +143,8 @@ const SettingsPage = () => {
                 <input
                   required
                   type="email"
-                  defaultValue="admin@gmail.com"
+                  value={profile.email}
+                  onChange={(e) => setProfile({...profile, email: e.target.value})}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500"
                 />
               </div>
@@ -86,7 +154,8 @@ const SettingsPage = () => {
                 </label>
                 <input
                   type="tel"
-                  defaultValue="+1 234 567 890"
+                  value={profile.phone}
+                  onChange={(e) => setProfile({...profile, phone: e.target.value})}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500"
                 />
               </div>
@@ -95,9 +164,9 @@ const SettingsPage = () => {
                   Role
                 </label>
                 <input
-                  type="text"
-                  defaultValue="Super Admin"
                   disabled
+                  type="text"
+                  value={user.role || "Admin"}
                   className="w-full px-4 py-2 border border-gray-200 bg-gray-50 rounded-lg text-gray-500"
                 />
               </div>
@@ -198,34 +267,61 @@ const SettingsPage = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Current Password
                 </label>
-                <input
-                  required
-                  type="password"
-                  placeholder="••••••••"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500"
-                />
+                <div className="relative">
+                  <input
+                    required
+                    type={showCurrentPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    className="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                  >
+                    {showCurrentPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   New Password
                 </label>
-                <input
-                  required
-                  type="password"
-                  placeholder="••••••••"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500"
-                />
+                <div className="relative">
+                  <input
+                    required
+                    type={showNewPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    className="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                  >
+                    {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Confirm New Password
                 </label>
-                <input
-                  required
-                  type="password"
-                  placeholder="••••••••"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500"
-                />
+                <div className="relative">
+                  <input
+                    required
+                    type={showConfirmPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    className="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                  >
+                    {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
               </div>
             </div>
             <div className="pt-6 mt-6 border-t border-gray-200 flex justify-end">

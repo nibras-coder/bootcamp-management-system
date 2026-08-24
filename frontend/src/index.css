@@ -676,15 +676,28 @@ h3 {
 .social-telegram {
   color: #229ed9 !important;
 }
+
 .social-instagram {
   color: #c13584 !important;
 }
+
 .social-facebook {
   color: #1877f2 !important;
 }
+
 .social-youtube {
   color: #ff0000 !important;
 }
+
+.social-tiktok {
+  color: #111 !important;
+}
+
+.social-tiktok svg {
+  filter: drop-shadow(1px 1px 0 #fe2c55)
+    drop-shadow(-1px -1px 0 #25f4ee);
+}
+
 .social-x {
   color: #111 !important;
 }
@@ -1025,7 +1038,7 @@ h3 {
   overflow: hidden;
   display: flex;
   align-items: end;
-  background: linear-gradient(150deg, #117e76, #075f5a);
+  background: transparent;
 }
 
 .auth-art > img:first-child {
@@ -1034,18 +1047,18 @@ h3 {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  opacity: 0.24;
-  mix-blend-mode: multiply;
+  opacity: 1;
+  transform: scaleX(-1);
+}
+
+.art-overlay {
+  display: none;
 }
 
 .art-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    180deg,
-    rgba(9, 113, 106, 0.05),
-    rgba(3, 63, 61, 0.45)
-  );
+  z-index: 1;
 }
 
 .auth-brand {
@@ -1122,7 +1135,438 @@ h3 {
   opacity: 0.75;
 }
 
-/* ---------- Responsive ---------- */
+/* =========================================================
+   SIMPLE GLOBAL DARK MODE
+========================================================= */
+
+html.dark-mode {
+  --bg: #121a1b;
+  --ink: #edf2f0;
+  --muted: #9eacab;
+  --primary: #67bdb3;
+  --primary2: #4fa39a;
+  --teal-soft: #1e3637;
+  --card: #1b2829;
+  --border: #2d3d3e;
+  --sand: #292b28;
+  --shadow: 0 18px 42px -24px rgba(0, 0, 0, 0.45);
+}
+
+html.dark-mode body {
+  background: var(--bg);
+  color: var(--ink);
+}
+
+html.dark-mode #root {
+  min-height: 100vh;
+}
+
+/* ---------- Header ---------- */
+
+html.dark-mode .header {
+  background: rgba(18, 26, 27, 0.94);
+  border-bottom-color: #2d3d3e;
+}
+
+html.dark-mode .logo {
+  color: #edf2f0;
+}
+
+html.dark-mode .nav-links {
+  color: #aebbb9;
+}
+
+html.dark-mode .nav-links a:hover,
+html.dark-mode .nav-links a.active {
+  color: #67bdb3;
+}
+
+html.dark-mode .mobile-toggle {
+  color: #edf2f0;
+}
+
+/* ---------- Home ---------- */
+
+html.dark-mode .hero {
+  background: #121a1b;
+}
+
+html.dark-mode .hero-image {
+  filter: brightness(0.72) saturate(0.95);
+}
+
+html.dark-mode .hero-fade {
+  background: linear-gradient(
+    90deg,
+    #121a1b 0%,
+    rgba(18, 26, 27, 0.9) 24%,
+    rgba(18, 26, 27, 0.55) 42%,
+    rgba(18, 26, 27, 0.12) 62%,
+    rgba(18, 26, 27, 0) 78%
+  );
+}
+
+html.dark-mode .hero h1,
+html.dark-mode .hero h2,
+html.dark-mode .hero h3 {
+  color: #edf2f0;
+}
+
+html.dark-mode .hero p {
+  color: #aebbb9;
+}
+
+html.dark-mode .arabic {
+  color: #ead69a;
+}
+
+html.dark-mode .arabic-rule {
+  color: #d7b968;
+}
+
+html.dark-mode .arabic-rule span {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    #8f7a4b
+  );
+}
+
+html.dark-mode .arabic-rule span:last-child {
+  background: linear-gradient(
+    90deg,
+    #8f7a4b,
+    transparent
+  );
+}
+
+/* ---------- Stats ---------- */
+
+html.dark-mode .stats {
+  background: #182526;
+  border-color: #2d3d3e;
+}
+
+html.dark-mode .stats b {
+  color: #67bdb3;
+}
+
+html.dark-mode .stats span {
+  color: #9eacab;
+}
+
+/* ---------- Cards ---------- */
+
+html.dark-mode .card,
+html.dark-mode .track-card,
+html.dark-mode .feature-card,
+html.dark-mode .mentor-card {
+  background: #1b2829;
+  border-color: #2d3d3e;
+  color: #edf2f0;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+}
+
+html.dark-mode .track-card h3,
+html.dark-mode .feature-card h3,
+html.dark-mode .mentor-card h3 {
+  color: #edf2f0;
+}
+
+html.dark-mode .track-card p,
+html.dark-mode .feature-card p,
+html.dark-mode .mentor-card p {
+  color: #9eacab;
+}
+
+html.dark-mode .icon {
+  color: #67bdb3;
+}
+
+/* ---------- How it works ---------- */
+
+html.dark-mode .how-card {
+  background: linear-gradient(
+    135deg,
+    #08756e,
+    #075f5a
+  );
+}
+
+/* ---------- Mentors ---------- */
+
+html.dark-mode .mentor-card span {
+  color: #67bdb3;
+}
+
+/* ---------- FAQ ---------- */
+
+html.dark-mode .faq {
+  border-color: #2d3d3e;
+}
+
+html.dark-mode .faq-item {
+  border-color: #2d3d3e;
+}
+
+html.dark-mode .faq-item button {
+  color: #edf2f0;
+}
+
+html.dark-mode .faq-item button b {
+  color: #8fa09d;
+}
+
+html.dark-mode .faq-item p {
+  color: #9eacab;
+}
+
+/* ---------- CTA ---------- */
+
+html.dark-mode .cta {
+  background: #08756e;
+}
+
+html.dark-mode .cta p {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+/* ---------- Footer ---------- */
+
+html.dark-mode .footer {
+  background: #172324;
+  border-top-color: #2d3d3e;
+}
+
+html.dark-mode .footer-grid h4 {
+  color: #edf2f0;
+}
+
+html.dark-mode .footer-main p,
+html.dark-mode .footer-grid a,
+html.dark-mode .footer-grid p {
+  color: #9eacab;
+}
+
+html.dark-mode .footer-bottom {
+  border-top-color: #2d3d3e;
+  color: #7f8d8b;
+}
+
+/* ---------- Social icons ---------- */
+/* Keep original brand colors */
+
+html.dark-mode .social {
+  background: #fff !important;
+  border-color: #cddedb !important;
+  box-shadow: 0 8px 22px -16px rgba(19, 64, 66, 0.5) !important;
+}
+
+html.dark-mode .social-telegram {
+  color: #229ed9 !important;
+}
+
+html.dark-mode .social-instagram {
+  color: #c13584 !important;
+}
+
+html.dark-mode .social-facebook {
+  color: #1877f2 !important;
+}
+
+html.dark-mode .social-youtube {
+  color: #ff0000 !important;
+}
+
+html.dark-mode .social-tiktok {
+  color: #111 !important;
+}
+
+html.dark-mode .social-x {
+  color: #111 !important;
+}
+
+html.dark-mode .social svg {
+  filter: none;
+}
+
+html.dark-mode .social-tiktok svg {
+  filter:
+    drop-shadow(1px 1px 0 #fe2c55)
+    drop-shadow(-1px -1px 0 #25f4ee);
+}
+
+/* ---------- Logos ---------- */
+
+html.dark-mode .logo img {
+  filter: none !important;
+}
+
+/* ---------- Inner pages ---------- */
+
+html.dark-mode .page-shell {
+  color: #edf2f0;
+}
+
+html.dark-mode .page-shell > h1,
+html.dark-mode .page-shell h2,
+html.dark-mode .page-shell h3 {
+  color: #edf2f0;
+}
+
+html.dark-mode .page-intro,
+html.dark-mode .large-card > p,
+html.dark-mode .info-card p,
+html.dark-mode .soft-card p,
+html.dark-mode .soft-cta p {
+  color: #9eacab;
+}
+
+html.dark-mode .large-card,
+html.dark-mode .info-card {
+  background: #1b2829;
+  border-color: #2d3d3e;
+}
+
+html.dark-mode .soft-card,
+html.dark-mode .soft-cta {
+  background: #1b2829;
+}
+
+html.dark-mode .pills span {
+  background: #243536;
+  color: #aebbb9;
+}
+
+/* ---------- Forms ---------- */
+
+html.dark-mode .form-card {
+  background: #1b2829;
+  border-color: #2d3d3e;
+}
+
+html.dark-mode .field > span {
+  color: #b5c1bf;
+}
+
+html.dark-mode .field input,
+html.dark-mode .field select,
+html.dark-mode .field textarea {
+  background: #172324;
+  color: #edf2f0;
+  border-color: #354849;
+}
+
+html.dark-mode .field input::placeholder,
+html.dark-mode .field textarea::placeholder {
+  color: #788986;
+}
+
+html.dark-mode .field input:focus,
+html.dark-mode .field select:focus,
+html.dark-mode .field textarea:focus {
+  border-color: #67bdb3;
+}
+
+/* ---------- Tables ---------- */
+
+html.dark-mode table {
+  background: #1b2829;
+  color: #edf2f0;
+}
+
+html.dark-mode th {
+  background: #203638;
+  color: #f7f7f1;
+}
+
+html.dark-mode td {
+  color: #d5dfdc;
+  border-color: #2d3d3e;
+}
+
+/* ---------- Sidebar ---------- */
+
+html.dark-mode .sidebar,
+html.dark-mode .student-sidebar,
+html.dark-mode .admin-sidebar,
+html.dark-mode .mentor-sidebar {
+  background: #0d1718;
+  color: #edf2f0;
+}
+
+/* ---------- Horizontal lines ---------- */
+
+html.dark-mode hr {
+  border-color: #2d3d3e;
+}
+
+/* =========================================================
+   DARK MODE BUTTON
+========================================================= */
+
+.global-theme-toggle {
+  position: fixed;
+  top: 20px;
+  right: 16px;
+  z-index: 99999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  height: 42px;
+  min-width: 42px;
+  max-width: calc(100vw - 32px);
+  padding: 0 14px;
+
+  border: 1px solid #d8e2df;
+  border-radius: 999px;
+
+  background: rgba(255, 255, 255, 0.94);
+  color: #24504d;
+
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+
+  backdrop-filter: blur(10px);
+
+  cursor: pointer;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  transition:
+    background 0.25s ease,
+    color 0.25s ease,
+    border-color 0.25s ease,
+    transform 0.2s ease;
+}
+
+.global-theme-toggle:hover {
+  transform: translateY(-2px);
+}
+
+.global-theme-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+html.dark-mode .global-theme-toggle {
+  background: rgba(30, 54, 56, 0.95);
+  border-color: #527572;
+  color: #efd98f;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.4);
+}
+
+html.dark-mode .global-theme-toggle:hover {
+  background: #29484a;
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
 
 @media (max-width: 900px) {
   .container {
@@ -1261,6 +1705,17 @@ h3 {
       rgba(251, 252, 251, 0.5) 47%,
       rgba(251, 252, 251, 0.05) 72%,
       rgba(251, 252, 251, 0) 100%
+    );
+  }
+
+  html.dark-mode .hero-fade {
+    background: linear-gradient(
+      90deg,
+      #121a1b 0%,
+      rgba(18, 26, 27, 0.9) 25%,
+      rgba(18, 26, 27, 0.5) 47%,
+      rgba(18, 26, 27, 0.05) 72%,
+      rgba(18, 26, 27, 0) 100%
     );
   }
 
@@ -1440,7 +1895,8 @@ h3 {
     font-size: 13.5px;
   }
 
-  /* Keep the authentication composition compact on phones. */
+  /* Authentication */
+
   .auth-page {
     padding: 22px 10px;
     overflow-x: hidden;
@@ -1518,6 +1974,23 @@ h3 {
   .auth-switch,
   .terms {
     font-size: 11px;
+  }
+
+  /* Theme toggle */
+
+  .global-theme-toggle {
+    top: 12px;
+    right: 12px;
+    width: 40px;
+    min-width: 40px;
+    max-width: 40px;
+    height: 38px;
+    padding: 0;
+    justify-content: center;
+  }
+
+  .global-theme-label {
+    display: none;
   }
 }
 

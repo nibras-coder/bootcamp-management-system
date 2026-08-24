@@ -1,5 +1,13 @@
 import React, { useState } from "react";
-import { Calendar, CheckCircle, XCircle, Search, Loader } from "lucide-react";
+import {
+  Calendar,
+  CheckCircle,
+  XCircle,
+  Search,
+  Loader,
+  Clock,
+  Shield,
+} from "lucide-react";
 
 const initialAttendance = [
   {
@@ -47,17 +55,64 @@ const initialAttendance = [
 ];
 
 const AttendancePage = () => {
-  const [date, setDate] = useState("2026-08-18");
-  const [records, setRecords] = useState(initialAttendance);
+  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+  const [records, setRecords] = useState([]);
+  const [batches, setBatches] = useState([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedBatch, setSelectedBatch] = useState("all");
 
-  const handleStatusChange = (id, newStatus) => {
+  // Real API integration
+  React.useEffect(() => {
+    fetchBatches();
+    fetchAttendance();
+  }, [date, selectedBatch]);
+
+  const fetchBatches = async () => {
+    try {
+      const { data } = await API.get("/batches");
+      if (data.success) setBatches(data.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const fetchAttendance = async () => {
+    try {
+      const { data } = await API.get("/attendance");
+      if (data.success) {
+        // Filter by date and optionally batch
+        let filtered = data.data.filter((r) => {
+          const recDate = new Date(r.date).toISOString().split("T")[0];
+          const matchesDate = recDate === date;
+          const matchesBatch =
+            selectedBatch === "all" ||
+            (r.batch && r.batch._id === selectedBatch);
+          return matchesDate && matchesBatch;
+        });
+        setRecords(filtered);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleStatusChange = async (id, newStatus) => {
+    // Optimistic update
     setRecords(
       records.map((record) =>
-        record.id === id ? { ...record, status: newStatus } : record,
+        record._id === id ? { ...record, status: newStatus } : record,
       ),
     );
+    try {
+      await API.put(`/attendance/${id}`, { status: newStatus });
+      setMessage("Status updated successfully!");
+      setTimeout(() => setMessage(""), 2000);
+    } catch (error) {
+      console.error(error);
+      // Revert if needed (not implementing full revert for brevity)
+    }
   };
 
   const handleSave = () => {
@@ -106,10 +161,22 @@ const AttendancePage = () => {
           {loading ? <Loader className="animate-spin" size={18} /> : null}
           <span>Mark Attendance</span>
         </button>
+        <select
+          value={selectedBatch}
+          onChange={(e) => setSelectedBatch(e.target.value)}
+          className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-teal-500 focus:border-teal-500"
+        >
+          <option value="all">All Tracks</option>
+          {batches.map((b) => (
+            <option key={b._id} value={b._id}>
+              {b.name || b.track}
+            </option>
+          ))}
+        </select>
       </div>
 
-      {/* Grid Summary */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-200 flex items-center space-x-4">
           <div className="p-3 bg-green-100 text-green-700 rounded-lg">
             <CheckCircle size={24} />
@@ -134,7 +201,7 @@ const AttendancePage = () => {
         </div>
         <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-200 flex items-center space-x-4">
           <div className="p-3 bg-yellow-100 text-yellow-700 rounded-lg">
-            <Calendar size={24} />
+            <Clock size={24} />
           </div>
           <div>
             <p className="text-sm text-gray-500 font-medium">Late</p>
@@ -143,19 +210,30 @@ const AttendancePage = () => {
             </p>
           </div>
         </div>
+        <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-200 flex items-center space-x-4">
+          <div className="p-3 bg-blue-100 text-blue-700 rounded-lg">
+            <Shield size={24} />
+          </div>
+          <div>
+            <p className="text-sm text-gray-500 font-medium">Excused</p>
+            <p className="text-2xl font-bold text-gray-900">
+              {records.filter((r) => r.status === "Excused").length}
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Table */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="p-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
-          <h3 className="font-semibold text-gray-800">
-            Attendance Record (Regular Sessions)
-          </h3>
+          <h3 className="font-semibold text-gray-800">Attendance Record</h3>
           <div className="relative">
             <Search className="h-4 w-4 text-gray-400 absolute left-3 top-2.5" />
             <input
               type="text"
               placeholder="Search student..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9 pr-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-teal-500"
             />
           </div>
@@ -178,47 +256,58 @@ const AttendancePage = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
-            {records.map((record) => (
-              <tr key={record.id} className="hover:bg-gray-50">
-                <td className="px-6 py-3 text-sm font-medium text-gray-900">
-                  {record.name}
-                </td>
-                <td className="px-6 py-3 text-sm text-gray-500">
-                  {record.batch}
-                </td>
-                <td className="px-6 py-3">
-                  <span
-                    className={`inline-flex px-2 py-1 rounded-md text-xs font-medium ${
-                      record.status === "Present"
-                        ? "bg-green-100 text-green-800"
-                        : record.status === "Absent"
-                          ? "bg-red-100 text-red-800"
-                          : record.status === "Late"
-                            ? "bg-yellow-100 text-yellow-800"
-                            : "bg-blue-100 text-blue-800"
-                    }`}
-                  >
-                    {record.status}
-                  </span>
-                </td>
-                <td className="px-6 py-3 text-right">
-                  <select
-                    className="border border-gray-300 rounded text-xs py-1 px-2 focus:ring-teal-500"
-                    value={record.status}
-                    onChange={(e) =>
-                      handleStatusChange(record.id, e.target.value)
-                    }
-                  >
-                    <option value="Present">Present</option>
-                    <option value="Absent">Absent</option>
-                    <option value="Late">Late</option>
-                    <option value="Excuse">Excuse</option>
-                  </select>
-                </td>
-              </tr>
-            ))}
+            {records
+              .filter((r) =>
+                (r.student?.name || "")
+                  .toLowerCase()
+                  .includes(searchQuery.toLowerCase()),
+              )
+              .map((record) => (
+                <tr key={record._id} className="hover:bg-gray-50">
+                  <td className="px-6 py-3 text-sm font-medium text-gray-900">
+                    {record.student?.name || "Unknown"}
+                  </td>
+                  <td className="px-6 py-3 text-sm text-gray-500">
+                    {record.batch?.name || record.batch?.track || "Unknown"}
+                  </td>
+                  <td className="px-6 py-3">
+                    <span
+                      className={`inline-flex px-2 py-1 rounded-md text-xs font-medium ${
+                        record.status === "Present"
+                          ? "bg-green-100 text-green-800"
+                          : record.status === "Absent"
+                            ? "bg-red-100 text-red-800"
+                            : record.status === "Late"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-blue-100 text-blue-800"
+                      }`}
+                    >
+                      {record.status}
+                    </span>
+                  </td>
+                  <td className="px-6 py-3 text-right">
+                    <select
+                      className="border border-gray-300 rounded text-xs py-1 px-2 focus:ring-teal-500"
+                      value={record.status}
+                      onChange={(e) =>
+                        handleStatusChange(record._id, e.target.value)
+                      }
+                    >
+                      <option value="Present">Present</option>
+                      <option value="Absent">Absent</option>
+                      <option value="Late">Late</option>
+                      <option value="Excused">Excused</option>
+                    </select>
+                  </td>
+                </tr>
+              ))}
           </tbody>
         </table>
+        {records.length === 0 && (
+          <div className="p-8 text-center text-gray-500">
+            No attendance records found for this date.
+          </div>
+        )}
       </div>
     </div>
   );

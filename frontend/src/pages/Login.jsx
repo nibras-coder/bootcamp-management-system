@@ -115,7 +115,7 @@ function Login() {
         </div>
 
         <div className="auth-art">
-          <img src={calligraphy} alt="" />
+          <img src={calligraphy} alt="Calligraphy" className="w-full h-full object-cover object-center" />
           <div className="art-overlay"></div>
           <div className="auth-brand">
             <Link to="/" className="logo">

@@ -16,14 +16,14 @@ const announcementSchema = new mongoose.Schema(
 
     targetAudience: {
       type: String,
-      enum: ["students", "all"],
+      enum: ["students", "mentors", "all"],
       default: "students",
     },
 
     batch: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Batch",
-      required: true,
+      required: false,
     },
 
     author: {
@@ -37,26 +37,17 @@ const announcementSchema = new mongoose.Schema(
       default: Date.now,
     },
 
-    // Students who have viewed this announcement
-    views: [
-      {
-        student: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "User",
-        },
-
-        viewedAt: {
-          type: Date,
-          default: Date.now,
-        },
-      },
-    ],
+    readBy: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User"
+    }],
   },
   {
     timestamps: true,
   }
 );
 
-module.exports =
-  mongoose.models.Announcement ||
-  mongoose.model("Announcement", announcementSchema);
+module.exports = mongoose.model(
+  "Announcement",
+  announcementSchema
+);
