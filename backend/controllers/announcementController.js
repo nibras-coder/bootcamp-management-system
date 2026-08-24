@@ -16,27 +16,35 @@ const createAnnouncement = async (req, res) => {
       publishDate,
     } = req.body;
 
-    if (!title || !content || !batch) {
+    if (!title || !content) {
       return res.status(400).json({
         success: false,
         message:
-          "Title, content and batch are required",
+          "Title and content are required",
+      });
+    }
+
+    if (!batch && req.user.role !== 'admin') {
+      return res.status(400).json({
+        success: false,
+        message: "Batch is required for mentors",
       });
     }
 
     // Check mentor is assigned to batch
-
-    const mentorBatch = await Batch.findOne({
-      _id: batch,
-      mentors: mentorId,
-    });
-
-    if (!mentorBatch) {
-      return res.status(403).json({
-        success: false,
-        message:
-          "You are not assigned to this batch",
+    if (req.user.role !== 'admin' && batch) {
+      const mentorBatch = await Batch.findOne({
+        _id: batch,
+        mentors: req.user.id,
       });
+
+      if (!mentorBatch) {
+        return res.status(403).json({
+          success: false,
+          message:
+            "You are not assigned to this batch",
+        });
+      }
     }
 
     const announcement =
@@ -45,7 +53,7 @@ const createAnnouncement = async (req, res) => {
         content,
         targetAudience:
           targetAudience || "students",
-        batch,
+        batch: batch || null,
         author: mentorId,
         publishDate:
           publishDate || new Date(),
@@ -126,6 +134,29 @@ const getMentorAnnouncements = async (
     });
   }
 };
+// Get all announcements (for admin)
+const getAllAnnouncements = async (req, res) => {
+  try {
+    const announcements = await Announcement.find()
+      .populate("batch", "name track")
+      .populate("author", "name email")
+      .sort({ publishDate: -1 });
+
+    res.status(200).json({
+      success: true,
+      count: announcements.length,
+      data: announcements,
+    });
+  } catch (error) {
+    console.error("Get all announcements error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to get all announcements",
+      error: error.message,
+    });
+  }
+};
+
 // Get one announcement
 
 const getAnnouncementById = async (
@@ -286,7 +317,7 @@ const updateAnnouncement = async (
         mentors: mentorId,
       });
 
-    if (!mentorBatch) {
+    if (req.user.role !== "admin" && !mentorBatch) {
       return res.status(403).json({
         success: false,
         message:
@@ -410,4 +441,47 @@ module.exports = {
   getMyAnnouncements,
   updateAnnouncement,
   deleteAnnouncement,
+};
+
+const markAnnouncementRead = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { id } = req.params;
+
+    const announcement = await Announcement.findById(id);
+
+    if (!announcement) {
+      return res.status(404).json({
+        success: false,
+        message: "Announcement not found",
+      });
+    }
+
+    if (!announcement.readBy.includes(userId)) {
+      announcement.readBy.push(userId);
+      await announcement.save();
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Announcement marked as read",
+    });
+  } catch (error) {
+    console.error("Mark announcement read error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to mark announcement as read",
+      error: error.message,
+    });
+  }
+};
+
+module.exports = {
+  createAnnouncement,
+  getMentorAnnouncements,
+  getAnnouncementById,
+  updateAnnouncement,
+  deleteAnnouncement,
+  markAnnouncementRead,
+  getAllAnnouncements,
 };

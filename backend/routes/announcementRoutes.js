@@ -16,15 +16,25 @@ const {
   getAnnouncementById,
   updateAnnouncement,
   deleteAnnouncement,
+  getAllAnnouncements,
+  markAnnouncementRead,
 } = require(
   "../controllers/announcementController"
+);
+
+// Get all announcements (for admin)
+router.get(
+  "/all",
+  protect,
+  authorize("admin"),
+  getAllAnnouncements
 );
 
 // Get mentor announcements
 router.get(
   "/",
   protect,
-  authorize("mentor"),
+  authorize("mentor", "admin"),
   getMentorAnnouncements
 );
 
@@ -32,7 +42,7 @@ router.get(
 router.get(
   "/:id",
   protect,
-  authorize("mentor"),
+  authorize("mentor", "admin"),
   getAnnouncementById
 );
 
@@ -40,7 +50,7 @@ router.get(
 router.post(
   "/",
   protect,
-  authorize("mentor"),
+  authorize("mentor", "admin"),
   createAnnouncement
 );
 
@@ -48,7 +58,7 @@ router.post(
 router.put(
   "/:id",
   protect,
-  authorize("mentor"),
+  authorize("mentor", "admin"),
   updateAnnouncement
 );
 
@@ -56,8 +66,16 @@ router.put(
 router.delete(
   "/:id",
   protect,
-  authorize("mentor"),
+  authorize("mentor", "admin"),
   deleteAnnouncement
+);
+
+// Mark as read
+router.patch(
+  "/:id/read",
+  protect,
+  authorize("admin", "mentor"),
+  markAnnouncementRead
 );
 
 module.exports = router;

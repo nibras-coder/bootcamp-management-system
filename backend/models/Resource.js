@@ -2,14 +2,33 @@ const mongoose = require("mongoose");
 
 const resourceSchema = new mongoose.Schema(
   {
-    title: { type: String, required: true, trim: true },
-    description: { type: String, default: "", trim: true },
-    url: { type: String, default: "", trim: true },
-    type: { type: String, default: "Resource", trim: true },
-    // "All Tracks" makes the resource available to every student.
-    targetTrack: { type: String, default: "All Tracks", trim: true },
+    title: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    description: {
+      type: String,
+      required: true,
+    },
+    target: {
+      type: String,
+      default: "All Tracks",
+    },
+    link: {
+      type: String,
+    },
+    fileUrl: {
+      type: String,
+    },
+    batch: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Batch",
+    }
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
 module.exports = mongoose.model("Resource", resourceSchema);

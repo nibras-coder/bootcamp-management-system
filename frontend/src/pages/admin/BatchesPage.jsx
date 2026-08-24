@@ -1,38 +1,17 @@
-import React, { useState } from "react";
-import { Search, Plus, MoreVertical, Calendar, Users, X } from "lucide-react";
-
-const initialBatches = [
-  {
-    id: 1,
-    name: "Web Dev Bootcamp 2026",
-    status: "Active",
-    students: 45,
-    startDate: "2026-05-10",
-    endDate: "2026-11-10",
-    instructor: "ALi kemal",
-  },
-  {
-    id: 2,
-    name: "DSA & Competitive Programming",
-    status: "Upcoming",
-    students: 30,
-    startDate: "2026-09-01",
-    endDate: "2027-03-01",
-    instructor: "Nedil Jemal",
-  },
-  {
-    id: 3,
-    name: "Backend Masterclass (Node/Express)",
-    status: "Completed",
-    students: 25,
-    startDate: "2025-10-15",
-    endDate: "2026-02-15",
-    instructor: "Reof Yassin ",
-  },
-];
+import React, { useState, useEffect } from "react";
+import {
+  Search,
+  Plus,
+  MoreVertical,
+  Calendar,
+  Users,
+  X,
+  User as UserIcon,
+} from "lucide-react";
+import API from "../../api/axios";
 
 const BatchesPage = () => {
-  const [batches, setBatches] = useState(initialBatches);
+  const [batches, setBatches] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newBatch, setNewBatch] = useState({
@@ -43,28 +22,88 @@ const BatchesPage = () => {
     endDate: "",
     instructor: "",
   });
+  const [mentors, setMentors] = useState([]);
 
-  const filteredBatches = batches.filter((batch) =>
-    batch.name.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [selectedBatchForDetail, setSelectedBatchForDetail] = useState(null);
+  const [batchStudents, setBatchStudents] = useState([]);
 
-  const handleAddBatch = (e) => {
-    e.preventDefault();
-    setBatches([...batches, { ...newBatch, id: Date.now() }]);
-    setIsModalOpen(false);
-    setNewBatch({
-      name: "",
-      status: "Upcoming",
-      students: 0,
-      startDate: "",
-      endDate: "",
-      instructor: "",
-    });
+  useEffect(() => {
+    fetchBatches();
+    fetchMentors();
+  }, []);
+
+  const fetchBatches = async () => {
+    try {
+      const response = await API.get("/batches");
+      if (response.data.success) {
+        setBatches(response.data.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch batches:", error);
+    }
   };
 
-  const handleDelete = (id) => {
+  const fetchMentors = async () => {
+    try {
+      const response = await API.get("/users?role=mentor");
+      if (response.data.success) {
+        setMentors(response.data.data || []);
+      }
+    } catch (error) {
+      console.error("Failed to fetch mentors:", error);
+    }
+  };
+
+  const filteredBatches = batches.filter((batch) =>
+    (batch.name || batch.track || "")
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase()),
+  );
+
+  const handleAddBatch = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await API.post("/batches", newBatch);
+      if (response.data.success) {
+        setBatches([...batches, response.data.data]);
+        setIsModalOpen(false);
+        setNewBatch({
+          name: "",
+          status: "Upcoming",
+          students: 0,
+          startDate: "",
+          endDate: "",
+          instructor: "",
+        });
+      }
+    } catch (error) {
+      console.error("Failed to add batch:", error);
+    }
+  };
+
+  const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this batch?")) {
-      setBatches(batches.filter((b) => b.id !== id));
+      try {
+        await API.delete(`/batches/${id}`);
+        setBatches(batches.filter((b) => b._id !== id));
+      } catch (error) {
+        console.error("Failed to delete batch:", error);
+      }
+    }
+  };
+
+  const openBatchDetail = async (batch) => {
+    setSelectedBatchForDetail(batch);
+    setIsDetailModalOpen(true);
+    setBatchStudents([]); // clear prev
+    try {
+      const response = await API.get(`/batches/${batch._id}/students`);
+      if (response.data.success) {
+        setBatchStudents(response.data.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch students for batch:", error);
     }
   };
 
@@ -89,53 +128,76 @@ const BatchesPage = () => {
           className="flex items-center space-x-2 bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors"
         >
           <Plus size={20} />
-          <span>New Trach</span>
+          <span>New Track</span>
         </button>
       </div>
 
-      {/* Grid */}
+      {/* Batches Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredBatches.map((batch) => (
           <div
-            key={batch.id}
+            key={batch._id}
             className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow relative group"
           >
-            <div className="p-5 border-b border-gray-100 flex justify-between items-start">
-              <div>
-                <span
-                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    batch.status === "Active"
-                      ? "bg-green-100 text-green-800"
-                      : batch.status === "Upcoming"
-                        ? "bg-blue-100 text-blue-800"
-                        : "bg-gray-100 text-gray-800"
-                  }`}
-                >
-                  {batch.status}
-                </span>
-                <h3 className="text-lg font-semibold text-gray-900 mt-2">
-                  {batch.name}
-                </h3>
-                <p className="text-sm text-gray-500 mt-1">
-                  Instructor: {batch.instructor}
-                </p>
+            {/* Delete button (shows on hover) */}
+            <button
+              onClick={() => handleDelete(batch._id)}
+              className="absolute top-4 right-4 p-1 bg-white rounded-md text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity hover:text-red-600 hover:bg-red-50 z-10"
+              title="Delete batch"
+            >
+              <X size={16} />
+            </button>
+
+            <div className="p-6">
+              <div className="flex justify-between items-start mb-4 pr-6">
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900">
+                    {batch.name || batch.track}
+                  </h3>
+                  <span
+                    className={`inline-block mt-2 px-2.5 py-1 rounded-full text-xs font-medium ${
+                      batch.status === "Active"
+                        ? "bg-green-100 text-green-800"
+                        : batch.status === "Upcoming"
+                          ? "bg-blue-100 text-blue-800"
+                          : "bg-gray-100 text-gray-800"
+                    }`}
+                  >
+                    {batch.status || "Upcoming"}
+                  </span>
+                </div>
               </div>
-              <button
-                onClick={() => handleDelete(batch.id)}
-                className="text-gray-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                <X size={20} />
-              </button>
+
+              <div className="space-y-3">
+                <div className="flex items-center text-sm text-gray-600">
+                  <Users className="w-4 h-4 mr-2 text-gray-400" />
+                  <span>{batch.students?.length || 0} Students</span>
+                </div>
+                <div className="flex items-center text-sm text-gray-600">
+                  <Calendar className="w-4 h-4 mr-2 text-gray-400" />
+                  <span>
+                    {new Date(batch.startDate).toLocaleDateString()} -{" "}
+                    {new Date(batch.endDate).toLocaleDateString()}
+                  </span>
+                </div>
+                <div className="flex items-center text-sm text-gray-600">
+                  <UserIcon className="w-4 h-4 mr-2 text-gray-400" />
+                  <span>
+                    Instructor:{" "}
+                    {typeof batch.instructor === "object"
+                      ? batch.instructor?.name || "Unknown"
+                      : batch.instructor || "Not Assigned"}
+                  </span>
+                </div>
+              </div>
             </div>
-            <div className="px-5 py-4 bg-gray-50 flex justify-between text-sm text-gray-600">
-              <div className="flex items-center space-x-2">
-                <Users size={16} className="text-gray-400" />
-                <span>{batch.students} Students</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Calendar size={16} className="text-gray-400" />
-                <span>{batch.startDate}</span>
-              </div>
+            <div className="bg-gray-50 px-6 py-3 border-t border-gray-200">
+              <button
+                onClick={() => openBatchDetail(batch)}
+                className="text-teal-600 text-sm font-medium hover:text-teal-700"
+              >
+                View Details
+              </button>
             </div>
           </div>
         ))}
@@ -162,7 +224,7 @@ const BatchesPage = () => {
             <form onSubmit={handleAddBatch} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Batch Name
+                  Track Name
                 </label>
                 <input
                   required
@@ -210,17 +272,37 @@ const BatchesPage = () => {
                   Instructor
                 </label>
                 <input
-                  required
-                  type="text"
+                  list="mentors-list"
                   value={newBatch.instructor}
                   onChange={(e) =>
                     setNewBatch({ ...newBatch, instructor: e.target.value })
                   }
+                  placeholder="type instructor name"
                   className="w-full px-3 py-2 border rounded-lg focus:ring-teal-500"
-                  placeholder="e.g. Abdullah Isa"
                 />
+                <datalist id="mentors-list">
+                  {mentors.map((m) => (
+                    <option key={m._id} value={m.name}></option>
+                  ))}
+                </datalist>
               </div>
-              <div className="flex justify-end space-x-3 mt-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Status
+                </label>
+                <select
+                  value={newBatch.status}
+                  onChange={(e) =>
+                    setNewBatch({ ...newBatch, status: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-teal-500"
+                >
+                  <option value="Upcoming">Upcoming</option>
+                  <option value="Active">Active</option>
+                  <option value="Completed">Completed</option>
+                </select>
+              </div>
+              <div className="flex justify-end space-x-3 pt-4">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
@@ -232,10 +314,76 @@ const BatchesPage = () => {
                   type="submit"
                   className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700"
                 >
-                  Add Track
+                  Create Track
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Detail Modal */}
+      {isDetailModalOpen && selectedBatchForDetail && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-2xl w-full p-6 shadow-xl max-h-[90vh] flex flex-col">
+            <div className="flex justify-between items-center mb-4">
+              <div>
+                <h2 className="text-xl font-bold text-gray-800">
+                  {selectedBatchForDetail.name || selectedBatchForDetail.track}
+                </h2>
+                <p className="text-sm text-gray-500 mt-1">
+                  Enrolled Students ({batchStudents.length})
+                </p>
+              </div>
+              <button
+                onClick={() => setIsDetailModalOpen(false)}
+                className="text-gray-500 hover:text-gray-800"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="overflow-y-auto flex-1">
+              {batchStudents.length === 0 ? (
+                <div className="text-center p-8 text-gray-500">
+                  No students are enrolled in this track yet.
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {batchStudents.map((student) => (
+                    <div
+                      key={student._id}
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="h-10 w-10 bg-teal-100 text-teal-700 font-bold flex items-center justify-center rounded-full">
+                          {student.name.charAt(0)}
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900">
+                            {student.name}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {student.email}
+                          </p>
+                        </div>
+                      </div>
+                      <span className="text-xs font-medium bg-gray-200 text-gray-700 px-2 py-1 rounded">
+                        {student.gender || "N/A"}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="mt-4 pt-4 border-t flex justify-end">
+              <button
+                onClick={() => setIsDetailModalOpen(false)}
+                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}

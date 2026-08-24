@@ -19,35 +19,32 @@ const {
   "../controllers/attendanceController"
 );
 
-// Get mentor attendance history
+// Admin can view all attendance, mentor can view their own
 router.get(
   "/",
   protect,
-  authorize("mentor"),
+  authorize("mentor", "admin"),
   getMentorAttendance
 );
 
-// Get attendance for one student
 router.get(
   "/student/:studentId",
   protect,
-  authorize("mentor"),
+  authorize("mentor", "admin"),
   getStudentAttendance
 );
 
-// Mark attendance
 router.post(
   "/",
   protect,
-  authorize("mentor"),
+  authorize("mentor", "admin"),
   markAttendance
 );
 
-// Update attendance
 router.put(
   "/:id",
   protect,
-  authorize("mentor"),
+  authorize("mentor", "admin"),
   updateAttendance
 );
 

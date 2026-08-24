@@ -22,7 +22,9 @@ const batchSchema = new mongoose.Schema(
     endDate: {
       type: Date,
     },
-
+    instructor: {
+      type: mongoose.Schema.Types.Mixed,
+    },
     mentors: [
       {
         type: mongoose.Schema.Types.ObjectId,

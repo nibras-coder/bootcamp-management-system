@@ -32,18 +32,19 @@ const createAssignment = async (req, res) => {
     }
 
     // Check that mentor is assigned to batch
-
-    const mentorBatch = await Batch.findOne({
-      _id: batch,
-      mentors: mentorId,
-    });
-
-    if (!mentorBatch) {
-      return res.status(403).json({
-        success: false,
-        message:
-          "You are not assigned to this batch",
+    if (req.user.role !== "admin") {
+      const mentorBatch = await Batch.findOne({
+        _id: batch,
+        mentors: mentorId,
       });
+
+      if (!mentorBatch) {
+        return res.status(403).json({
+          success: false,
+          message:
+            "You are not assigned to this batch",
+        });
+      }
     }
 
     const assignment = await Assignment.create({
@@ -120,6 +121,37 @@ const getMentorAssignments = async (req, res) => {
     });
   }
 };
+const getAssignments = async (req, res) => {
+  try {
+    let query = {};
+
+    if (req.user.role === "student") {
+      query.batch = req.user.batch;
+    } else if (req.user.role === "mentor") {
+      const batches = await Batch.find({ mentors: req.user.id }).select("_id");
+      query.batch = { $in: batches.map((batch) => batch._id) };
+    }
+
+    const assignments = await Assignment.find(query)
+      .populate("batch", "name track")
+      .populate("createdBy", "name email")
+      .sort({ deadline: 1 });
+
+    res.status(200).json({
+      success: true,
+      count: assignments.length,
+      data: assignments,
+    });
+  } catch (error) {
+    console.error("Get assignments error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to get assignments",
+      error: error.message,
+    });
+  }
+};
+
 // Get one assignment
 
 const getAssignmentById = async (
@@ -142,17 +174,20 @@ const getAssignmentById = async (
       });
     }
 
-    const mentorBatch = await Batch.findOne({
-      _id: assignment.batch._id,
-      mentors: mentorId,
-    });
+    if (req.user.role !== "admin") {
+      const mentorBatch =
+        await Batch.findOne({
+          _id: assignment.batch._id,
+          mentors: mentorId,
+        });
 
-    if (!mentorBatch) {
-      return res.status(403).json({
-        success: false,
-        message:
-          "You cannot access this assignment",
-      });
+      if (!mentorBatch) {
+        return res.status(403).json({
+          success: false,
+          message:
+            "You cannot access this assignment",
+        });
+      }
     }
 
     res.status(200).json({
@@ -276,18 +311,20 @@ const updateAssignment = async (req, res) => {
     }
 
     // Check mentor owns the batch
+    if (req.user.role !== "admin") {
+      const mentorBatch =
+        await Batch.findOne({
+          _id: assignment.batch,
+          mentors: mentorId,
+        });
 
-    const mentorBatch = await Batch.findOne({
-      _id: assignment.batch,
-      mentors: mentorId,
-    });
-
-    if (!mentorBatch) {
-      return res.status(403).json({
-        success: false,
-        message:
-          "You cannot update this assignment",
-      });
+      if (!mentorBatch) {
+        return res.status(403).json({
+          success: false,
+          message:
+            "You cannot update this assignment",
+        });
+      }
     }
 
     const {
@@ -357,17 +394,20 @@ const deleteAssignment = async (req, res) => {
       });
     }
 
-    const mentorBatch = await Batch.findOne({
-      _id: assignment.batch,
-      mentors: mentorId,
-    });
+    if (req.user.role !== "admin") {
+      const mentorBatch =
+        await Batch.findOne({
+          _id: assignment.batch,
+          mentors: mentorId,
+        });
 
-    if (!mentorBatch) {
-      return res.status(403).json({
-        success: false,
-        message:
-          "You cannot delete this assignment",
-      });
+      if (!mentorBatch) {
+        return res.status(403).json({
+          success: false,
+          message:
+            "You cannot delete this assignment",
+        });
+      }
     }
 
     await Assignment.findByIdAndDelete(id);
@@ -395,6 +435,7 @@ const deleteAssignment = async (req, res) => {
 module.exports = {
   createAssignment,
   getMentorAssignments,
+  getAssignments,
   getAssignmentById,
   getMyAssignments,
   updateAssignment,

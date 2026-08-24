@@ -32,11 +32,17 @@ const getUserById = asyncHandler(async (req, res) => {
 
 const createUser = asyncHandler(async (req, res) => {
   const { name, fullName, email, password, role, batch } = req.body;
-  const userName = (name || fullName || "").trim();
+  const userName = name || fullName;
 
   if (!userName || !email || !password || !role) {
-    return res.status(400).json({ success: false, message: "Name, email, password and role are required" });
+    return res.status(400).json({
+      success: false,
+      message: "Missing required fields",
+    });
   }
+  const existing = await User.findOne({
+    email: email.toLowerCase(),
+  });
 
   const existing = await User.findOne({ email: email.toLowerCase().trim() });
   if (existing) return res.status(400).json({ success: false, message: "Email already in use" });
@@ -49,8 +55,14 @@ const createUser = asyncHandler(async (req, res) => {
     batch: batch || null,
   });
 
-  const safeUser = await User.findById(user._id).select("-password").populate("batch", "name track");
-  res.status(201).json({ success: true, message: "User created", data: safeUser });
+  res.status(201).json({
+    success: true,
+    message: "User created",
+    user: user.toObject({ transform: (_, value) => {
+      delete value.password;
+      return value;
+    } }),
+  });
 });
 
 const updateUser = asyncHandler(async (req, res) => {
@@ -58,14 +70,39 @@ const updateUser = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id);
   if (!user) return res.status(404).json({ success: false, message: "User not found" });
 
-  if (name !== undefined || fullName !== undefined) user.name = (name || fullName).trim();
-  if (email !== undefined) user.email = email.toLowerCase().trim();
-  if (role !== undefined) user.role = role;
-  if (batch !== undefined) user.batch = batch || null;
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      message: "User not found",
+    });
+  }
+
+  if (name !== undefined || fullName !== undefined) {
+    user.name = name !== undefined ? name : fullName;
+  }
+
+  if (email !== undefined) {
+    user.email = email.toLowerCase();
+  }
+
+  if (role !== undefined) {
+    user.role = role;
+  }
+
+  if (batch !== undefined) {
+    user.batch = batch;
+  }
 
   await user.save();
-  const safeUser = await User.findById(user._id).select("-password").populate("batch", "name track");
-  res.status(200).json({ success: true, message: "User updated", data: safeUser });
+
+  res.status(200).json({
+    success: true,
+    message: "User updated",
+    user: user.toObject({ transform: (_, value) => {
+      delete value.password;
+      return value;
+    } }),
+  });
 });
 
 const deleteUser = asyncHandler(async (req, res) => {
@@ -77,7 +114,15 @@ const deleteUser = asyncHandler(async (req, res) => {
 
 const getStudents = async (req, res) => {
   try {
-    const students = await User.find({ role: "student" })
+    const filter = { role: "student" };
+    if (req.query.gender) {
+      filter.gender = req.query.gender;
+    }
+    if (req.query.batch) {
+      filter.batch = req.query.batch;
+    }
+
+    const students = await User.find(filter)
       .select("-password")
       .populate("batch", "name track");
     res.status(200).json({ success: true, count: students.length, data: students });
@@ -85,7 +130,29 @@ const getStudents = async (req, res) => {
     res.status(500).json({ success: false, message: "Failed to get students", error: error.message });
   }
 };
+const warnStudent = async (req, res) => {
+  try {
+    const { message } = req.body;
+    if (!message) {
+      return res.status(400).json({ success: false, message: "Warning message is required" });
+    }
 
+    const student = await User.findOneAndUpdate(
+      { _id: req.params.id, role: "student" },
+      { $push: { warnings: { message } } },
+      { new: true }
+    ).select("-password");
+
+    if (!student) {
+      return res.status(404).json({ success: false, message: "Student not found" });
+    }
+
+    res.status(200).json({ success: true, message: "Warning added successfully", data: student });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Failed to warn student", error: error.message });
+  }
+};
+// Get students assigned to the logged-in mentor
 const getMentorStudents = async (req, res) => {
   try {
     const batches = await Batch.find({ mentors: req.user.id }).select("_id name track");
@@ -98,4 +165,13 @@ const getMentorStudents = async (req, res) => {
   }
 };
 
-module.exports = { getUsers, getUserById, createUser, updateUser, deleteUser, getStudents, getMentorStudents };
+module.exports = {
+  getUsers,
+  getUserById,
+  createUser,
+  updateUser,
+  deleteUser,
+  getStudents,
+  getMentorStudents,
+  warnStudent,
+};
