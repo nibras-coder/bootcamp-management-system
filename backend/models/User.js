@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs");
 
 const userSchema = new mongoose.Schema(
   {
@@ -30,8 +29,41 @@ const userSchema = new mongoose.Schema(
     batch: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Batch",
+      default: null
+    },
+    password: {
+      type: String,
+      required: true,
+      minlength: 6,
+    },
+    resetPasswordToken: {
+      type: String,
       default: null,
     },
+    
+    resetPasswordExpires: {
+      type: Date,
+      default: null,
+    },
+    profilePhoto: {
+      type: String,
+      default: null,
+    },
+    settings: {
+      emailNotifications: {
+        type: Boolean,
+        default: true,
+      },
+    
+      announcementNotifications: {
+        type: Boolean,
+        default: true,
+      },
+    
+      assignmentNotifications: {
+        type: Boolean,
+        default: true,
+      },
     gender: {
       type: String,
       enum: ["Male", "Female"],

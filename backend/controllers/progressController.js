@@ -2,7 +2,7 @@ const Progress = require("../models/Progress");
 const User = require("../models/User");
 const Batch = require("../models/Batch");
 
-// Create progress
+// CREATE PROGRESS - MENTOR
 
 const createProgress = async (req, res) => {
   try {
@@ -17,12 +17,7 @@ const createProgress = async (req, res) => {
       notes,
     } = req.body;
 
-    if (
-      !student ||
-      !batch ||
-      !topic ||
-      !week
-    ) {
+    if (!student || !batch || !topic || !week) {
       return res.status(400).json({
         success: false,
         message:
@@ -30,7 +25,7 @@ const createProgress = async (req, res) => {
       });
     }
 
-    // Check mentor owns the batch
+    // Check batch belongs to mentor
 
     const mentorBatch = await Batch.findOne({
       _id: batch,
@@ -80,10 +75,9 @@ const createProgress = async (req, res) => {
 
     const progress = await Progress.create({
       student,
-      track,
+      batch,
       topic,
-      status:
-        status || "Not Started",
+      status: status || "Not Started",
       week,
       notes,
       updatedBy: mentorId,
@@ -113,69 +107,38 @@ const createProgress = async (req, res) => {
     });
   }
 };
-const getProgress = async (req, res) => {
+// Get all progress - mentor
+
+const getMentorProgress = async (req, res) => {
   try {
-    const userId = req.user.id;
-    const userRole = req.user.role;
-    
-    let progress = [];
+    const mentorId = req.user.id;
 
-    if (userRole === "student") {
-      // Find progress for this student
-      progress = await Progress.find({
-        student: userId,
-      })
-        .populate("student", "name email")
-        .populate("batch", "name track")
-        .populate("updatedBy", "name")
-        .sort({
-          updatedAt: -1,
-        });
-        
-      // For progress dashboard, we might want to calculate the score here.
-      // Usually the frontend expects { data: { progressScore, assignments } } or just progress.
-      // The frontend currently uses: progressRes.data?.progressScore || progressRes.data?.score || progressRes.data || 0
-      
-      const total = progress.length;
-      const completed = progress.filter(item => item.status === "Completed").length;
-      const score = total > 0 ? Math.round((completed / total) * 100) : 0;
-      
-      return res.status(200).json({
-        success: true,
-        count: progress.length,
-        progressScore: score, // Provide progressScore for frontend
-        data: progress,
+    const batches = await Batch.find({
+      mentors: mentorId,
+    }).select("_id");
+
+    const batchIds = batches.map(
+      (batch) => batch._id
+    );
+
+    const progress = await Progress.find({
+      batch: { $in: batchIds },
+    })
+      .populate("student", "name email")
+      .populate("batch", "name track")
+      .populate("updatedBy", "name")
+      .sort({
+        updatedAt: -1,
       });
 
-    } else {
-      // Find mentor's batches
-      const batches = await Batch.find({
-        mentors: userId,
-      }).select("_id");
-
-      const batchIds = batches.map(
-        (batch) => batch._id
-      );
-
-      progress = await Progress.find({
-        batch: { $in: batchIds },
-      })
-        .populate("student", "name email")
-        .populate("batch", "name track")
-        .populate("updatedBy", "name")
-        .sort({
-          updatedAt: -1,
-        });
-        
-      return res.status(200).json({
-        success: true,
-        count: progress.length,
-        data: progress,
-      });
-    }
+    res.status(200).json({
+      success: true,
+      count: progress.length,
+      data: progress,
+    });
   } catch (error) {
     console.error(
-      "Get progress error:",
+      "Get mentor progress error:",
       error
     );
 
@@ -186,8 +149,7 @@ const getProgress = async (req, res) => {
     });
   }
 };
-
-// Get student progress
+// Get one student progress - mentor
 
 const getStudentProgress = async (
   req,
@@ -197,7 +159,6 @@ const getStudentProgress = async (
     const mentorId = req.user.id;
     const { studentId } = req.params;
 
-    // Find mentor's batches
     const batches = await Batch.find({
       mentors: mentorId,
     }).select("_id");
@@ -206,7 +167,8 @@ const getStudentProgress = async (
       (batch) => batch._id
     );
 
-    // Make sure student belongs to mentor
+    // Make sure student belongs to mentor's batch
+
     const student = await User.findOne({
       _id: studentId,
       role: "student",
@@ -223,12 +185,14 @@ const getStudentProgress = async (
 
     const progress = await Progress.find({
       student: studentId,
-    }).sort({
-      week: 1,
-      createdAt: 1,
-    });
+    })
+      .populate("batch", "name track")
+      .populate("updatedBy", "name")
+      .sort({
+        week: 1,
+        createdAt: 1,
+      });
 
-    // Calculate summary
     const total = progress.length;
 
     const completed = progress.filter(
@@ -293,7 +257,109 @@ const getStudentProgress = async (
     });
   }
 };
-// Update progress
+// Get my progress 
+
+const getMyProgress = async (req, res) => {
+  try {
+      const studentId = req.user.id;
+
+    // Check that the user exists and is a student
+
+    const student = await User.findOne({
+      _id: studentId,
+      role: "student",
+    }).populate("batch", "name track");
+
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found",
+      });
+    }
+
+    // Get ONLY the logged-in student's progress
+
+    const progress = await Progress.find({
+      student: studentId,
+    })
+      .populate("batch", "name track")
+      .populate("updatedBy", "name")
+      .sort({
+        week: 1,
+        createdAt: 1,
+      });
+
+    // Calculate summary
+    const total = progress.length;
+
+    const completed = progress.filter(
+      (item) =>
+        item.status === "Completed"
+    ).length;
+
+    const inProgress = progress.filter(
+      (item) =>
+        item.status === "In Progress"
+    ).length;
+
+    const needsImprovement =
+      progress.filter(
+        (item) =>
+          item.status ===
+          "Needs Improvement"
+      ).length;
+
+    const notStarted = progress.filter(
+      (item) =>
+        item.status === "Not Started"
+    ).length;
+
+    const completionPercentage =
+      total > 0
+        ? (completed / total) * 100
+        : 0;
+
+    res.status(200).json({
+      success: true,
+
+      data: {
+        student: {
+          id: student._id,
+          name: student.name,
+          email: student.email,
+          batch: student.batch,
+        },
+
+        summary: {
+          total,
+          completed,
+          inProgress,
+          needsImprovement,
+          notStarted,
+          completionPercentage:
+            Number(
+              completionPercentage.toFixed(1)
+            ),
+        },
+
+        progress,
+      },
+    });
+  } catch (error) {
+    console.error(
+      "Get my progress error:",
+      error
+    );
+
+    res.status(500).json({
+      success: false,
+      message:
+        "Failed to get your progress",
+      error: error.message,
+    });
+  }
+};
+// Update progress ->mentor
 
 const updateProgress = async (
   req,
@@ -321,7 +387,6 @@ const updateProgress = async (
     }
 
     // Check mentor owns batch
-
     const mentorBatch = await Batch.findOne({
       _id: progress.batch,
       mentors: mentorId,
@@ -384,7 +449,8 @@ const updateProgress = async (
 
 module.exports = {
   createProgress,
-  getProgress,
+  getMentorProgress,
   getStudentProgress,
+  getMyProgress,
   updateProgress,
 };

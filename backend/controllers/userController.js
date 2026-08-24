@@ -1,112 +1,154 @@
 const User = require("../models/User");
 const Batch = require("../models/Batch");
+const asyncHandler = require("../utils/asyncHandler");
 
-const getUsers = async (req, res) => {
-  try {
-    const filter = {};
-    if (req.query.role) {
-      filter.role = req.query.role;
-    }
-    
-    const users = await User.find(filter).select("-password").sort({ createdAt: -1 });
-    
-    res.status(200).json({
-      success: true,
-      count: users.length,
-      data: users,
-    });
-  } catch (error) {
-    console.error("Get users error:", error);
-    res.status(500).json({
+// GET /api/users
+const getUsers = asyncHandler(async (req, res) => {
+  const { role, search } = req.query;
+  const query = {};
+
+  if (role) {
+    query.role = role;
+  }
+
+  if (search) {
+    query.$or = [
+      { name: { $regex: search, $options: "i" } },
+      { email: { $regex: search, $options: "i" } },
+    ];
+  }
+
+  const users = await User.find(query).sort({ createdAt: -1 });
+
+  res.status(200).json({
+    success: true,
+    count: users.length,
+    users,
+  });
+});
+
+// GET /api/users/:id
+const getUserById = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.params.id)
+    .select("-password")
+    .populate("batch", "name track");
+
+  if (!user) {
+    return res.status(404).json({
       success: false,
-      message: "Failed to get users",
-      error: error.message,
+      message: "User not found",
     });
   }
-};
 
-const createUser = async (req, res) => {
-  try {
-    const { name, email, password, gender, phone, expertise, status } = req.body;
+  res.status(200).json({
+    success: true,
+    data: user,
+  });
+});
 
-    if (!name || !email || !password) {
-      return res.status(400).json({ success: false, message: "Name, email, and password are required" });
-    }
+// Admin creates a user directly
+const createUser = asyncHandler(async (req, res) => {
+  const { name, fullName, email, password, role, batch } = req.body;
+  const userName = name || fullName;
 
-    const existingUser = await User.findOne({ email: email.toLowerCase().trim() });
-    if (existingUser) {
-      return res.status(400).json({ success: false, message: "Email already registered" });
-    }
-
-    const bcrypt = require("bcryptjs");
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    // Creating the user. 
-    // The role is explicitly set to "mentor".
-    const newUser = await User.create({
-      name,
-      email,
-      password: hashedPassword,
-      role: "mentor",
-      mentorRole: req.body.role || "",
-      gender,
-      phone,
-      expertise,
-      isActive: status === "Active",
-    });
-
-    // Remove password from response
-    newUser.password = undefined;
-
-    res.status(201).json({
-      success: true,
-      message: "Mentor created successfully",
-      data: newUser,
-    });
-  } catch (error) {
-    console.error("Create user error:", error);
-    res.status(500).json({
+  if (!userName || !email || !password || !role) {
+    return res.status(400).json({
       success: false,
-      message: "Failed to create mentor",
-      error: error.message,
+      message: "Missing required fields",
+    });
+  }
+  const existing = await User.findOne({
+    email: email.toLowerCase(),
+  });
+
+  if (existing) {
+    return res.status(400).json({
+      success: false,
+      message: "Email already in use",
     });
   }
 };
+// Get mentor's students
 
-const updateUser = async (req, res) => {
-  try {
-    const updatedUser = await User.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true, runValidators: true }
-    ).select("-password");
-    
-    if (!updatedUser) {
-      return res.status(404).json({ success: false, message: "User not found" });
-    }
-    
-    res.status(200).json({ success: true, data: updatedUser });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Failed to update user", error: error.message });
-  }
-};
+  const user = await User.create({
+    name: userName,
+    email: email.toLowerCase(),
+    password,
+    role,
+    batch,
+  });
 
-const deleteUser = async (req, res) => {
-  try {
-    const user = await User.findByIdAndDelete(req.params.id);
-    if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
-    }
-    res.status(200).json({ success: true, message: "User deleted successfully" });
-  } catch (error) {
-    console.error("Delete user error:", error);
-    res.status(500).json({ success: false, message: "Failed to delete user", error: error.message });
+  res.status(201).json({
+    success: true,
+    message: "User created",
+    user: user.toObject({ transform: (_, value) => {
+      delete value.password;
+      return value;
+    } }),
+  });
+});
+
+// PUT /api/users/:id
+const updateUser = asyncHandler(async (req, res) => {
+  const { name, fullName, email, role, batch } = req.body;
+
+  const user = await User.findById(req.params.id);
+
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      message: "User not found",
+    });
   }
-};
+
+  if (name !== undefined || fullName !== undefined) {
+    user.name = name !== undefined ? name : fullName;
+  }
+
+  if (email !== undefined) {
+    user.email = email.toLowerCase();
+  }
+
+  if (role !== undefined) {
+    user.role = role;
+  }
+
+  if (batch !== undefined) {
+    user.batch = batch;
+  }
+
+  await user.save();
+
+  res.status(200).json({
+    success: true,
+    message: "User updated",
+    user: user.toObject({ transform: (_, value) => {
+      delete value.password;
+      return value;
+    } }),
+  });
+});
+
+// DELETE /api/users/:id
+const deleteUser = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.params.id);
+
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      message: "User not found",
+    });
+  }
+
+  await user.deleteOne();
+
+  res.status(200).json({
+    success: true,
+    message: "User deleted",
+  });
+});
 
 // Get all students
-
 const getStudents = async (req, res) => {
   try {
     const filter = { role: "student" };
@@ -136,7 +178,6 @@ const getStudents = async (req, res) => {
     });
   }
 };
-
 const warnStudent = async (req, res) => {
   try {
     const { message } = req.body;
@@ -159,53 +200,19 @@ const warnStudent = async (req, res) => {
     res.status(500).json({ success: false, message: "Failed to warn student", error: error.message });
   }
 };
-// Get one user
-
-const getUserById = async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id)
-      .select("-password")
-      .populate("batch", "name track");
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      data: user,
-    });
-  } catch (error) {
-    console.error("Get user error:", error);
-
-    res.status(500).json({
-      success: false,
-      message: "Failed to get user",
-      error: error.message,
-    });
-  }
-};
-// Get mentor's students
-
+// Get students assigned to the logged-in mentor
 const getMentorStudents = async (req, res) => {
   try {
     const mentorId = req.user.id;
 
     // Find batches assigned to this mentor
-    
     const batches = await Batch.find({
       mentors: mentorId,
     }).select("_id name track");
 
-    const batchIds = batches.map(
-      (batch) => batch._id
-    );
+    const batchIds = batches.map((batch) => batch._id);
 
     // Find students belonging to those batches
-
     const students = await User.find({
       role: "student",
       batch: { $in: batchIds },
@@ -219,10 +226,7 @@ const getMentorStudents = async (req, res) => {
       data: students,
     });
   } catch (error) {
-    console.error(
-      "Get mentor students error:",
-      error
-    );
+    console.error("Get mentor students error:", error);
 
     res.status(500).json({
       success: false,
@@ -234,11 +238,11 @@ const getMentorStudents = async (req, res) => {
 
 module.exports = {
   getUsers,
+  getUserById,
   createUser,
   updateUser,
   deleteUser,
   getStudents,
-  getUserById,
   getMentorStudents,
   warnStudent,
 };

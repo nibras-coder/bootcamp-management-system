@@ -2,7 +2,7 @@ const Attendance = require("../models/Attendance");
 const User = require("../models/User");
 const Batch = require("../models/Batch");
 
-// Mark Attendance
+// Mark attendance -> mentor
 
 const markAttendance = async (req, res) => {
   try {
@@ -106,7 +106,7 @@ const markAttendance = async (req, res) => {
     });
   }
 };
-   //Get Attendance for mentor
+// Get attendance for mentor
 
 const getMentorAttendance = async (req, res) => {
   try {
@@ -152,7 +152,7 @@ const getMentorAttendance = async (req, res) => {
     });
   }
 };
-// Get one student attendance
+// Get one student attendance -> mentor
 
 const getStudentAttendance = async (
   req,
@@ -172,7 +172,7 @@ const getStudentAttendance = async (
       (batch) => batch._id
     );
 
-    // Check student belongs to mentor
+    // Check student belongs to mentor's batch
 
     const student = await User.findOne({
       _id: studentId,
@@ -236,7 +236,96 @@ const getStudentAttendance = async (
     });
   }
 };
-// Update attendance
+// Get my attendance 
+
+
+const getMyAttendance = async (req, res) => {
+  try {
+    // Get the logged-in student's ID from JWT
+    const studentId = req.user.id;
+
+    // Check that the logged-in user exists
+
+    const student = await User.findOne({
+      _id: studentId,
+      role: "student",
+    }).populate("batch", "name track");
+
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found",
+      });
+    }
+
+    // Find ONLY the logged-in student's attendance
+
+    const attendance = await Attendance.find({
+      student: studentId,
+    })
+      .populate("student", "name email")
+      .populate("batch", "name track")
+      .populate("markedBy", "name")
+      .sort({ date: -1 });
+
+    // Calculate attendance statistics
+
+    const total = attendance.length;
+
+    const present = attendance.filter(
+      (record) =>
+        record.status === "Present"
+    ).length;
+
+    const absent = attendance.filter(
+      (record) =>
+        record.status === "Absent"
+    ).length;
+
+    const percentage =
+      total > 0
+        ? (present / total) * 100
+        : 0;
+
+    res.status(200).json({
+      success: true,
+
+      data: {
+        student: {
+          id: student._id,
+          name: student.name,
+          email: student.email,
+          batch: student.batch,
+        },
+
+        totalSessions: total,
+
+        presentSessions: present,
+
+        absentSessions: absent,
+
+        attendancePercentage:
+          Number(percentage.toFixed(1)),
+
+        records: attendance,
+      },
+    });
+  } catch (error) {
+    console.error(
+      "Get my attendance error:",
+      error
+    );
+
+    res.status(500).json({
+      success: false,
+      message:
+        "Failed to get your attendance",
+      error: error.message,
+    });
+  }
+};
+// Update attendance - mentor
+
 
 const updateAttendance = async (
   req,
@@ -262,7 +351,6 @@ const updateAttendance = async (
     }
 
     // Check mentor owns this batch
-    
     const mentorBatch = await Batch.findOne({
       _id: attendance.batch,
       mentors: mentorId,
@@ -306,5 +394,6 @@ module.exports = {
   markAttendance,
   getMentorAttendance,
   getStudentAttendance,
+  getMyAttendance,
   updateAttendance,
 };

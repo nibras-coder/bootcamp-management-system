@@ -61,10 +61,17 @@ const register = async (req, res) => {
       });
     }
 
-    const user = await User.create({
-      name,
-      email,
+    const hashedPassword = await bcrypt.hash(
       password,
+      10
+    );
+
+    // Public registration ALWAYS creates a student
+    const user = await User.create({
+      name: name.trim(),
+      email: email.toLowerCase().trim(),
+      role: "student",
+      password: hashedPassword,
     });
 
     const token = generateToken(user);

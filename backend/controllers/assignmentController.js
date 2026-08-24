@@ -1,5 +1,6 @@
 const Assignment = require("../models/Assignment");
 const Batch = require("../models/Batch");
+const User = require("../models/User");
 
 // Create assignmet
 
@@ -46,34 +47,24 @@ const createAssignment = async (req, res) => {
       }
     }
 
-    const assignment =
-      await Assignment.create({
-        title,
-        description,
-        instructions,
-        batch,
-        createdBy: mentorId,
-        deadline,
-        maxScore,
-      });
+    const assignment = await Assignment.create({
+      title,
+      description,
+      instructions,
+      batch,
+      createdBy: mentorId,
+      deadline,
+      maxScore,
+    });
 
     const populatedAssignment =
-      await Assignment.findById(
-        assignment._id
-      )
-        .populate(
-          "batch",
-          "name track"
-        )
-        .populate(
-          "createdBy",
-          "name email"
-        );
+      await Assignment.findById(assignment._id)
+        .populate("batch", "name track")
+        .populate("createdBy", "name email");
 
     res.status(201).json({
       success: true,
-      message:
-        "Assignment created successfully",
+      message: "Assignment created successfully",
       data: populatedAssignment,
     });
   } catch (error) {
@@ -84,50 +75,33 @@ const createAssignment = async (req, res) => {
 
     res.status(500).json({
       success: false,
-      message:
-        "Failed to create assignment",
+      message: "Failed to create assignment",
       error: error.message,
     });
   }
 };
-const getAssignments = async (
-  req,
-  res
-) => {
+// Get assignment -> Mentor
+
+const getMentorAssignments = async (req, res) => {
   try {
-    const userId = req.user.id;
-    const userRole = req.user.role;
+    const mentorId = req.user.id;
 
-    let assignments = [];
+    const batches = await Batch.find({
+      mentors: mentorId,
+    }).select("_id");
 
-    if (userRole === "admin") {
-      assignments = await Assignment.find()
-        .populate("batch", "name track")
-        .populate("createdBy", "name email")
-        .sort({ deadline: 1 });
-    } else if (userRole === "student") {
-      // Students only see assignments for their batch
-      assignments = await Assignment.find({
-        batch: req.user.batch,
-      })
-        .populate("batch", "name track")
-        .populate("createdBy", "name email")
-        .sort({ deadline: 1 });
-    } else {
-      // Mentors see assignments for batches they mentor
-      const batches = await Batch.find({
-        mentors: userId,
-      }).select("_id");
+    const batchIds = batches.map(
+      (batch) => batch._id
+    );
 
-      const batchIds = batches.map((batch) => batch._id);
-
-      assignments = await Assignment.find({
-        batch: { $in: batchIds },
-      })
-        .populate("batch", "name track")
-        .populate("createdBy", "name email")
-        .sort({ deadline: 1 });
-    }
+    const assignments = await Assignment.find({
+      batch: { $in: batchIds },
+    })
+      .populate("batch", "name track")
+      .populate("createdBy", "name email")
+      .sort({
+        deadline: 1,
+      });
 
     res.status(200).json({
       success: true,
@@ -135,7 +109,10 @@ const getAssignments = async (
       data: assignments,
     });
   } catch (error) {
-    console.error("Get assignments error:", error);
+    console.error(
+      "Get mentor assignments error:",
+      error
+    );
 
     res.status(500).json({
       success: false,
@@ -144,6 +121,37 @@ const getAssignments = async (
     });
   }
 };
+const getAssignments = async (req, res) => {
+  try {
+    let query = {};
+
+    if (req.user.role === "student") {
+      query.batch = req.user.batch;
+    } else if (req.user.role === "mentor") {
+      const batches = await Batch.find({ mentors: req.user.id }).select("_id");
+      query.batch = { $in: batches.map((batch) => batch._id) };
+    }
+
+    const assignments = await Assignment.find(query)
+      .populate("batch", "name track")
+      .populate("createdBy", "name email")
+      .sort({ deadline: 1 });
+
+    res.status(200).json({
+      success: true,
+      count: assignments.length,
+      data: assignments,
+    });
+  } catch (error) {
+    console.error("Get assignments error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to get assignments",
+      error: error.message,
+    });
+  }
+};
+
 // Get one assignment
 
 const getAssignmentById = async (
@@ -156,14 +164,8 @@ const getAssignmentById = async (
 
     const assignment =
       await Assignment.findById(id)
-        .populate(
-          "batch",
-          "name track"
-        )
-        .populate(
-          "createdBy",
-          "name email"
-        );
+        .populate("batch", "name track")
+        .populate("createdBy", "name email");
 
     if (!assignment) {
       return res.status(404).json({
@@ -200,18 +202,100 @@ const getAssignmentById = async (
 
     res.status(500).json({
       success: false,
-      message:
-        "Failed to get assignment",
+      message: "Failed to get assignment",
       error: error.message,
     });
   }
 };
-// Update assignment
 
-const updateAssignment = async (
-  req,
-  res
-) => {
+const getMyAssignments = async (req, res) => {
+  try {
+    // Get logged-in student's ID
+    const studentId = req.user.id;
+
+    
+    const student = await User.findOne({
+      _id: studentId,
+      role: "student",
+    }).populate("batch", "name track");
+
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found",
+      });
+    }
+
+    
+    if (!student.batch) {
+      return res.status(404).json({
+        success: false,
+        message: "Student is not assigned to a batch",
+      });
+    }
+
+    // Get assignments for student's batch
+
+    const assignments = await Assignment.find({
+      batch: student.batch._id,
+    })
+      .populate("batch", "name track")
+      .populate("createdBy", "name email")
+      .sort({
+        deadline: 1,
+      });
+
+    // Separate upcoming and past assignments
+
+    const now = new Date();
+
+    const upcomingAssignments = assignments.filter(
+      (assignment) =>
+        new Date(assignment.deadline) >= now
+    );
+
+    const pastAssignments = assignments.filter(
+      (assignment) =>
+        new Date(assignment.deadline) < now
+    );
+
+    res.status(200).json({
+      success: true,
+
+      count: assignments.length,
+
+      data: {
+        student: {
+          id: student._id,
+          name: student.name,
+          email: student.email,
+          batch: student.batch,
+        },
+
+        assignments,
+
+        upcomingAssignments,
+
+        pastAssignments,
+      },
+    });
+  } catch (error) {
+    console.error(
+      "Get my assignments error:",
+      error
+    );
+
+    res.status(500).json({
+      success: false,
+      message:
+        "Failed to get your assignments",
+      error: error.message,
+    });
+  }
+};
+// Update assignment -> Mentor
+
+const updateAssignment = async (req, res) => {
   try {
     const mentorId = req.user.id;
     const { id } = req.params;
@@ -256,13 +340,11 @@ const updateAssignment = async (
     }
 
     if (description !== undefined) {
-      assignment.description =
-        description;
+      assignment.description = description;
     }
 
     if (instructions !== undefined) {
-      assignment.instructions =
-        instructions;
+      assignment.instructions = instructions;
     }
 
     if (deadline !== undefined) {
@@ -295,12 +377,9 @@ const updateAssignment = async (
     });
   }
 };
-// Delete assignment
+// Delete assignment -> Mentor
 
-const deleteAssignment = async (
-  req,
-  res
-) => {
+const deleteAssignment = async (req, res) => {
   try {
     const mentorId = req.user.id;
     const { id } = req.params;
@@ -355,8 +434,10 @@ const deleteAssignment = async (
 
 module.exports = {
   createAssignment,
+  getMentorAssignments,
   getAssignments,
   getAssignmentById,
+  getMyAssignments,
   updateAssignment,
   deleteAssignment,
 };
