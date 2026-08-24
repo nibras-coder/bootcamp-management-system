@@ -25,32 +25,40 @@ const register = async (req, res) => {
       email,
       password,
       confirmPassword,
+      gender,
     } = req.body;
+
+    console.log(`[REGISTER] Attempting to register email: ${email}`);
 
     if (
       !name ||
       !email ||
       !password ||
-      !confirmPassword
+      !confirmPassword ||
+      !gender
     ) {
+      console.log(`[REGISTER FAILED] Missing fields`);
       return res.status(400).json({
         message: "All fields are required",
       });
     }
 
     if (password !== confirmPassword) {
+      console.log(`[REGISTER FAILED] Passwords do not match`);
       return res.status(400).json({
         message: "Passwords do not match",
       });
     }
 
-    if (!/^\S+@astu\.edu\.et$/i.test(email.trim())) {
+    if (!/^\S+@\S+\.\S+$/i.test(email.trim())) {
+      console.log(`[REGISTER FAILED] Invalid email format: ${email}`);
       return res.status(400).json({
-        message: "Please use your ASTU email address (@astu.edu.et)",
+        message: "Please use a valid email address",
       });
     }
 
     if (password.length < 6) {
+      console.log(`[REGISTER FAILED] Password too short`);
       return res.status(400).json({
         message:
           "Password must be at least 6 characters",
@@ -62,23 +70,22 @@ const register = async (req, res) => {
     });
 
     if (existingUser) {
+      console.log(`[REGISTER FAILED] Email already registered: ${email}`);
       return res.status(400).json({
         message: "Email already registered",
       });
     }
 
-    const hashedPassword = await bcrypt.hash(
-      password,
-      10
-    );
-
+    console.log(`[REGISTER] Creating user in DB...`);
     // Public registration ALWAYS creates a student
     const user = await User.create({
       name: name.trim(),
       email: email.toLowerCase().trim(),
       role: "student",
-      password: hashedPassword,
+      password: password,
+      gender: gender,
     });
+    console.log(`[REGISTER SUCCESS] User created with ID: ${user._id}`);
 
     const token = generateToken(user);
 
@@ -105,8 +112,10 @@ const register = async (req, res) => {
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
+    console.log(`[LOGIN ATTEMPT] Email: ${email}`);
 
     if (!email || !password) {
+      console.log(`[LOGIN FAILED] Missing email or password`);
       return res.status(400).json({
         message:
           "Email and password are required",
@@ -117,6 +126,7 @@ const login = async (req, res) => {
     }).select("+password");
 
     if (!user) {
+      console.log(`[LOGIN FAILED] User not found for email: ${email}`);
       return res.status(401).json({
         message: "Invalid email or password",
       });
@@ -127,8 +137,10 @@ const login = async (req, res) => {
         password,
         user.password
       );
+    console.log(`[LOGIN] Password match result: ${isPasswordCorrect}`);
 
     if (!isPasswordCorrect) {
+      console.log(`[LOGIN FAILED] Incorrect password for email: ${email}`);
       return res.status(401).json({
         message: "Invalid email or password",
       });
@@ -141,6 +153,7 @@ const login = async (req, res) => {
     }
 
     const token = generateToken(user);
+    console.log(`[LOGIN SUCCESS] Token generated for user: ${email}`);
 
     res.status(200).json({
       message: "Login successful",

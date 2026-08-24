@@ -90,7 +90,7 @@ const AssignmentsPage = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-bold text-gray-800">
+        <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">
           Contests & Assignments
         </h2>
         <button
@@ -106,11 +106,11 @@ const AssignmentsPage = () => {
         {assignments.map((assignment) => (
           <div
             key={assignment._id}
-            className="bg-white p-6 rounded-xl shadow-sm border border-gray-200"
+            className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700"
           >
             <div className="flex justify-between items-start mb-4">
               <div>
-                <h3 className="font-semibold text-lg text-gray-900">
+                <h3 className="font-semibold text-lg text-gray-900 dark:text-gray-100">
                   {assignment.title}
                 </h3>
                 <p className="text-sm text-gray-500 mt-1">
@@ -133,7 +133,7 @@ const AssignmentsPage = () => {
               </span>
             </div>
 
-            <div className="flex items-center text-sm text-gray-600 mb-4 space-x-4">
+            <div className="flex items-center text-sm text-gray-600 dark:text-gray-300 mb-4 space-x-4">
               <div className="flex items-center space-x-1">
                 <Clock size={16} className="text-gray-400" />
                 <span>
@@ -165,21 +165,21 @@ const AssignmentsPage = () => {
       {/* Add Assignment Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-xl">
+          <div className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full p-6 shadow-xl">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-800">
+              <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">
                 Add New Contest/Assignment
               </h2>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="text-gray-500 hover:text-gray-800"
+                className="text-gray-500 hover:text-gray-800 dark:text-gray-200"
               >
                 <X size={20} />
               </button>
             </div>
             <form onSubmit={handleAddAssignment} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Title
                 </label>
                 <input
@@ -197,7 +197,7 @@ const AssignmentsPage = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Track
                 </label>
                 <select
@@ -220,7 +220,7 @@ const AssignmentsPage = () => {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Deadline Date
                 </label>
                 <input
@@ -237,7 +237,7 @@ const AssignmentsPage = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Attached File / Link (Optional)
                 </label>
                 <input
@@ -251,7 +251,7 @@ const AssignmentsPage = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Score/Points
                 </label>
                 <input
@@ -272,7 +272,7 @@ const AssignmentsPage = () => {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                  className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 rounded-lg"
                 >
                   Cancel
                 </button>
@@ -291,9 +291,9 @@ const AssignmentsPage = () => {
       {/* Grading Modal */}
       {isGradingModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-sm w-full p-6 shadow-xl text-center">
+          <div className="bg-white dark:bg-gray-800 rounded-xl max-w-sm w-full p-6 shadow-xl text-center">
             <CheckCircle className="mx-auto text-teal-500 mb-4" size={48} />
-            <h2 className="text-xl font-bold text-gray-800 mb-2">
+            <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">
               Complete Grading?
             </h2>
             <p className="text-gray-500 text-sm mb-6">
@@ -303,7 +303,7 @@ const AssignmentsPage = () => {
             <div className="flex justify-center space-x-3">
               <button
                 onClick={() => setIsGradingModalOpen(false)}
-                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 rounded-lg"
               >
                 Cancel
               </button>

@@ -12,8 +12,8 @@ const data = [
 
 function AttendanceChart() {
   return (
-    <div className="bg-white rounded-xl p-5 shadow-sm">
-      <h3 className="font-semibold text-gray-800 mb-4">Attendance Overview</h3>
+    <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm">
+      <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-4">Attendance Overview</h3>
       <ResponsiveContainer width="100%" height={250}>
         <LineChart data={data}>
           <CartesianGrid strokeDasharray="3 3" stroke="#eee" />

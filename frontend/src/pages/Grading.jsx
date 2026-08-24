@@ -84,12 +84,12 @@ function Grading() {
       <Sidebar />
 
       <main className="flex-1 p-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-1">Grading</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1">Grading</h1>
         <p className="text-gray-500 text-sm mb-6">
           Review and grade student submissions.
         </p>
 
-        <div className="bg-white rounded-xl shadow-sm p-5">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-5">
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-gray-400 border-b border-gray-100">
@@ -106,9 +106,9 @@ function Grading() {
                   key={sub.id}
                   className="border-b border-gray-50 last:border-0"
                 >
-                  <td className="py-3 text-gray-800">{sub.student}</td>
-                  <td className="py-3 text-gray-600">{sub.assignment}</td>
-                  <td className="py-3 text-gray-600">{sub.score ?? "—"}</td>
+                  <td className="py-3 text-gray-800 dark:text-gray-200">{sub.student}</td>
+                  <td className="py-3 text-gray-600 dark:text-gray-300">{sub.assignment}</td>
+                  <td className="py-3 text-gray-600 dark:text-gray-300">{sub.score ?? "—"}</td>
                   <td className="py-3">
                     <span
                       className={`text-xs px-2 py-1 rounded-full capitalize ${statusColors[sub.status]}`}
@@ -133,9 +133,9 @@ function Grading() {
         {/* Review modal */}
         {selected && (
           <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-            <div className="bg-white rounded-xl p-6 w-full max-w-lg">
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-lg">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="font-semibold text-gray-800">
+                <h3 className="font-semibold text-gray-800 dark:text-gray-200">
                   {selected.student} — {selected.assignment}
                 </h3>
                 <button onClick={closeModal}>
@@ -178,7 +178,7 @@ function Grading() {
 
               <div className="space-y-3">
                 <div>
-                  <label className="block text-sm text-gray-600 mb-1">
+                  <label className="block text-sm text-gray-600 dark:text-gray-300 mb-1">
                     Score
                   </label>
                   <input
@@ -186,12 +186,12 @@ function Grading() {
                     value={score}
                     onChange={(e) => setScore(e.target.value)}
                     placeholder="e.g. 85"
-                    className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm"
+                    className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm text-gray-600 mb-1">
+                  <label className="block text-sm text-gray-600 dark:text-gray-300 mb-1">
                     Feedback
                   </label>
                   <textarea
@@ -199,7 +199,7 @@ function Grading() {
                     onChange={(e) => setFeedback(e.target.value)}
                     rows={3}
                     placeholder="Write feedback for the student..."
-                    className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm"
+                    className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm"
                   />
                 </div>
 

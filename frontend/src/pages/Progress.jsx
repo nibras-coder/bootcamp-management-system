@@ -95,7 +95,7 @@ function Progress() {
       <Sidebar />
 
       <main className="flex-1 p-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-1">Progress</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1">Progress</h1>
         <p className="text-gray-500 text-sm mb-6">
           Track each student's progress by topic.
         </p>
@@ -109,7 +109,7 @@ function Progress() {
               className={`px-4 py-2 rounded-lg text-sm ${
                 selectedStudentId === student.id
                   ? "bg-teal-800 text-white"
-                  : "bg-white text-gray-600 border border-gray-200"
+                  : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700"
               }`}
             >
               {student.name}
@@ -118,7 +118,7 @@ function Progress() {
         </div>
 
         {/* Topic progress table */}
-        <div className="bg-white rounded-xl shadow-sm p-5 mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-5 mb-6">
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-gray-400 border-b border-gray-100">
@@ -132,7 +132,7 @@ function Progress() {
                   key={topic}
                   className="border-b border-gray-50 last:border-0"
                 >
-                  <td className="py-3 text-gray-800">{topic}</td>
+                  <td className="py-3 text-gray-800 dark:text-gray-200">{topic}</td>
                   <td className="py-3">
                     <select
                       value={selectedStudent.progress[topic]}
@@ -155,8 +155,8 @@ function Progress() {
         </div>
 
         {/* Notes */}
-        <div className="bg-white rounded-xl shadow-sm p-5">
-          <h3 className="font-semibold text-gray-800 mb-3">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-5">
+          <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-3">
             Add a Note for {selectedStudent.name}
           </h3>
           <textarea
@@ -164,7 +164,7 @@ function Progress() {
             onChange={(e) => setNote(e.target.value)}
             rows={3}
             placeholder="e.g. Struggling with async/await, needs extra practice..."
-            className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm"
+            className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-3 text-sm"
           />
           <button
             onClick={handleSaveNote}

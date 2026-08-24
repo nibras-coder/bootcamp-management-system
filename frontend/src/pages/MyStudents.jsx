@@ -33,12 +33,12 @@ function MyStudents() {
       <Sidebar />
 
       <main className="flex-1 p-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-1">My Students</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1">My Students</h1>
         <p className="text-gray-500 text-sm mb-6">
           Students assigned to your Track.
         </p>
 
-        <div className="bg-white rounded-xl shadow-sm p-5">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-5">
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-gray-400 border-b border-gray-100">
@@ -54,8 +54,8 @@ function MyStudents() {
                   key={student.email}
                   className="border-b border-gray-50 last:border-0"
                 >
-                  <td className="py-3 text-gray-800">{student.name}</td>
-                  <td className="py-3 text-gray-600">{student.email}</td>
+                  <td className="py-3 text-gray-800 dark:text-gray-200">{student.name}</td>
+                  <td className="py-3 text-gray-600 dark:text-gray-300">{student.email}</td>
                   <td className="py-3">
                     <span
                       className={
@@ -67,7 +67,7 @@ function MyStudents() {
                       {student.attendance}%
                     </span>
                   </td>
-                  <td className="py-3 text-gray-600">{student.progress}</td>
+                  <td className="py-3 text-gray-600 dark:text-gray-300">{student.progress}</td>
                 </tr>
               ))}
             </tbody>

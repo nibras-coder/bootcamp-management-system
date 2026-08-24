@@ -21,8 +21,8 @@ const assignments = [
 
 function RecentAssignments() {
   return (
-    <div className="bg-white rounded-xl p-5 shadow-sm">
-      <h3 className="font-semibold text-gray-800 mb-4">
+    <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm">
+      <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-4">
         Recent Assignments to Grade
       </h3>
       <table className="w-full text-sm">
@@ -37,9 +37,9 @@ function RecentAssignments() {
         <tbody>
           {assignments.map((item, index) => (
             <tr key={index} className="border-b border-gray-50 last:border-0">
-              <td className="py-3 text-gray-800">{item.student}</td>
-              <td className="py-3 text-gray-600">{item.title}</td>
-              <td className="py-3 text-gray-600">{item.date}</td>
+              <td className="py-3 text-gray-800 dark:text-gray-200">{item.student}</td>
+              <td className="py-3 text-gray-600 dark:text-gray-300">{item.title}</td>
+              <td className="py-3 text-gray-600 dark:text-gray-300">{item.date}</td>
               <td className="py-3">
                 <span className="bg-orange-50 text-orange-500 text-xs px-2 py-1 rounded-full">
                   {item.status}

@@ -112,7 +112,7 @@ const StudentsPage = () => {
           </div>
           <input
             type="text"
-            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500 text-sm"
+            className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-teal-500 focus:border-teal-500 text-sm"
             placeholder="Search students by name..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -123,32 +123,32 @@ const StudentsPage = () => {
           <div className="relative">
             <button
               onClick={() => setIsFilterOpen(!isFilterOpen)}
-              className="flex items-center space-x-2 bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500"
+              className="flex items-center space-x-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500"
             >
               <Filter size={18} />
               <span>Filter</span>
             </button>
             {isFilterOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 p-4 z-10">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 p-4 z-10">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Gender Filter
                 </label>
                 <select
                   value={genderFilter}
                   onChange={(e) => setGenderFilter(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 text-sm"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-teal-500 text-sm"
                 >
                   <option value="">All</option>
                   <option value="Male">Male</option>
                   <option value="Female">Female</option>
                 </select>
-                <label className="block text-sm font-medium text-gray-700 mb-2 mt-4">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 mt-4">
                   Batch Filter
                 </label>
                 <select
                   value={batchFilter}
                   onChange={(e) => setBatchFilter(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 text-sm"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-teal-500 text-sm"
                 >
                   <option value="">All</option>
                   <option value="Web Dev Bootcamp">Web Dev Bootcamp</option>
@@ -159,7 +159,7 @@ const StudentsPage = () => {
             )}
           </div>
 
-          <button className="flex items-center space-x-2 bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors">
+          <button className="flex items-center space-x-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors">
             <Download size={18} />
             <span>Export</span>
           </button>
@@ -174,24 +174,24 @@ const StudentsPage = () => {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-gray-50 border-b border-gray-200">
-                <th className="px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+              <tr className="bg-gray-50 border-b border-gray-200 dark:border-gray-700">
+                <th className="px-6 py-4 text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
                   Student Details
                 </th>
-                <th className="px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                <th className="px-6 py-4 text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
                   Trach
                 </th>
-                <th className="px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                <th className="px-6 py-4 text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
                   Score
                 </th>
-                <th className="px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                <th className="px-6 py-4 text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider text-right">
+                <th className="px-6 py-4 text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider text-right">
                   Actions
                 </th>
               </tr>
@@ -208,7 +208,7 @@ const StudentsPage = () => {
                         {student.name ? student.name.charAt(0).toUpperCase() : "U"}
                       </div>
                       <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">
+                        <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
                           {student.name || "Unknown Student"}{" "}
                           <span className="text-xs text-gray-400 ml-1">
                             ({student.gender || "N/A"})
@@ -221,7 +221,7 @@ const StudentsPage = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{student.batch?.name || student.batch?.track || "Unassigned"}</div>
+                    <div className="text-sm text-gray-900 dark:text-gray-100">{student.batch?.name || student.batch?.track || "Unassigned"}</div>
                     <div className="text-xs text-gray-500">
                       Joined {new Date(student.createdAt).toLocaleDateString()}
                     </div>
@@ -234,7 +234,7 @@ const StudentsPage = () => {
                           style={{ width: `${student.score || 0}%` }}
                         ></div>
                       </div>
-                      <span className="text-sm text-gray-700">
+                      <span className="text-sm text-gray-700 dark:text-gray-300">
                         {student.score || 0}%
                       </span>
                     </div>
@@ -291,21 +291,21 @@ const StudentsPage = () => {
       {/* Add Student Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-xl">
+          <div className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full p-6 shadow-xl">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-800">
+              <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">
                 Add New Student
               </h2>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="text-gray-500 hover:text-gray-800"
+                className="text-gray-500 hover:text-gray-800 dark:text-gray-200"
               >
                 <X size={20} />
               </button>
             </div>
             <form onSubmit={handleAddStudent} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Full Name
                 </label>
                 <input
@@ -319,7 +319,7 @@ const StudentsPage = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Email
                 </label>
                 <input
@@ -334,7 +334,7 @@ const StudentsPage = () => {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Track
                   </label>
                   <select
@@ -356,7 +356,7 @@ const StudentsPage = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Gender
                   </label>
                   <select
@@ -376,7 +376,7 @@ const StudentsPage = () => {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                  className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 rounded-lg"
                 >
                   Cancel
                 </button>
@@ -395,21 +395,21 @@ const StudentsPage = () => {
       {/* Warning Modal */}
       {isWarningModalOpen && warningStudent && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-xl">
+          <div className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full p-6 shadow-xl">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-800">
+              <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">
                 Warn Student
               </h2>
               <button
                 onClick={() => setIsWarningModalOpen(false)}
-                className="text-gray-500 hover:text-gray-800"
+                className="text-gray-500 hover:text-gray-800 dark:text-gray-200"
               >
                 <X size={20} />
               </button>
             </div>
             <form onSubmit={handleWarn} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Message for {warningStudent.name}
                 </label>
                 <textarea
@@ -425,7 +425,7 @@ const StudentsPage = () => {
                 <button
                   type="button"
                   onClick={() => setIsWarningModalOpen(false)}
-                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                  className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 rounded-lg"
                 >
                   Cancel
                 </button>

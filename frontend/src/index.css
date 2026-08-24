@@ -1356,45 +1356,23 @@ html.dark-mode .footer-bottom {
 /* ---------- Social icons ---------- */
 /* Keep original brand colors */
 
-html.dark-mode .social {
-  background: #fff !important;
-  border-color: #cddedb !important;
-  box-shadow: 0 8px 22px -16px rgba(19, 64, 66, 0.5) !important;
-}
 
-html.dark-mode .social-telegram {
-  color: #229ed9 !important;
-}
 
-html.dark-mode .social-instagram {
-  color: #c13584 !important;
-}
 
-html.dark-mode .social-facebook {
-  color: #1877f2 !important;
-}
 
-html.dark-mode .social-youtube {
-  color: #ff0000 !important;
-}
 
-html.dark-mode .social-tiktok {
-  color: #111 !important;
-}
 
-html.dark-mode .social-x {
-  color: #111 !important;
-}
 
-html.dark-mode .social svg {
-  filter: none;
-}
 
-html.dark-mode .social-tiktok svg {
-  filter:
-    drop-shadow(1px 1px 0 #fe2c55)
-    drop-shadow(-1px -1px 0 #25f4ee);
-}
+
+
+
+
+
+
+
+
+
 
 /* ---------- Logos ---------- */
 

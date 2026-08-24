@@ -17,7 +17,7 @@ export default function StudentSidebar({ sidebarOpen, setSidebarOpen, name, hand
           <img
             src={logo}
             alt="Logo"
-            className="w-10 h-10 object-cover rounded-full bg-white p-1"
+            className="w-10 h-10 object-cover rounded-full bg-white dark:bg-gray-800 p-1"
           />
           <div>
             <h1 className="font-bold text-sm text-white leading-tight">
