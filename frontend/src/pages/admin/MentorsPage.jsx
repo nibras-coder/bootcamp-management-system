@@ -81,10 +81,14 @@ const MentorsPage = () => {
         .filter(Boolean);
 
       // Post to backend
-      const response = await API.post("/users", {
+      const payload = {
         ...newMentor,
+        role: "mentor",
+        mentorRole: newMentor.role,
         expertise: expertiseArray,
-      });
+      };
+      
+      const response = await API.post("/users", payload);
 
       // Update local state with returned user
       const m = response.data.data;

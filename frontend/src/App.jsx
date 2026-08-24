@@ -19,6 +19,8 @@ import calligraphy from "./assets/calligraphy.jpg";
 // Page Imports
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import ForgotPage from "./pages/ForgotPage";
+import ResetPassword from "./pages/ResetPassword";
 import AdminLayout from "./layouts/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import MentorDashboard from "./pages/MentorDashboard";
@@ -804,95 +806,7 @@ function Field({ label, children }) {
   );
 }
 
-function AuthShell({ title, subtitle, children }) {
-  const navigate = useNavigate();
-  return (
-    <main className="auth-page">
-      <div className="auth-shell">
-        <div className="auth-main">
-          <h1>{title}</h1>
-          <p className="auth-subtitle">{subtitle}</p>
-          {children}
-        </div>
-        <div className="auth-art">
-         <img
-  src={calligraphy}
-  alt="Islamic calligraphy"
-  className="auth-calligraphy"
-/>
-          <div className="art-overlay"></div>
-          <div className="auth-brand">
-            <Logo size={36} />
-            <span className="auth-home-hint">Back to home</span>
-          </div>
-        </div>
-      </div>
-    </main>
-  );
-}
-
-function ForgotPage() {
-  const [sent, setSent] = useState(false);
-  const [email, setEmail] = useState("");
-  const navigate = useNavigate();
-  return (
-    <AuthShell
-      title={sent ? "Check your inbox" : "Forgot your password?"}
-      subtitle={
-        sent
-          ? "If an account exists for that email, a reset link is on its way."
-          : "Enter the email you registered with and we will send you a reset link."
-      }
-    >
-      {sent ? (
-        <div className="sent-box">
-          <h2>Reset link sent</h2>
-          <p>
-            We sent instructions to <b>{email}</b>. Check your inbox and spam
-            folder.
-          </p>
-          <div className="button-row">
-            <Button href="/login">Back to login</Button>
-            <Button variant="outline" onClick={() => setSent(false)}>
-              Use a different email
-            </Button>
-          </div>
-        </div>
-      ) : (
-        <form
-          className="auth-form"
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (email.trim()) setSent(true);
-          }}
-        >
-          <Field label="Email">
-            <input
-              required
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@gmail.com"
-            />
-          </Field>
-          <Button>Send reset link</Button>
-          <p className="auth-switch">
-            Remembered it?{" "}
-            <a
-              href="/login"
-              onClick={(e) => {
-                e.preventDefault();
-                navigate("/login");
-              }}
-            >
-              Back to login
-            </a>
-          </p>
-        </form>
-      )}
-    </AuthShell>
-  );
-}
+// ForgotPage is imported from pages
 
 function PublicLayout() {
   return (
@@ -924,6 +838,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPage />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
 
         {/* Student Dashboard */}
         <Route path="/student-dashboard/*" element={<ProtectedRoute allowedRoles={["student"]}><StudentDashboard /></ProtectedRoute>} />
