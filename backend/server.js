@@ -13,10 +13,14 @@ const submissionRoutes = require("./routes/submissionRoutes");
 const announcementRoutes = require( "./routes/announcementRoutes");
 const userRoutes = require( "./routes/userRoutes");
 const batchRoutes = require("./routes/batchRoutes");
+const resourceRoutes = require("./routes/resourceRoutes");
 
 dotenv.config();
 
 const app = express();
+
+const path = require("path");
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.use(cors());
 app.use(express.json());
@@ -29,7 +33,8 @@ app.use("/api/assignments", assignmentRoutes);
 app.use("/api/submissions",submissionRoutes);
 app.use("/api/announcements",announcementRoutes);
 app.use("/api/users",userRoutes);
-app.use( "/api/batches", batchRoutes);
+app.use("/api/batches", batchRoutes);
+app.use("/api/resources", resourceRoutes);
 
 app.get("/", (req, res) => {
   res.json({

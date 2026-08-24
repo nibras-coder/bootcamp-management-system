@@ -16,9 +16,18 @@ const {
   getBatchById,
   assignMentors,
   getBatchStudents,
+  deleteBatch,
 } = require("../controllers/batchController");
 
 // Admin
+
+// Delete batch
+router.delete(
+  "/:id",
+  protect,
+  authorize("admin"),
+  deleteBatch
+);
 
 // Create batch
 router.post(

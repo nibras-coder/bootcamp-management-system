@@ -62,6 +62,18 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    warnings: [
+      {
+        message: {
+          type: String,
+          required: true,
+        },
+        date: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
   },
   {
     timestamps: true,

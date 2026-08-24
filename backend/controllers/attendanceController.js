@@ -110,23 +110,29 @@ const markAttendance = async (req, res) => {
 
 const getMentorAttendance = async (req, res) => {
   try {
-    const mentorId = req.user.id;
-
-    const batches = await Batch.find({
-      mentors: mentorId,
-    }).select("_id");
-
-    const batchIds = batches.map(
-      (batch) => batch._id
-    );
-
-    const attendance = await Attendance.find({
-      batch: { $in: batchIds },
-    })
-      .populate("student", "name email")
-      .populate("batch", "name track")
-      .populate("markedBy", "name")
-      .sort({ date: -1 });
+    let attendance;
+    
+    if (req.user.role === "admin") {
+      attendance = await Attendance.find({})
+        .populate("student", "name email")
+        .populate("batch", "name track")
+        .populate("markedBy", "name")
+        .sort({ date: -1 });
+    } else {
+      const mentorId = req.user.id;
+      const batches = await Batch.find({
+        mentors: mentorId,
+      }).select("_id");
+      const batchIds = batches.map((batch) => batch._id);
+      
+      attendance = await Attendance.find({
+        batch: { $in: batchIds },
+      })
+        .populate("student", "name email")
+        .populate("batch", "name track")
+        .populate("markedBy", "name")
+        .sort({ date: -1 });
+    }
 
     res.status(200).json({
       success: true,

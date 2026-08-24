@@ -10,6 +10,7 @@ const createBatch = async (req, res) => {
       track,
       startDate,
       endDate,
+      instructor,
       mentors,
     } = req.body;
 
@@ -44,6 +45,7 @@ const createBatch = async (req, res) => {
       track,
       startDate,
       endDate,
+      instructor,
       mentors: mentors || [],
     });
 
@@ -53,10 +55,19 @@ const createBatch = async (req, res) => {
         "name email role"
       );
 
+    const mongoose = require("mongoose");
+    let batchObj = populatedBatch.toObject();
+    if (batchObj.instructor && mongoose.Types.ObjectId.isValid(batchObj.instructor)) {
+      const user = await User.findById(batchObj.instructor).select("name");
+      if (user) {
+        batchObj.instructor = user;
+      }
+    }
+
     res.status(201).json({
       success: true,
       message: "Batch created successfully",
-      data: populatedBatch,
+      data: batchObj,
     });
   } catch (error) {
     console.error("Create batch error:", error);
@@ -64,7 +75,7 @@ const createBatch = async (req, res) => {
     if (error.code === 11000) {
       return res.status(400).json({
         success: false,
-        message: "Batch name already exists",
+        message: "Track name already exists",
       });
     }
 
@@ -86,10 +97,25 @@ const getBatches = async (req, res) => {
       )
       .sort({ createdAt: -1 });
 
+    const mongoose = require("mongoose");
+    const User = require("../models/User");
+
+    // Manually populate instructor if it's an ObjectId
+    const populatedBatches = await Promise.all(batches.map(async (batch) => {
+      let batchObj = batch.toObject();
+      if (batchObj.instructor && mongoose.Types.ObjectId.isValid(batchObj.instructor)) {
+        const user = await User.findById(batchObj.instructor).select("name");
+        if (user) {
+          batchObj.instructor = user;
+        }
+      }
+      return batchObj;
+    }));
+
     res.status(200).json({
       success: true,
-      count: batches.length,
-      data: batches,
+      count: populatedBatches.length,
+      data: populatedBatches,
     });
   } catch (error) {
     console.error("Get batches error:", error);
@@ -252,10 +278,26 @@ const getBatchStudents = async (
   }
 };
 
+const deleteBatch = async (req, res) => {
+  try {
+    const batch = await Batch.findByIdAndDelete(req.params.id);
+    if (!batch) {
+      return res.status(404).json({ success: false, message: "Batch not found" });
+    }
+    // Also delete any students or assignments tied to it? Or leave it to cascade? 
+    // Usually a basic findByIdAndDelete is expected for this MVP.
+    res.status(200).json({ success: true, message: "Batch deleted successfully" });
+  } catch (error) {
+    console.error("Delete batch error:", error);
+    res.status(500).json({ success: false, message: "Failed to delete batch", error: error.message });
+  }
+};
+
 module.exports = {
   createBatch,
   getBatches,
   getBatchById,
   assignMentors,
   getBatchStudents,
+  deleteBatch,
 };

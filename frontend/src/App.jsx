@@ -285,7 +285,11 @@ function SocialIcon({ type }) {
     ),
   };
   return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
+    <svg 
+      viewBox="0 0 24 24" 
+      aria-hidden="true" 
+      className={`w-[21px] h-[21px] fill-current ${type === 'tiktok' ? 'drop-shadow-[1px_1px_0_#fe2c55] drop-shadow-[-1px_-1px_0_#25f4ee]' : ''}`}
+    >
       {paths[type]}
     </svg>
   );
@@ -311,18 +315,28 @@ function Footer() {
             Muslim Students Jemea.
           </p>
           <div className="socials">
-            {socials.map(([type, label, url]) => (
-              <a
-                className={`social social-${type}`}
-                href={url}
-                target="_blank"
-                rel="noreferrer"
-                aria-label={label}
-                key={type}
-              >
-                <SocialIcon type={type} />
-              </a>
-            ))}
+            {socials.map(([type, label, url]) => {
+              const colorClasses = {
+                telegram: "text-[#229ed9]",
+                instagram: "text-[#c13584]",
+                facebook: "text-[#1877f2]",
+                youtube: "text-[#ff0000]",
+                tiktok: "text-[#111]",
+                x: "text-[#111]",
+              };
+              return (
+                <a
+                  className={`social social-${type} w-11 h-11 p-0 border border-[#cddedb] rounded-full grid place-items-center bg-white shadow-[0_8px_22px_-16px_rgba(19,64,66,0.5)] transition duration-200 hover:-translate-y-[3px] hover:scale-[1.04] hover:bg-[#f7fbfa] ${colorClasses[type] || "text-[#286d69]"}`}
+                  href={url}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label={label}
+                  key={type}
+                >
+                  <SocialIcon type={type} />
+                </a>
+              );
+            })}
           </div>
         </div>
         <div>
@@ -715,7 +729,7 @@ function ContactPage() {
             <h2>Follow us</h2>
             <div className="socials contact-socials">
               <a
-                className="social social-telegram"
+                className="w-11 h-11 p-0 border border-[#cddedb] rounded-full grid place-items-center bg-white shadow-[0_8px_22px_-16px_rgba(19,64,66,0.5)] transition duration-200 hover:-translate-y-[3px] hover:scale-[1.04] hover:bg-[#f7fbfa] text-[#229ed9]"
                 href="https://t.me/astumsj"
                 target="_blank"
                 rel="noreferrer"
@@ -724,7 +738,7 @@ function ContactPage() {
                 <SocialIcon type="telegram" />
               </a>
               <a
-                className="social social-instagram"
+                className="w-11 h-11 p-0 border border-[#cddedb] rounded-full grid place-items-center bg-white shadow-[0_8px_22px_-16px_rgba(19,64,66,0.5)] transition duration-200 hover:-translate-y-[3px] hover:scale-[1.04] hover:bg-[#f7fbfa] text-[#c13584]"
                 href="https://instagram.com/astumsj"
                 target="_blank"
                 rel="noreferrer"
@@ -733,7 +747,7 @@ function ContactPage() {
                 <SocialIcon type="instagram" />
               </a>
               <a
-                className="social social-facebook"
+                className="w-11 h-11 p-0 border border-[#cddedb] rounded-full grid place-items-center bg-white shadow-[0_8px_22px_-16px_rgba(19,64,66,0.5)] transition duration-200 hover:-translate-y-[3px] hover:scale-[1.04] hover:bg-[#f7fbfa] text-[#1877f2]"
                 href="https://facebook.com/astumsj"
                 target="_blank"
                 rel="noreferrer"
@@ -742,7 +756,7 @@ function ContactPage() {
                 <SocialIcon type="facebook" />
               </a>
               <a
-                className="social social-youtube"
+                className="w-11 h-11 p-0 border border-[#cddedb] rounded-full grid place-items-center bg-white shadow-[0_8px_22px_-16px_rgba(19,64,66,0.5)] transition duration-200 hover:-translate-y-[3px] hover:scale-[1.04] hover:bg-[#f7fbfa] text-[#ff0000]"
                 href="https://youtube.com/@astumsj"
                 target="_blank"
                 rel="noreferrer"
@@ -751,7 +765,7 @@ function ContactPage() {
                 <SocialIcon type="youtube" />
               </a>
               <a
-                className="social social-tiktok"
+                className="w-11 h-11 p-0 border border-[#cddedb] rounded-full grid place-items-center bg-white shadow-[0_8px_22px_-16px_rgba(19,64,66,0.5)] transition duration-200 hover:-translate-y-[3px] hover:scale-[1.04] hover:bg-[#f7fbfa] text-[#111]"
                 href="https://vt.tiktok.com/ZSVak4cxQ/"
                 target="_blank"
                 rel="noreferrer"
@@ -760,7 +774,7 @@ function ContactPage() {
                 <SocialIcon type="tiktok" />
               </a>
               <a
-                className="social social-x"
+                className="w-11 h-11 p-0 border border-[#cddedb] rounded-full grid place-items-center bg-white shadow-[0_8px_22px_-16px_rgba(19,64,66,0.5)] transition duration-200 hover:-translate-y-[3px] hover:scale-[1.04] hover:bg-[#f7fbfa] text-[#111]"
                 href="https://x.com/astumsj"
                 target="_blank"
                 rel="noreferrer"

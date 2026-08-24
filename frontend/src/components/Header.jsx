@@ -1,16 +1,34 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Bell, Calendar, User } from 'lucide-react';
+import API from '../api/axios';
 
 const Header = ({ title, subtitle, userProfile = null }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(3);
+  const [notifications, setNotifications] = useState([]);
   const dropdownRef = useRef(null);
 
-  const notifications = [
-    { id: 1, text: "Reminder: Weekly Experience Sharing at 8 PM", time: "1 hour ago" },
-    { id: 2, text: "New Codeforces contest results uploaded", time: "3 hours ago" },
-    { id: 3, text: "Bootcamp Regular Session starting soon", time: "5 hours ago" },
-  ];
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const response = await API.get("/announcements/all");
+        
+        if (response.data.success) {
+          const userObj = JSON.parse(localStorage.getItem("user") || "{}");
+          const userId = userObj.id || userObj._id;
+          
+          // Filter announcements that are not read by this user
+          const unread = response.data.data.filter(a => !a.readBy?.includes(userId));
+          setNotifications(unread);
+        }
+      } catch (error) {
+        console.error("Failed to fetch notifications:", error);
+      }
+    };
+    
+    fetchNotifications();
+  }, []);
+
+  const unreadCount = notifications.length;
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -35,8 +53,23 @@ const Header = ({ title, subtitle, userProfile = null }) => {
 
   const handleNotificationClick = () => {
     setIsDropdownOpen(!isDropdownOpen);
-    if (!isDropdownOpen) {
-      setUnreadCount(0);
+  };
+
+  const markAsRead = async (id, e) => {
+    if (e) e.stopPropagation();
+    try {
+      await API.patch(`/announcements/${id}/read`);
+      setNotifications(prev => prev.filter(n => n._id !== id));
+    } catch (error) {
+      console.error("Failed to mark notification as read:", error);
+    }
+  };
+
+  const markAllAsRead = async () => {
+    try {
+      await Promise.all(notifications.map(n => markAsRead(n._id)));
+    } catch (error) {
+      console.error("Failed to mark all as read:", error);
     }
   };
 
@@ -70,18 +103,20 @@ const Header = ({ title, subtitle, userProfile = null }) => {
             <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden z-50">
               <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
                 <h3 className="font-semibold text-gray-800">Notifications</h3>
-                <span className="text-xs text-teal-600 font-medium cursor-pointer hover:underline">Mark all as read</span>
+                <span onClick={markAllAsRead} className="text-xs text-teal-600 font-medium cursor-pointer hover:underline">Mark all as read</span>
               </div>
               <div className="max-h-96 overflow-y-auto">
-                {notifications.map((notif) => (
-                  <div key={notif.id} className="p-4 border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer">
-                    <p className="text-sm text-gray-800">{notif.text}</p>
-                    <p className="text-xs text-gray-500 mt-1">{notif.time}</p>
+                {notifications.length > 0 ? notifications.map((notif) => (
+                  <div key={notif._id} onClick={(e) => markAsRead(notif._id, e)} className="p-4 border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer">
+                    <p className="text-sm text-gray-800">{notif.title || notif.text}</p>
+                    <p className="text-xs text-gray-500 mt-1">{new Date(notif.publishDate).toLocaleDateString()}</p>
                   </div>
-                ))}
+                )) : (
+                  <div className="p-4 text-center text-sm text-gray-500">No new notifications</div>
+                )}
               </div>
               <div className="p-3 text-center border-t border-gray-100">
-                <button className="text-sm font-medium text-teal-600 hover:text-teal-700">View All Notifications</button>
+                <button className="text-sm font-medium text-teal-600 hover:text-teal-700">View All Announcements</button>
               </div>
             </div>
           )}

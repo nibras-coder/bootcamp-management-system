@@ -32,7 +32,7 @@ router.get(
 router.get(
   "/:id",
   protect,
-  authorize("mentor"),
+  authorize("mentor", "admin"),
   getAssignmentById
 );
 
@@ -40,7 +40,7 @@ router.get(
 router.post(
   "/",
   protect,
-  authorize("mentor"),
+  authorize("mentor", "admin"),
   createAssignment
 );
 
@@ -48,7 +48,7 @@ router.post(
 router.put(
   "/:id",
   protect,
-  authorize("mentor"),
+  authorize("mentor", "admin"),
   updateAssignment
 );
 
@@ -56,7 +56,7 @@ router.put(
 router.delete(
   "/:id",
   protect,
-  authorize("mentor"),
+  authorize("mentor", "admin"),
   deleteAssignment
 );
 

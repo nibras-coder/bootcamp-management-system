@@ -75,20 +75,49 @@ const createUser = async (req, res) => {
 };
 
 const updateUser = async (req, res) => {
-  res.status(200).json({ message: "Not implemented yet" });
+  try {
+    const updatedUser = await User.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true, runValidators: true }
+    ).select("-password");
+    
+    if (!updatedUser) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+    
+    res.status(200).json({ success: true, data: updatedUser });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Failed to update user", error: error.message });
+  }
 };
 
 const deleteUser = async (req, res) => {
-  res.status(200).json({ message: "Not implemented yet" });
+  try {
+    const user = await User.findByIdAndDelete(req.params.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+    res.status(200).json({ success: true, message: "User deleted successfully" });
+  } catch (error) {
+    console.error("Delete user error:", error);
+    res.status(500).json({ success: false, message: "Failed to delete user", error: error.message });
+  }
 };
 
 // Get all students
 
 const getStudents = async (req, res) => {
   try {
-    const students = await User.find({
-      role: "student",
-    })
+    const filter = { role: "student" };
+    if (req.query.gender) {
+      filter.gender = req.query.gender;
+    }
+    if (req.query.batch) {
+      filter.batch = req.query.batch;
+    }
+
+    const students = await User.find(filter)
       .select("-password")
       .populate("batch", "name track");
 
@@ -105,6 +134,29 @@ const getStudents = async (req, res) => {
       message: "Failed to get students",
       error: error.message,
     });
+  }
+};
+
+const warnStudent = async (req, res) => {
+  try {
+    const { message } = req.body;
+    if (!message) {
+      return res.status(400).json({ success: false, message: "Warning message is required" });
+    }
+
+    const student = await User.findOneAndUpdate(
+      { _id: req.params.id, role: "student" },
+      { $push: { warnings: { message } } },
+      { new: true }
+    ).select("-password");
+
+    if (!student) {
+      return res.status(404).json({ success: false, message: "Student not found" });
+    }
+
+    res.status(200).json({ success: true, message: "Warning added successfully", data: student });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Failed to warn student", error: error.message });
   }
 };
 // Get one user
@@ -188,4 +240,5 @@ module.exports = {
   getStudents,
   getUserById,
   getMentorStudents,
+  warnStudent,
 };

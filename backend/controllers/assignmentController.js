@@ -31,18 +31,19 @@ const createAssignment = async (req, res) => {
     }
 
     // Check that mentor is assigned to batch
-
-    const mentorBatch = await Batch.findOne({
-      _id: batch,
-      mentors: mentorId,
-    });
-
-    if (!mentorBatch) {
-      return res.status(403).json({
-        success: false,
-        message:
-          "You are not assigned to this batch",
+    if (req.user.role !== "admin") {
+      const mentorBatch = await Batch.findOne({
+        _id: batch,
+        mentors: mentorId,
       });
+
+      if (!mentorBatch) {
+        return res.status(403).json({
+          success: false,
+          message:
+            "You are not assigned to this batch",
+        });
+      }
     }
 
     const assignment =
@@ -99,7 +100,12 @@ const getAssignments = async (
 
     let assignments = [];
 
-    if (userRole === "student") {
+    if (userRole === "admin") {
+      assignments = await Assignment.find()
+        .populate("batch", "name track")
+        .populate("createdBy", "name email")
+        .sort({ deadline: 1 });
+    } else if (userRole === "student") {
       // Students only see assignments for their batch
       assignments = await Assignment.find({
         batch: req.user.batch,
@@ -166,18 +172,20 @@ const getAssignmentById = async (
       });
     }
 
-    const mentorBatch =
-      await Batch.findOne({
-        _id: assignment.batch._id,
-        mentors: mentorId,
-      });
+    if (req.user.role !== "admin") {
+      const mentorBatch =
+        await Batch.findOne({
+          _id: assignment.batch._id,
+          mentors: mentorId,
+        });
 
-    if (!mentorBatch) {
-      return res.status(403).json({
-        success: false,
-        message:
-          "You cannot access this assignment",
-      });
+      if (!mentorBatch) {
+        return res.status(403).json({
+          success: false,
+          message:
+            "You cannot access this assignment",
+        });
+      }
     }
 
     res.status(200).json({
@@ -219,19 +227,20 @@ const updateAssignment = async (
     }
 
     // Check mentor owns the batch
-    
-    const mentorBatch =
-      await Batch.findOne({
-        _id: assignment.batch,
-        mentors: mentorId,
-      });
+    if (req.user.role !== "admin") {
+      const mentorBatch =
+        await Batch.findOne({
+          _id: assignment.batch,
+          mentors: mentorId,
+        });
 
-    if (!mentorBatch) {
-      return res.status(403).json({
-        success: false,
-        message:
-          "You cannot update this assignment",
-      });
+      if (!mentorBatch) {
+        return res.status(403).json({
+          success: false,
+          message:
+            "You cannot update this assignment",
+        });
+      }
     }
 
     const {
@@ -306,18 +315,20 @@ const deleteAssignment = async (
       });
     }
 
-    const mentorBatch =
-      await Batch.findOne({
-        _id: assignment.batch,
-        mentors: mentorId,
-      });
+    if (req.user.role !== "admin") {
+      const mentorBatch =
+        await Batch.findOne({
+          _id: assignment.batch,
+          mentors: mentorId,
+        });
 
-    if (!mentorBatch) {
-      return res.status(403).json({
-        success: false,
-        message:
-          "You cannot delete this assignment",
-      });
+      if (!mentorBatch) {
+        return res.status(403).json({
+          success: false,
+          message:
+            "You cannot delete this assignment",
+        });
+      }
     }
 
     await Assignment.findByIdAndDelete(id);
