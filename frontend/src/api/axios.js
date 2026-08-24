@@ -1,9 +1,13 @@
 import axios from "axios";
 
+// In development this uses Vite's `/api` proxy.  In production set
+// VITE_API_URL to the public backend URL, including the `/api` path.
+const baseURL = (import.meta.env.VITE_API_URL || "/api").replace(/\/$/, "");
+
 const API = axios.create({
-  // This tells Vite: "Use the live backend URL if we are on Render, otherwise use localhost for testing!"
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api",
+  baseURL,
   headers: { "Content-Type": "application/json" },
+  timeout: 15000,
 });
 
 API.interceptors.request.use((config) => {

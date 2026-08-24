@@ -2,7 +2,7 @@ const User = require("../models/User");
 const Batch = require("../models/Batch");
 const asyncHandler = require("../utils/asyncHandler");
 
-
+// Get all users
 const getUsers = asyncHandler(async (req, res) => {
   const { role, search } = req.query;
 
@@ -15,7 +15,7 @@ const getUsers = asyncHandler(async (req, res) => {
   if (search) {
     query.$or = [
       {
-        fullName: {
+        name: {
           $regex: search,
           $options: "i",
         },
@@ -37,11 +37,11 @@ const getUsers = asyncHandler(async (req, res) => {
   res.status(200).json({
     success: true,
     count: users.length,
-    users,
+    data: users,
   });
 });
-// Get one user by ID
 
+// Get one user by ID
 const getUserById = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id)
     .select("-password")
@@ -59,10 +59,11 @@ const getUserById = asyncHandler(async (req, res) => {
     data: user,
   });
 });
-// Admin creates a user directly
 
+// Admin creates a user
 const createUser = asyncHandler(async (req, res) => {
   const {
+    name,
     fullName,
     email,
     password,
@@ -70,15 +71,16 @@ const createUser = asyncHandler(async (req, res) => {
     batch,
   } = req.body;
 
-  // Validate required fields
-  if (!fullName || !email || !password || !role) {
+  // Support both name and fullName from frontend
+  const userName = (name || fullName || "").trim();
+
+  if (!userName || !email || !password || !role) {
     return res.status(400).json({
       success: false,
-      message: "Missing required fields",
+      message: "Name, email, password and role are required",
     });
   }
 
-  // Validate role
   const allowedRoles = ["student", "mentor", "admin"];
 
   if (!allowedRoles.includes(role)) {
@@ -88,9 +90,10 @@ const createUser = asyncHandler(async (req, res) => {
     });
   }
 
-  // Check if email already exists
+  const normalizedEmail = email.toLowerCase().trim();
+
   const existing = await User.findOne({
-    email: email.toLowerCase(),
+    email: normalizedEmail,
   });
 
   if (existing) {
@@ -100,7 +103,7 @@ const createUser = asyncHandler(async (req, res) => {
     });
   }
 
-  // If a batch is provided, make sure it exists
+  // Validate batch if provided
   if (batch) {
     const existingBatch = await Batch.findById(batch);
 
@@ -112,30 +115,29 @@ const createUser = asyncHandler(async (req, res) => {
     }
   }
 
-  // Create user
   const user = await User.create({
-    fullName,
-    email: email.toLowerCase(),
+    name: userName,
+    email: normalizedEmail,
     password,
     role,
     batch: batch || null,
   });
 
-  // Remove password before sending response
-  const userResponse = user.toObject();
-  delete userResponse.password;
+  const safeUser = await User.findById(user._id)
+    .select("-password")
+    .populate("batch", "name track");
 
   res.status(201).json({
     success: true,
     message: "User created successfully",
-    user: userResponse,
+    data: safeUser,
   });
 });
 
 // Update one user
-
 const updateUser = asyncHandler(async (req, res) => {
   const {
+    name,
     fullName,
     email,
     role,
@@ -151,16 +153,15 @@ const updateUser = asyncHandler(async (req, res) => {
     });
   }
 
-  // Update full name
-  if (fullName !== undefined) {
-    user.fullName = fullName;
+  // Support both name and fullName
+  if (name !== undefined || fullName !== undefined) {
+    user.name = (name || fullName).trim();
   }
 
   // Update email
   if (email !== undefined) {
-    const normalizedEmail = email.toLowerCase();
+    const normalizedEmail = email.toLowerCase().trim();
 
-    // Check if another user already has this email
     const existingEmail = await User.findOne({
       email: normalizedEmail,
       _id: { $ne: req.params.id },
@@ -208,18 +209,18 @@ const updateUser = asyncHandler(async (req, res) => {
 
   await user.save();
 
-  const userResponse = user.toObject();
-  delete userResponse.password;
+  const safeUser = await User.findById(user._id)
+    .select("-password")
+    .populate("batch", "name track");
 
   res.status(200).json({
     success: true,
     message: "User updated successfully",
-    user: userResponse,
+    data: safeUser,
   });
 });
 
 // Delete one user
-
 const deleteUser = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id);
 
@@ -239,7 +240,6 @@ const deleteUser = asyncHandler(async (req, res) => {
 });
 
 // Get all students
-
 const getStudents = asyncHandler(async (req, res) => {
   const students = await User.find({
     role: "student",
@@ -254,19 +254,17 @@ const getStudents = asyncHandler(async (req, res) => {
     data: students,
   });
 });
-// Get students assigned to logged-in mentor
 
+// Get students assigned to logged-in mentor
 const getMentorStudents = asyncHandler(async (req, res) => {
   const mentorId = req.user.id;
 
-  // Find batches assigned to this mentor
   const batches = await Batch.find({
     mentors: mentorId,
   }).select("_id name track");
 
   const batchIds = batches.map((batch) => batch._id);
 
-  // Find students belonging to those batches
   const students = await User.find({
     role: "student",
     batch: { $in: batchIds },

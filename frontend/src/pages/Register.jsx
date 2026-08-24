@@ -12,7 +12,6 @@ function Register() {
     email: "",
     password: "",
     confirmPassword: "",
-    role: "",
   });
 
   const [showPassword, setShowPassword] = useState(false);
@@ -31,7 +30,7 @@ function Register() {
   };
 
   const isValidASTUEmail = (email) => {
-    return /^[^\s@]+@gmail\.com$/i.test(email);
+    return /^[^\s@]+@astu\.edu\.et$/i.test(email);
   };
 
   const handleSubmit = async (e) => {
@@ -43,7 +42,6 @@ function Register() {
     const email = formData.email.trim();
     const password = formData.password;
     const confirmPassword = formData.confirmPassword;
-    const role = formData.role;
 
     if (!name || !email || !password || !confirmPassword) {
       setError("Please fill in all fields.");
@@ -51,7 +49,7 @@ function Register() {
     }
 
     if (!isValidASTUEmail(email)) {
-      setError("Please use a valid email.");
+      setError("Please use your ASTU email address (@astu.edu.et).");
       return;
     }
 
@@ -73,8 +71,6 @@ function Register() {
         email,
         password,
         confirmPassword,
-        role,
-        track: formData.track,
       });
 
       setSuccess(
@@ -87,8 +83,6 @@ function Register() {
         email: "",
         password: "",
         confirmPassword: "",
-        role: "",
-        track: "",
       });
 
       setTimeout(() => {
@@ -164,7 +158,7 @@ function Register() {
                 required
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="you@gmail.com"
+                placeholder="you@astu.edu.et"
               />
             </label>
 
@@ -198,30 +192,6 @@ function Register() {
                 onChange={handleChange}
                 placeholder="Confirm your password"
               />
-            </label>
-
-            <label className="field">
-              <span>Choose Track</span>
-              <select
-                name="track"
-                required
-                value={formData.track || ""}
-                onChange={handleChange}
-                style={{
-                  padding: "0.75rem",
-                  borderRadius: "8px",
-                  border: "1px solid #ddd",
-                  width: "100%",
-                }}
-              >
-                <option value="" disabled>
-                  Select a track
-                </option>
-                <option value="Web Development">Web Development</option>
-                <option value="Mobile Development">Mobile Development</option>
-                <option value="UI/UX Design">UI/UX Design</option>
-                <option value="Data Science">Data Science</option>
-              </select>
             </label>
 
             <label className="terms">

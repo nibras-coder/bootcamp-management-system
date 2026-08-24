@@ -15,7 +15,7 @@ const userSchema = new mongoose.Schema(
       unique: true,
       lowercase: true,
       trim: true,
-      match: [/^\S+@\S+\.\S+$/, "Please provide a valid email"],
+      match: [/^\S+@astu\.edu\.et$/i, "Please use a valid ASTU email"],
     },
 
     password: {
@@ -40,6 +40,23 @@ const userSchema = new mongoose.Schema(
     profilePhoto: {
       type: String,
       default: null,
+    },
+
+    settings: {
+      emailNotifications: {
+        type: Boolean,
+        default: true,
+      },
+
+      announcementNotifications: {
+        type: Boolean,
+        default: true,
+      },
+
+      assignmentNotifications: {
+        type: Boolean,
+        default: true,
+      },
     },
 
     gender: {
@@ -68,23 +85,6 @@ const userSchema = new mongoose.Schema(
       default: true,
     },
 
-    settings: {
-      emailNotifications: {
-        type: Boolean,
-        default: true,
-      },
-
-      announcementNotifications: {
-        type: Boolean,
-        default: true,
-      },
-
-      assignmentNotifications: {
-        type: Boolean,
-        default: true,
-      },
-    },
-
     resetPasswordToken: {
       type: String,
       default: null,
@@ -102,7 +102,6 @@ const userSchema = new mongoose.Schema(
 
 // Hash password before saving
 userSchema.pre("save", async function (next) {
-  // Don't hash if password wasn't changed
   if (!this.isModified("password")) {
     return next();
   }
@@ -117,7 +116,7 @@ userSchema.pre("save", async function (next) {
 });
 
 // Compare password during login
-userSchema.methods.comparePassword = async function (candidatePassword) {
+userSchema.methods.comparePassword = function (candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
 

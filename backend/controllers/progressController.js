@@ -1,4 +1,4 @@
-const Progress = require("../models/Progress");
+const Progress = require("../models/progress");
 const User = require("../models/User");
 const Batch = require("../models/Batch");
 

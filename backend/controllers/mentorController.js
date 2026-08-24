@@ -1,8 +1,8 @@
 const User = require("../models/User");
 const Batch = require("../models/Batch");
-const Attendance = require("../models/Attendance");
-const Assignment = require("../models/Assignment");
-const Submission = require("../models/Submission");
+const Attendance = require("../models/attendance");
+const Assignment = require("../models/assignment");
+const Submission = require("../models/submission");
 
 const getMentorDashboard = async (req, res) => {
   try {

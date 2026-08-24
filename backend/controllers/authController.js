@@ -44,6 +44,12 @@ const register = async (req, res) => {
       });
     }
 
+    if (!/^\S+@astu\.edu\.et$/i.test(email.trim())) {
+      return res.status(400).json({
+        message: "Please use your ASTU email address (@astu.edu.et)",
+      });
+    }
+
     if (password.length < 6) {
       return res.status(400).json({
         message:
