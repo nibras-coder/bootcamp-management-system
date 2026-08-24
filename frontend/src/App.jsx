@@ -10,7 +10,9 @@ import {
 } from "react-router-dom";
 import "./style.css";
 import API from "./api/axios";
-import { FiMenu, FiX } from "react-icons/fi";
+import { FiMenu, FiX, FiMoon, FiSun } from "react-icons/fi";
+import { useTheme } from "./context/ThemeContext.jsx";
+import calligraphy from "./assets/calligraphy.jpg";
 
 // Page Imports
 import Login from "./pages/Login";
@@ -810,7 +812,11 @@ function AuthShell({ title, subtitle, children }) {
           {children}
         </div>
         <div className="auth-art">
-          <img src="/assets/calligraphy.png" alt="" />
+         <img
+  src={calligraphy}
+  alt="Islamic calligraphy"
+  className="auth-calligraphy"
+/>
           <div className="art-overlay"></div>
           <div className="auth-brand">
             <Logo size={36} />
@@ -895,9 +901,35 @@ function PublicLayout() {
   );
 }
 
+
+function GlobalThemeToggle() {
+  const { darkMode, toggleDarkMode } = useTheme();
+
+  return (
+    <button
+      className={`global-theme-toggle ${darkMode ? "is-dark" : ""}`}
+      type="button"
+      onClick={toggleDarkMode}
+      aria-label={
+        darkMode ? "Switch to light mode" : "Switch to dark mode"
+      }
+      title={darkMode ? "Switch to light mode" : "Switch to dark mode"}
+    >
+      <span className="global-theme-icon">
+        {darkMode ? <FiSun size={18} /> : <FiMoon size={18} />}
+      </span>
+
+      <span className="global-theme-label">
+        {darkMode ? "Light" : "Dark"}
+      </span>
+    </button>
+  );
+}
+
 function App() {
   return (
     <BrowserRouter>
+      <GlobalThemeToggle />
       <Routes>
         {/* Public Landing Pages wrapped with Header & Footer */}
         <Route element={<PublicLayout />}>

@@ -1,4 +1,4 @@
-const Attendance = require("../models/Attendance");
+const Attendance = require("../models/attendance");
 const User = require("../models/User");
 const Batch = require("../models/Batch");
 

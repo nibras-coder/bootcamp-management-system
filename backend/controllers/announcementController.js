@@ -1,4 +1,4 @@
-const Announcement = require("../models/Announcement");
+const Announcement = require("../models/announcement");
 const Batch = require("../models/Batch");
 const User = require("../models/User");
 
