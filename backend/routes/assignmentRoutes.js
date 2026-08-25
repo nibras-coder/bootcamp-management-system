@@ -2,15 +2,12 @@ const express = require("express");
 
 const router = express.Router();
 
-const {
-  protect,
-} = require("../middleware/authMiddleware");
+const { protect } = require("../middleware/authMiddleware");
 
-const authorize = require(
-  "../middleware/roleMiddleware"
-);
+const authorize = require("../middleware/roleMiddleware");
 
 const {
+  getAssignments,
   getMyAssignments,
   getAssignmentById,
   createAssignment,
@@ -18,23 +15,43 @@ const {
   deleteAssignment,
 } = require("../controllers/assignmentController");
 
-// Get mentor or student assignments
+// ==========================================
+// Mentor / Admin / Student assignments
+// ==========================================
+
 router.get(
   "/",
   protect,
   authorize("mentor", "student", "admin"),
+  getAssignments
+);
+
+// ==========================================
+// Student's detailed assignments
+// ==========================================
+
+router.get(
+  "/my",
+  protect,
+  authorize("student"),
   getMyAssignments
 );
 
+// ==========================================
 // Get one assignment
+// ==========================================
+
 router.get(
   "/:id",
   protect,
-  authorize("mentor", "admin"),
+  authorize("mentor", "student", "admin"),
   getAssignmentById
 );
 
-// Create assignment
+// ==========================================
+// Create
+// ==========================================
+
 router.post(
   "/",
   protect,
@@ -42,7 +59,10 @@ router.post(
   createAssignment
 );
 
-// Update assignment
+// ==========================================
+// Update
+// ==========================================
+
 router.put(
   "/:id",
   protect,
@@ -50,7 +70,10 @@ router.put(
   updateAssignment
 );
 
-// Delete assignment
+// ==========================================
+// Delete
+// ==========================================
+
 router.delete(
   "/:id",
   protect,

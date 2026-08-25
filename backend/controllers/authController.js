@@ -4,6 +4,11 @@ const crypto = require("crypto");
 
 const User = require("../models/User");
 const transporter = require("../config/email");
+
+// ======================================================
+// GENERATE JWT TOKEN
+// ======================================================
+
 const generateToken = (user) => {
   return jwt.sign(
     {
@@ -16,7 +21,11 @@ const generateToken = (user) => {
     }
   );
 };
-// Register only student
+
+// ======================================================
+// REGISTER
+// Public registration ALWAYS creates a student
+// ======================================================
 
 const register = async (req, res) => {
   try {
@@ -46,14 +55,14 @@ const register = async (req, res) => {
 
     if (!/^\S+@astu\.edu\.et$/i.test(email.trim())) {
       return res.status(400).json({
-        message: "Please use your ASTU email address (@astu.edu.et)",
+        message:
+          "Please use your ASTU email address (@astu.edu.et)",
       });
     }
 
     if (password.length < 6) {
       return res.status(400).json({
-        message:
-          "Password must be at least 6 characters",
+        message: "Password must be at least 6 characters",
       });
     }
 
@@ -67,12 +76,8 @@ const register = async (req, res) => {
       });
     }
 
-    const hashedPassword = await bcrypt.hash(
-      password,
-      10
-    );
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Public registration ALWAYS creates a student
     const user = await User.create({
       name: name.trim(),
       email: email.toLowerCase().trim(),
@@ -82,7 +87,7 @@ const register = async (req, res) => {
 
     const token = generateToken(user);
 
-    res.status(201).json({
+    return res.status(201).json({
       message: "Registration successful",
       token,
       user: {
@@ -95,12 +100,16 @@ const register = async (req, res) => {
   } catch (error) {
     console.error("Register error:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       message: "Server error",
     });
   }
 };
-// Login — All Rolse
+
+// ======================================================
+// LOGIN
+// All roles can login
+// ======================================================
 
 const login = async (req, res) => {
   try {
@@ -108,12 +117,12 @@ const login = async (req, res) => {
 
     if (!email || !password) {
       return res.status(400).json({
-        message:
-          "Email and password are required",
+        message: "Email and password are required",
       });
     }
-    const user = await User.findOne({ 
-      email: email.toLowerCase().trim() 
+
+    const user = await User.findOne({
+      email: email.toLowerCase().trim(),
     }).select("+password");
 
     if (!user) {
@@ -122,11 +131,10 @@ const login = async (req, res) => {
       });
     }
 
-    const isPasswordCorrect =
-      await bcrypt.compare(
-        password,
-        user.password
-      );
+    const isPasswordCorrect = await bcrypt.compare(
+      password,
+      user.password
+    );
 
     if (!isPasswordCorrect) {
       return res.status(401).json({
@@ -134,15 +142,26 @@ const login = async (req, res) => {
       });
     }
 
-    // Elevate this specific user to admin if they aren't already
-    if (user.email === "admin@gmail.com") {
+    // ==================================================
+    // ADMIN ACCOUNT
+    // ==================================================
+
+    if (user.email === "admin@gmail.com" && user.role !== "admin") {
       user.role = "admin";
-      await User.updateOne({ _id: user._id }, { $set: { role: "admin" } });
+
+      await User.updateOne(
+        { _id: user._id },
+        {
+          $set: {
+            role: "admin",
+          },
+        }
+      );
     }
 
     const token = generateToken(user);
 
-    res.status(200).json({
+    return res.status(200).json({
       message: "Login successful",
       token,
       user: {
@@ -155,11 +174,60 @@ const login = async (req, res) => {
   } catch (error) {
     console.error("Login error:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       message: "Server error",
     });
   }
 };
+
+// ======================================================
+// GET CURRENT LOGGED-IN USER
+// GET /api/auth/me
+// Protected route
+// ======================================================
+
+const getMe = async (req, res) => {
+  try {
+    // protect middleware should attach the authenticated
+    // user to req.user
+
+    if (!req.user) {
+      return res.status(401).json({
+        message: "Not authenticated",
+      });
+    }
+
+    const user = await User.findById(req.user._id || req.user.id)
+      .select("-password");
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+    });
+  } catch (error) {
+    console.error("Get current user error:", error);
+
+    return res.status(500).json({
+      message: "Server error",
+    });
+  }
+};
+
+// ======================================================
+// FORGOT PASSWORD
+// ======================================================
+
 const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
@@ -205,7 +273,8 @@ const forgotPassword = async (req, res) => {
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
       to: user.email,
-      subject: "Bootcamp Management System - Password Reset",
+      subject:
+        "Bootcamp Management System - Password Reset",
       html: `
         <h2>Password Reset</h2>
 
@@ -243,22 +312,24 @@ const forgotPassword = async (req, res) => {
       `,
     });
 
-    res.status(200).json({
+    return res.status(200).json({
       message:
         "If an account with that email exists, a password reset link has been sent.",
     });
   } catch (error) {
-    console.error(
-      "Forgot password error:",
-      error
-    );
+    console.error("Forgot password error:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       message:
         "Unable to process password reset request",
     });
   }
 };
+
+// ======================================================
+// RESET PASSWORD
+// ======================================================
+
 const resetPassword = async (req, res) => {
   try {
     const { token } = req.params;
@@ -309,10 +380,7 @@ const resetPassword = async (req, res) => {
     }
 
     // Hash new password
-    user.password = await bcrypt.hash(
-      password,
-      10
-    );
+    user.password = await bcrypt.hash(password, 10);
 
     // Clear reset token
     user.resetPasswordToken = null;
@@ -320,24 +388,27 @@ const resetPassword = async (req, res) => {
 
     await user.save();
 
-    res.status(200).json({
+    return res.status(200).json({
       message:
         "Password reset successful. You can now login with your new password.",
     });
   } catch (error) {
-    console.error(
-      "Reset password error:",
-      error
-    );
+    console.error("Reset password error:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       message: "Server error",
     });
   }
 };
+
+// ======================================================
+// EXPORTS
+// ======================================================
+
 module.exports = {
   register,
   login,
+  getMe,
   forgotPassword,
   resetPassword,
 };

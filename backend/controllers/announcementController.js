@@ -475,11 +475,11 @@ const markAnnouncementRead = async (req, res) => {
     });
   }
 };
-
 module.exports = {
   createAnnouncement,
   getMentorAnnouncements,
   getAnnouncementById,
+  getMyAnnouncements,
   updateAnnouncement,
   deleteAnnouncement,
   markAnnouncementRead,
