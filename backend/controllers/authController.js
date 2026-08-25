@@ -5,6 +5,10 @@ const crypto = require("crypto");
 const User = require("../models/User");
 const transporter = require("../config/email");
 
+// ======================================================
+// GENERATE JWT TOKEN
+// ======================================================
+
 const generateToken = (user) => {
   return jwt.sign(
     {
@@ -20,7 +24,7 @@ const generateToken = (user) => {
 
 // ======================================================
 // REGISTER
-// Only students can register through public registration
+// Public registration ALWAYS creates a student
 // ======================================================
 
 const register = async (req, res) => {
@@ -49,6 +53,13 @@ const register = async (req, res) => {
       });
     }
 
+    if (!/^\S+@astu\.edu\.et$/i.test(email.trim())) {
+      return res.status(400).json({
+        message:
+          "Please use your ASTU email address (@astu.edu.et)",
+      });
+    }
+
     if (password.length < 6) {
       return res.status(400).json({
         message: "Password must be at least 6 characters",
@@ -65,15 +76,18 @@ const register = async (req, res) => {
       });
     }
 
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     const user = await User.create({
-      name,
-      email,
-      password,
+      name: name.trim(),
+      email: email.toLowerCase().trim(),
+      role: "student",
+      password: hashedPassword,
     });
 
     const token = generateToken(user);
 
-    res.status(201).json({
+    return res.status(201).json({
       message: "Registration successful",
       token,
       user: {
@@ -86,7 +100,7 @@ const register = async (req, res) => {
   } catch (error) {
     console.error("Register error:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       message: "Server error",
     });
   }
@@ -94,7 +108,7 @@ const register = async (req, res) => {
 
 // ======================================================
 // LOGIN
-// All roles
+// All roles can login
 // ======================================================
 
 const login = async (req, res) => {
@@ -128,8 +142,11 @@ const login = async (req, res) => {
       });
     }
 
-    // Elevate this specific user to admin
-    if (user.email === "admin@gmail.com") {
+    // ==================================================
+    // ADMIN ACCOUNT
+    // ==================================================
+
+    if (user.email === "admin@gmail.com" && user.role !== "admin") {
       user.role = "admin";
 
       await User.updateOne(
@@ -144,7 +161,7 @@ const login = async (req, res) => {
 
     const token = generateToken(user);
 
-    res.status(200).json({
+    return res.status(200).json({
       message: "Login successful",
       token,
       user: {
@@ -157,116 +174,52 @@ const login = async (req, res) => {
   } catch (error) {
     console.error("Login error:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       message: "Server error",
     });
   }
 };
 
+// ======================================================
+// GET CURRENT LOGGED-IN USER
+// GET /api/auth/me
+// Protected route
+// ======================================================
 
-// CHANGE PASSWORD
-
-
-const changePassword = async (req, res) => {
+const getMe = async (req, res) => {
   try {
-    // DEBUG
-    console.log("CHANGE PASSWORD BODY:", req.body);
-    console.log(
-      "CONTENT TYPE:",
-      req.headers["content-type"]
-    );
+    // protect middleware should attach the authenticated
+    // user to req.user
 
-    // Make sure body exists
-    if (!req.body) {
-      return res.status(400).json({
-        success: false,
-        message: "Request body is missing",
+    if (!req.user) {
+      return res.status(401).json({
+        message: "Not authenticated",
       });
     }
 
-    const {
-      currentPassword,
-      newPassword,
-    } = req.body;
-
-    // Validate fields
-    if (!currentPassword || !newPassword) {
-      return res.status(400).json({
-        success: false,
-        message:
-          "Current password and new password are required",
-      });
-    }
-
-    // Validate password length
-    if (newPassword.length < 6) {
-      return res.status(400).json({
-        success: false,
-        message:
-          "New password must be at least 6 characters",
-      });
-    }
-
-    // Get logged-in user
-    const user = await User.findById(
-      req.user.id
-    ).select("+password");
+    const user = await User.findById(req.user._id || req.user.id)
+      .select("-password");
 
     if (!user) {
       return res.status(404).json({
-        success: false,
         message: "User not found",
       });
     }
 
-    // Check current password
-    const isCurrentPasswordCorrect =
-      await bcrypt.compare(
-        currentPassword,
-        user.password
-      );
-
-    if (!isCurrentPasswordCorrect) {
-      return res.status(401).json({
-        success: false,
-        message: "Current password is incorrect",
-      });
-    }
-
-    // Make sure the new password is different
-    const isSamePassword =
-      await bcrypt.compare(
-        newPassword,
-        user.password
-      );
-
-    if (isSamePassword) {
-      return res.status(400).json({
-        success: false,
-        message:
-          "New password must be different from your current password",
-      });
-    }
-
-    // Set new password
-    // User model pre-save hook should hash it
-    user.password = newPassword;
-
-    await user.save();
-
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
-      message: "Password changed successfully",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
     });
   } catch (error) {
-    console.error(
-      "Change password error:",
-      error
-    );
+    console.error("Get current user error:", error);
 
-    res.status(500).json({
-      success: false,
-      message: "Failed to change password",
+    return res.status(500).json({
+      message: "Server error",
     });
   }
 };
@@ -289,6 +242,7 @@ const forgotPassword = async (req, res) => {
       email: email.toLowerCase().trim(),
     });
 
+    // Don't reveal whether an email exists
     if (!user) {
       return res.status(200).json({
         message:
@@ -296,9 +250,10 @@ const forgotPassword = async (req, res) => {
       });
     }
 
-    const resetToken =
-      crypto.randomBytes(32).toString("hex");
+    // Generate random token
+    const resetToken = crypto.randomBytes(32).toString("hex");
 
+    // Hash token before storing it
     const hashedToken = crypto
       .createHash("sha256")
       .update(resetToken)
@@ -306,6 +261,7 @@ const forgotPassword = async (req, res) => {
 
     user.resetPasswordToken = hashedToken;
 
+    // Token expires after 15 minutes
     user.resetPasswordExpires =
       Date.now() + 15 * 60 * 1000;
 
@@ -356,17 +312,14 @@ const forgotPassword = async (req, res) => {
       `,
     });
 
-    res.status(200).json({
+    return res.status(200).json({
       message:
         "If an account with that email exists, a password reset link has been sent.",
     });
   } catch (error) {
-    console.error(
-      "Forgot password error:",
-      error
-    );
+    console.error("Forgot password error:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       message:
         "Unable to process password reset request",
     });
@@ -406,6 +359,7 @@ const resetPassword = async (req, res) => {
       });
     }
 
+    // Hash token from URL
     const hashedToken = crypto
       .createHash("sha256")
       .update(token)
@@ -425,64 +379,24 @@ const resetPassword = async (req, res) => {
       });
     }
 
-    user.password = await bcrypt.hash(
-      password,
-      10
-    );
+    // Hash new password
+    user.password = await bcrypt.hash(password, 10);
 
+    // Clear reset token
     user.resetPasswordToken = null;
     user.resetPasswordExpires = null;
 
     await user.save();
 
-    res.status(200).json({
+    return res.status(200).json({
       message:
         "Password reset successful. You can now login with your new password.",
     });
   } catch (error) {
-    console.error(
-      "Reset password error:",
-      error
-    );
+    console.error("Reset password error:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       message: "Server error",
-    });
-  }
-};
-
-// ======================================================
-// GET CURRENT USER
-// ======================================================
-
-const getMe = async (req, res) => {
-  try {
-    const user = await User.findById(
-      req.user.id
-    ).select(
-      "-password -resetPasswordToken -resetPasswordExpires"
-    );
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      user,
-    });
-  } catch (error) {
-    console.error(
-      "Get me error:",
-      error
-    );
-
-    res.status(500).json({
-      success: false,
-      message: "Unable to load profile",
     });
   }
 };
@@ -494,8 +408,7 @@ const getMe = async (req, res) => {
 module.exports = {
   register,
   login,
-  changePassword,
+  getMe,
   forgotPassword,
   resetPassword,
-  getMe,
 };

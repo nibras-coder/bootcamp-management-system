@@ -2,61 +2,82 @@ const express = require("express");
 
 const router = express.Router();
 
-const {
-  protect,
-} = require("../middleware/authMiddleware");
+const { protect } = require("../middleware/authMiddleware");
 
-const authorize = require(
-  "../middleware/roleMiddleware"
-);
+const authorize = require("../middleware/roleMiddleware");
 
 const {
-  createAssignment,
-  getMentorAssignments,
+  getAssignments,
+  getMyAssignments,
   getAssignmentById,
+  createAssignment,
   updateAssignment,
   deleteAssignment,
-} = require(
-  "../controllers/assignmentController"
-);
+} = require("../controllers/assignmentController");
 
-// Get mentor assignments
+// ==========================================
+// Mentor / Admin / Student assignments
+// ==========================================
+
 router.get(
   "/",
   protect,
-  authorize("mentor"),
-  getMentorAssignments
+  authorize("mentor", "student", "admin"),
+  getAssignments
 );
 
+// ==========================================
+// Student's detailed assignments
+// ==========================================
+
+router.get(
+  "/my",
+  protect,
+  authorize("student"),
+  getMyAssignments
+);
+
+// ==========================================
 // Get one assignment
+// ==========================================
+
 router.get(
   "/:id",
   protect,
-  authorize("mentor"),
+  authorize("mentor", "student", "admin"),
   getAssignmentById
 );
 
-// Create assignment
+// ==========================================
+// Create
+// ==========================================
+
 router.post(
   "/",
   protect,
-  authorize("mentor"),
+  authorize("mentor", "admin"),
   createAssignment
 );
 
-// Update assignment
+// ==========================================
+// Update
+// ==========================================
+
 router.put(
   "/:id",
   protect,
-  authorize("mentor"),
+  authorize("mentor", "admin"),
   updateAssignment
 );
 
-// Delete assignment
+// ==========================================
+// Delete
+// ==========================================
+
 router.delete(
   "/:id",
   protect,
-  authorize("mentor"),
+  authorize("mentor", "admin"),
   deleteAssignment
 );
 

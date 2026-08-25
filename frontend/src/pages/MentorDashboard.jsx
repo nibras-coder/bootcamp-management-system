@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -13,6 +13,10 @@ import {
   AlertTriangle,
   Clock3,
   MoreHorizontal,
+  Megaphone,
+  RefreshCw,
+  X,
+  ExternalLink,
 } from "lucide-react";
 
 import Sidebar from "../components/mentor/Sidebar";
@@ -50,7 +54,6 @@ function CircularProgress({
           className="w-32 h-32 -rotate-90"
           viewBox="0 0 100 100"
         >
-          {/* Background */}
           <circle
             cx="50"
             cy="50"
@@ -60,7 +63,6 @@ function CircularProgress({
             strokeWidth="8"
           />
 
-          {/* Progress */}
           <circle
             cx="50"
             cy="50"
@@ -154,7 +156,6 @@ function QuickActions({ navigate }) {
     <div className="p-6">
       <div className="space-y-3">
 
-        {/* Mark Attendance */}
         <button
           onClick={() =>
             navigate("/mentor/attendance")
@@ -186,7 +187,6 @@ function QuickActions({ navigate }) {
           />
         </button>
 
-        {/* Review Submissions */}
         <button
           onClick={() =>
             navigate("/mentor/grading")
@@ -218,7 +218,6 @@ function QuickActions({ navigate }) {
           />
         </button>
 
-        {/* Create Announcement */}
         <button
           onClick={() =>
             navigate("/mentor/announcements")
@@ -256,6 +255,237 @@ function QuickActions({ navigate }) {
 }
 
 /* =========================================================
+   NOTIFICATION DROPDOWN
+========================================================= */
+
+function NotificationDropdown({
+  notifications,
+  onClose,
+  onRead,
+  onRefresh,
+  loading,
+  navigate,
+}) {
+  const getNotificationIcon = (type) => {
+    if (type === "announcement") {
+      return (
+        <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+          <Megaphone
+            size={18}
+            className="text-blue-600"
+          />
+        </div>
+      );
+    }
+
+    if (type === "assignment") {
+      return (
+        <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
+          <FileText
+            size={18}
+            className="text-amber-600"
+          />
+        </div>
+      );
+    }
+
+    return (
+      <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center shrink-0">
+        <Bell
+          size={18}
+          className="text-gray-600"
+        />
+      </div>
+    );
+  };
+
+  const formatDate = (date) => {
+    if (!date) return "";
+
+    const parsed = new Date(date);
+
+    if (Number.isNaN(parsed.getTime())) {
+      return "";
+    }
+
+    return parsed.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  const handleNotificationClick = async (notification) => {
+    if (
+      notification.type === "announcement" &&
+      notification.id
+    ) {
+      await onRead(notification.id);
+    }
+
+    onClose();
+
+    if (notification.type === "announcement") {
+      navigate("/mentor/announcements");
+    } else if (
+      notification.type === "assignment"
+    ) {
+      navigate("/mentor/grading");
+    }
+  };
+
+  return (
+    <div className="absolute right-0 top-14 z-50 w-[360px] max-w-[calc(100vw-32px)] bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
+
+      {/* HEADER */}
+
+      <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+        <div>
+          <h3 className="font-bold text-gray-900">
+            Notifications
+          </h3>
+
+          <p className="text-xs text-gray-400 mt-1">
+            Important updates for you
+          </p>
+        </div>
+
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={onRefresh}
+            disabled={loading}
+            className="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center"
+            title="Refresh notifications"
+          >
+            <RefreshCw
+              size={15}
+              className={
+                loading
+                  ? "animate-spin text-teal-600"
+                  : "text-gray-500"
+              }
+            />
+          </button>
+
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center"
+          >
+            <X
+              size={16}
+              className="text-gray-500"
+            />
+          </button>
+        </div>
+      </div>
+
+      {/* BODY */}
+
+      <div className="max-h-[420px] overflow-y-auto">
+
+        {loading && notifications.length === 0 ? (
+          <div className="p-8 text-center">
+            <RefreshCw
+              size={24}
+              className="mx-auto text-teal-600 animate-spin"
+            />
+
+            <p className="text-sm text-gray-500 mt-3">
+              Loading notifications...
+            </p>
+          </div>
+        ) : notifications.length === 0 ? (
+          <div className="p-8 text-center">
+            <div className="w-14 h-14 mx-auto rounded-2xl bg-teal-50 flex items-center justify-center">
+              <CheckCircle2
+                size={26}
+                className="text-teal-600"
+              />
+            </div>
+
+            <h4 className="font-semibold text-gray-900 mt-4">
+              You're all caught up
+            </h4>
+
+            <p className="text-xs text-gray-500 mt-1">
+              There are no new notifications.
+            </p>
+          </div>
+        ) : (
+          notifications.map((notification) => (
+            <button
+              key={notification.key}
+              type="button"
+              onClick={() =>
+                handleNotificationClick(
+                  notification
+                )
+              }
+              className={`w-full text-left px-5 py-4 border-b border-gray-50 hover:bg-gray-50 transition ${
+                notification.unread
+                  ? "bg-teal-50/40"
+                  : "bg-white"
+              }`}
+            >
+              <div className="flex gap-3">
+                {getNotificationIcon(
+                  notification.type
+                )}
+
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="text-sm font-semibold text-gray-900 truncate">
+                      {notification.title}
+                    </p>
+
+                    {notification.unread && (
+                      <span className="w-2 h-2 rounded-full bg-teal-600 mt-1.5 shrink-0" />
+                    )}
+                  </div>
+
+                  <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                    {notification.message}
+                  </p>
+
+                  <div className="flex items-center justify-between mt-2">
+                    <span className="text-[11px] text-gray-400">
+                      {formatDate(
+                        notification.date
+                      )}
+                    </span>
+
+                    <span className="text-[11px] text-teal-600 font-medium flex items-center gap-1">
+                      View
+                      <ExternalLink size={11} />
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </button>
+          ))
+        )}
+      </div>
+
+      {/* FOOTER */}
+
+      <div className="px-5 py-3 bg-gray-50 border-t border-gray-100">
+        <button
+          type="button"
+          onClick={() => {
+            onClose();
+            navigate("/mentor/notifications");
+          }}
+          className="w-full text-center text-xs font-semibold text-teal-700 hover:text-teal-800"
+        >
+          View all notifications
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* =========================================================
    MENTOR DASHBOARD
 ========================================================= */
 
@@ -267,50 +497,317 @@ function MentorDashboard() {
   const [error, setError] = useState("");
 
   /* =======================================================
+     NOTIFICATIONS
+  ======================================================= */
+
+  const [
+    notifications,
+    setNotifications,
+  ] = useState([]);
+
+  const [
+    notificationsLoading,
+    setNotificationsLoading,
+  ] = useState(false);
+
+  const [
+    notificationOpen,
+    setNotificationOpen,
+  ] = useState(false);
+
+  const notificationRef = useRef(null);
+
+  /* =======================================================
      FETCH DASHBOARD
   ======================================================= */
 
-  useEffect(() => {
-    const fetchDashboard = async () => {
-      try {
-        setLoading(true);
-        setError("");
+  const fetchDashboard = async () => {
+    try {
+      setLoading(true);
+      setError("");
 
-        const response = await api.get(
-          "/mentor/dashboard"
+      const response = await api.get(
+        "/mentor/dashboard"
+      );
+
+      console.log(
+        "Mentor dashboard:",
+        response.data
+      );
+
+      if (response.data?.success) {
+        setDashboard(
+          response.data.data
         );
-
-        console.log(
-          "Mentor dashboard:",
-          response.data
-        );
-
-        if (response.data?.success) {
-          setDashboard(
-            response.data.data
-          );
-        } else {
-          setError(
-            response.data?.message ||
-              "Failed to load dashboard"
-          );
-        }
-      } catch (err) {
-        console.error(
-          "Mentor dashboard error:",
-          err
-        );
-
+      } else {
         setError(
-          err.response?.data?.message ||
-            "Unable to connect to the server"
+          response.data?.message ||
+            "Failed to load dashboard"
         );
-      } finally {
-        setLoading(false);
+      }
+    } catch (err) {
+      console.error(
+        "Mentor dashboard error:",
+        err
+      );
+
+      setError(
+        err.response?.data?.message ||
+          "Unable to connect to the server"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /* =======================================================
+     FETCH NOTIFICATIONS
+  ======================================================= */
+
+  const fetchNotifications = async () => {
+    try {
+      setNotificationsLoading(true);
+
+      /*
+       * We use the existing announcement endpoint.
+       *
+       * If your backend endpoint is different, change only
+       * this URL.
+       */
+
+      const response = await api.get(
+        "/announcements"
+      );
+
+      const rawAnnouncements =
+        response.data?.data ||
+        response.data?.announcements ||
+        [];
+
+      const announcements =
+        Array.isArray(rawAnnouncements)
+          ? rawAnnouncements
+          : [];
+
+      const announcementNotifications =
+        announcements
+          .filter((announcement) => {
+            const target =
+              announcement.targetAudience;
+
+            return (
+              target === "mentors" ||
+              target === "all"
+            );
+          })
+          .slice(0, 10)
+          .map((announcement) => {
+            const readBy =
+              announcement.readBy || [];
+
+            const currentUserId =
+              localStorage.getItem(
+                "userId"
+              );
+
+            const unread =
+              currentUserId &&
+              !readBy.some(
+                (id) =>
+                  String(
+                    id?._id || id
+                  ) ===
+                  String(
+                    currentUserId
+                  )
+              );
+
+            return {
+              key: `announcement-${announcement._id}`,
+              id: announcement._id,
+              type: "announcement",
+              title:
+                announcement.title ||
+                "New Announcement",
+              message:
+                announcement.content ||
+                "You have a new announcement.",
+              date:
+                announcement.publishDate ||
+                announcement.createdAt,
+              unread: Boolean(unread),
+            };
+          });
+
+      /*
+       * Pending submissions from dashboard
+       * are also useful as notifications.
+       */
+
+      const pending =
+        dashboard?.pendingGrading || [];
+
+      const assignmentNotifications =
+        pending.slice(0, 10).map(
+          (submission, index) => ({
+            key: `assignment-${submission._id || index}`,
+            id: submission._id,
+            type: "assignment",
+            title:
+              submission.assignment?.title ||
+              submission.title ||
+              "Assignment needs review",
+            message:
+              submission.student?.name
+                ? `${submission.student.name} submitted an assignment for review.`
+                : "A student submission is waiting for your review.",
+            date:
+              submission.createdAt ||
+              submission.submittedAt,
+            unread: true,
+          })
+        );
+
+      const combined = [
+        ...announcementNotifications,
+        ...assignmentNotifications,
+      ];
+
+      combined.sort((a, b) => {
+        const dateA = new Date(
+          a.date || 0
+        ).getTime();
+
+        const dateB = new Date(
+          b.date || 0
+        ).getTime();
+
+        return dateB - dateA;
+      });
+
+      setNotifications(
+        combined.slice(0, 15)
+      );
+    } catch (err) {
+      console.error(
+        "Notifications error:",
+        err
+      );
+
+      /*
+       * Do not break the dashboard if the
+       * notification endpoint is unavailable.
+       */
+
+      setNotifications([]);
+    } finally {
+      setNotificationsLoading(false);
+    }
+  };
+
+  /* =======================================================
+     MARK ANNOUNCEMENT AS READ
+  ======================================================= */
+
+  const markAnnouncementAsRead = async (
+    announcementId
+  ) => {
+    try {
+      /*
+       * This expects a backend route such as:
+       *
+       * PATCH /api/announcements/:id/read
+       *
+       * If your announcement controller does not
+       * have this yet, we can add it next.
+       */
+
+      await api.patch(
+        `/announcements/${announcementId}/read`
+      );
+
+      setNotifications((previous) =>
+        previous.map((notification) =>
+          notification.id ===
+            announcementId
+            ? {
+                ...notification,
+                unread: false,
+              }
+            : notification
+        )
+      );
+    } catch (error) {
+      console.error(
+        "Mark notification read error:",
+        error
+      );
+
+      /*
+       * Update locally even if the backend
+       * read endpoint is not available yet.
+       */
+
+      setNotifications((previous) =>
+        previous.map((notification) =>
+          notification.id ===
+            announcementId
+            ? {
+                ...notification,
+                unread: false,
+              }
+            : notification
+        )
+      );
+    }
+  };
+
+  /* =======================================================
+     INITIAL LOAD
+  ======================================================= */
+
+  useEffect(() => {
+    fetchDashboard();
+  }, []);
+
+  /*
+   * Fetch notifications after dashboard data
+   * is available.
+   */
+
+  useEffect(() => {
+    if (!loading) {
+      fetchNotifications();
+    }
+  }, [loading]);
+
+  /* =======================================================
+     CLOSE NOTIFICATION WHEN CLICKING OUTSIDE
+  ======================================================= */
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        notificationRef.current &&
+        !notificationRef.current.contains(
+          event.target
+        )
+      ) {
+        setNotificationOpen(false);
       }
     };
 
-    fetchDashboard();
+    document.addEventListener(
+      "mousedown",
+      handleClickOutside
+    );
+
+    return () => {
+      document.removeEventListener(
+        "mousedown",
+        handleClickOutside
+      );
+    };
   }, []);
 
   /* =======================================================
@@ -373,9 +870,7 @@ function MentorDashboard() {
             </p>
 
             <button
-              onClick={() =>
-                window.location.reload()
-              }
+              onClick={fetchDashboard}
               className="mt-5 px-5 py-2.5 bg-teal-700 text-white rounded-xl text-sm font-semibold hover:bg-teal-800 transition"
             >
               Try Again
@@ -407,21 +902,11 @@ function MentorDashboard() {
       dashboard?.averageGrade || 0
     );
 
-  /*
-    These fields will work once the backend
-    sends them.
-  */
-
   const studentsAtRisk =
     dashboard?.studentsAtRisk || [];
 
   const pendingGrading =
     dashboard?.pendingGrading || [];
-
-  /*
-    Optional mentor information.
-    Supports several possible backend formats.
-  */
 
   const mentorName =
     dashboard?.mentor?.name ||
@@ -429,14 +914,20 @@ function MentorDashboard() {
     dashboard?.user?.name ||
     "Mentor";
 
-  /*
-    Optional chart data.
-  */
-
   const attendanceChartData =
     dashboard?.attendanceChart ||
     dashboard?.attendanceHistory ||
     [];
+
+  /* =======================================================
+     NOTIFICATION COUNT
+  ======================================================= */
+
+  const unreadNotifications =
+    notifications.filter(
+      (notification) =>
+        notification.unread
+    ).length;
 
   /* =======================================================
      DATE
@@ -466,15 +957,7 @@ function MentorDashboard() {
   return (
     <div className="flex min-h-screen bg-[#F4F7F8]">
 
-      {/* ===================================================
-          SIDEBAR
-      =================================================== */}
-
       <Sidebar />
-
-      {/* ===================================================
-          MAIN
-      =================================================== */}
 
       <main className="flex-1 min-w-0 p-5 lg:p-8 overflow-y-auto">
 
@@ -482,15 +965,15 @@ function MentorDashboard() {
             HEADER
         ================================================= */}
 
-        <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0F5257] via-[#12676B] to-[#16858A] p-6 lg:p-8 mb-7 shadow-lg">
+        <section className="relative overflow-visible rounded-3xl bg-gradient-to-br from-[#0F5257] via-[#12676B] to-[#16858A] p-6 lg:p-8 mb-7 shadow-lg">
 
-          <div className="absolute -right-20 -top-24 w-72 h-72 rounded-full bg-white/5" />
+          <div className="absolute -right-20 -top-24 w-72 h-72 rounded-full bg-white/5 pointer-events-none" />
 
-          <div className="absolute right-32 -bottom-40 w-80 h-80 rounded-full bg-white/5" />
+          <div className="absolute right-32 -bottom-40 w-80 h-80 rounded-full bg-white/5 pointer-events-none" />
 
           <div className="relative flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
 
-            {/* Welcome */}
+            {/* WELCOME */}
 
             <div>
               <div className="flex items-center gap-2 mb-3">
@@ -516,7 +999,7 @@ function MentorDashboard() {
               </p>
             </div>
 
-            {/* Date + Notification */}
+            {/* DATE + NOTIFICATION */}
 
             <div className="flex items-center gap-3">
 
@@ -539,29 +1022,60 @@ function MentorDashboard() {
 
               </div>
 
-              {/* Notification */}
+              {/* NOTIFICATION */}
 
-              <button
-                onClick={() =>
-                  navigate(
-                    "/mentor/notifications"
-                  )
-                }
-                className="relative p-3.5 rounded-2xl bg-white/10 border border-white/10 backdrop-blur-md hover:bg-white/20 transition"
+              <div
+                ref={notificationRef}
+                className="relative"
               >
-                <Bell
-                  size={20}
-                  className="text-white"
-                />
+                <button
+                  onClick={() =>
+                    setNotificationOpen(
+                      (previous) =>
+                        !previous
+                    )
+                  }
+                  className="relative p-3.5 rounded-2xl bg-white/10 border border-white/10 backdrop-blur-md hover:bg-white/20 transition"
+                >
+                  <Bell
+                    size={20}
+                    className="text-white"
+                  />
 
-                {pendingSubmissions > 0 && (
-                  <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-[#12676B]">
-                    {pendingSubmissions > 9
-                      ? "9+"
-                      : pendingSubmissions}
-                  </span>
+                  {unreadNotifications >
+                    0 && (
+                    <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-[#12676B]">
+                      {unreadNotifications >
+                      9
+                        ? "9+"
+                        : unreadNotifications}
+                    </span>
+                  )}
+                </button>
+
+                {notificationOpen && (
+                  <NotificationDropdown
+                    notifications={
+                      notifications
+                    }
+                    onClose={() =>
+                      setNotificationOpen(
+                        false
+                      )
+                    }
+                    onRead={
+                      markAnnouncementAsRead
+                    }
+                    onRefresh={
+                      fetchNotifications
+                    }
+                    loading={
+                      notificationsLoading
+                    }
+                    navigate={navigate}
+                  />
                 )}
-              </button>
+              </div>
 
             </div>
 
@@ -623,8 +1137,6 @@ function MentorDashboard() {
         ================================================= */}
 
         <section className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-7">
-
-          {/* Attendance Score */}
 
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
 
@@ -697,8 +1209,6 @@ function MentorDashboard() {
             </div>
           </div>
 
-          {/* Attendance Chart */}
-
           <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
 
             <AttendanceChart
@@ -715,8 +1225,6 @@ function MentorDashboard() {
 
         <section className="grid grid-cols-1 xl:grid-cols-3 gap-5 mb-7">
 
-          {/* Students At Risk */}
-
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
 
             <StudentsAtRisk
@@ -724,8 +1232,6 @@ function MentorDashboard() {
             />
 
           </div>
-
-          {/* Recent Assignments */}
 
           <div className="xl:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
 
@@ -739,12 +1245,9 @@ function MentorDashboard() {
 
         {/* =================================================
             QUICK ACTIONS + TODAY'S FOCUS
-            DO NOT REMOVE / REDESIGN
         ================================================= */}
 
         <section className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-
-          {/* QUICK ACTIONS */}
 
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
 
@@ -765,8 +1268,6 @@ function MentorDashboard() {
             />
 
           </div>
-
-          {/* TODAY'S FOCUS */}
 
           <div className="lg:col-span-2 relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#0F5257] to-[#16858A] p-7 shadow-lg text-white">
 
@@ -791,8 +1292,6 @@ function MentorDashboard() {
               <p className="text-sm text-white/70 mt-2 max-w-xl">
                 Review submissions, monitor attendance, and support students who need additional help.
               </p>
-
-              {/* BUTTONS */}
 
               <div className="flex flex-wrap gap-3 mt-6">
 
@@ -821,8 +1320,6 @@ function MentorDashboard() {
 
               </div>
 
-              {/* STATUS */}
-
               <div className="flex flex-wrap gap-6 mt-7 pt-5 border-t border-white/10">
 
                 <div className="flex items-center gap-2">
@@ -838,7 +1335,8 @@ function MentorDashboard() {
 
                 </div>
 
-                {pendingSubmissions > 0 && (
+                {pendingSubmissions >
+                  0 && (
                   <div className="flex items-center gap-2">
 
                     <AlertTriangle
@@ -854,7 +1352,8 @@ function MentorDashboard() {
                   </div>
                 )}
 
-                {studentsAtRisk.length > 0 && (
+                {studentsAtRisk.length >
+                  0 && (
                   <div className="flex items-center gap-2">
 
                     <AlertTriangle
@@ -863,9 +1362,12 @@ function MentorDashboard() {
                     />
 
                     <span className="text-xs text-white/70">
-                      {studentsAtRisk.length}{" "}
+                      {
+                        studentsAtRisk.length
+                      }{" "}
                       student
-                      {studentsAtRisk.length !== 1
+                      {studentsAtRisk.length !==
+                      1
                         ? "s"
                         : ""}{" "}
                       need attention

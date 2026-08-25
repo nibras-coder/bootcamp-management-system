@@ -1,8 +1,8 @@
 const User = require("../models/User");
 const Batch = require("../models/Batch");
-const Attendance = require("../models/Attendance");
-const Assignment = require("../models/Assignment");
-const Submission = require("../models/Submission");
+const Attendance = require("../models/attendance");
+const Assignment = require("../models/assignment");
+const Submission = require("../models/submission");
 
 const getMentorDashboard = async (req, res) => {
   try {
@@ -433,8 +433,31 @@ const getMentorStudents = async (
     });
   }
 };
+const getMentorBatches = async (req, res) => {
+  try {
+    const mentorId = req.user.id;
+
+    const batches = await Batch.find({
+      mentors: mentorId,
+    }).select("_id name track");
+
+    res.status(200).json({
+      success: true,
+      count: batches.length,
+      data: batches,
+    });
+  } catch (error) {
+    console.error("Get mentor batches error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to get mentor batches",
+    });
+  }
+};
 
 module.exports = {
   getMentorDashboard,
   getMentorStudents,
+  getMentorBatches,
 };

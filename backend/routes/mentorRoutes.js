@@ -11,6 +11,7 @@ const authorize = require("../middleware/roleMiddleware");
 const {
   getMentorDashboard,
   getMentorStudents,
+  getMentorBatches,
 } = require("../controllers/mentorController");
 
 // Mentor Dashboard
@@ -27,6 +28,14 @@ router.get(
   protect,
   authorize("mentor"),
   getMentorStudents
+);
+
+// Mentor Batches
+router.get(
+  "/batches",
+  protect,
+  authorize("mentor"),
+  getMentorBatches
 );
 
 module.exports = router;

@@ -1,9 +1,10 @@
 const express = require("express");
 
+const router = express.Router();
+
 const {
   register,
   login,
-  changePassword,
   forgotPassword,
   resetPassword,
   getMe,
@@ -13,32 +14,39 @@ const {
   protect,
 } = require("../middleware/authMiddleware");
 
-const router = express.Router();
-
-
-// PUBLIC AUTH ROUTES
-
+// ======================================================
+// REGISTER
+// ======================================================
 
 router.post("/register", register);
 
+// ======================================================
+// LOGIN
+// ======================================================
+
 router.post("/login", login);
+
+// ======================================================
+// CURRENT LOGGED-IN USER
+// IMPORTANT: /me MUST COME BEFORE /:id
+// ======================================================
+
+router.get("/me", protect, getMe);
+
+// ======================================================
+// FORGOT PASSWORD
+// ======================================================
 
 router.post("/forgot-password", forgotPassword);
 
-router.post("/reset-password/:token", resetPassword);
+// ======================================================
+// RESET PASSWORD
+// ======================================================
 
+router.post("/reset-password", resetPassword);
 
-// PROTECTED AUTH ROUTES
-
-
-// Get currently logged-in user
-router.get("/me", protect, getMe);
-
-// Change password
-router.put(
-  "/change-password",
-  protect,
-  changePassword
-);
+// ======================================================
+// EXPORT ROUTER
+// ======================================================
 
 module.exports = router;

@@ -9,6 +9,8 @@ import {
   ShieldCheck,
   Loader2,
   CheckCircle2,
+  RefreshCw,
+  Users,
 } from "lucide-react";
 
 function Profile() {
@@ -19,9 +21,45 @@ function Profile() {
 
   const fileInputRef = useRef(null);
 
+  // =====================================================
+  // BACKEND URL
+  // =====================================================
+
+  const BACKEND_URL = "http://localhost:5000";
+
+  // =====================================================
+  // BUILD PROFILE IMAGE URL
+  // =====================================================
+
+  const getAvatarUrl = (avatarUrl) => {
+    if (!avatarUrl) {
+      return null;
+    }
+
+    // Local preview URL
+    if (avatarUrl.startsWith("blob:")) {
+      return avatarUrl;
+    }
+
+    // Already a complete URL
+    if (
+      avatarUrl.startsWith("http://") ||
+      avatarUrl.startsWith("https://")
+    ) {
+      return avatarUrl;
+    }
+
+    // Backend returns /uploads/...
+    return `${BACKEND_URL}${avatarUrl}`;
+  };
+
   useEffect(() => {
     fetchProfile();
   }, []);
+
+  // =====================================================
+  // GET PROFILE
+  // =====================================================
 
   const fetchProfile = async () => {
     try {
@@ -29,28 +67,52 @@ function Profile() {
 
       const response = await api.get("/auth/me");
 
-      setUser(response.data.user);
+      console.log("PROFILE RESPONSE:", response.data);
+
+      const profileUser =
+        response.data?.user ||
+        response.data?.data?.user ||
+        response.data?.data ||
+        response.data;
+
+      if (!profileUser || !profileUser.name) {
+        throw new Error(
+          "User information was not returned by the server."
+        );
+      }
+
+      setUser(profileUser);
     } catch (error) {
       console.error("Profile loading error:", error);
+      console.error(
+        "Profile error response:",
+        error.response?.data
+      );
 
       setToast({
         type: "error",
         message:
           error.response?.data?.message ||
+          error.message ||
           "Unable to load your profile.",
       });
+
+      setUser(null);
     } finally {
       setLoading(false);
     }
   };
 
+  // =====================================================
+  // PROFILE PHOTO
+  // =====================================================
+
   const handlePhotoSelect = async (event) => {
     const file = event.target.files?.[0];
 
-    if (!file) {
-      return;
-    }
+    if (!file) return;
 
+    // Validate file type
     if (!file.type.startsWith("image/")) {
       setToast({
         type: "error",
@@ -60,6 +122,7 @@ function Profile() {
       return;
     }
 
+    // Validate file size
     if (file.size > 5 * 1024 * 1024) {
       setToast({
         type: "error",
@@ -69,6 +132,7 @@ function Profile() {
       return;
     }
 
+    // Create temporary preview
     const previewUrl = URL.createObjectURL(file);
 
     setUser((previousUser) => ({
@@ -88,8 +152,14 @@ function Profile() {
         formData
       );
 
+      console.log(
+        "PHOTO UPLOAD RESPONSE:",
+        response.data
+      );
+
       const newAvatarUrl =
-        response.data?.data?.avatarUrl;
+        response.data?.data?.avatarUrl ||
+        response.data?.avatarUrl;
 
       if (newAvatarUrl) {
         setUser((previousUser) => ({
@@ -128,6 +198,10 @@ function Profile() {
     }
   };
 
+  // =====================================================
+  // INITIALS
+  // =====================================================
+
   const getInitials = () => {
     if (!user?.name) {
       return "M";
@@ -135,11 +209,16 @@ function Profile() {
 
     return user.name
       .split(" ")
+      .filter(Boolean)
       .map((word) => word[0])
       .join("")
       .slice(0, 2)
       .toUpperCase();
   };
+
+  // =====================================================
+  // LOADING
+  // =====================================================
 
   if (loading) {
     return (
@@ -162,14 +241,25 @@ function Profile() {
     );
   }
 
+  // =====================================================
+  // ERROR
+  // =====================================================
+
   if (!user) {
     return (
       <div className="flex min-h-screen bg-slate-50">
         <Sidebar />
 
         <main className="flex-1 flex items-center justify-center p-6">
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center max-w-md">
-            <h2 className="text-lg font-semibold text-gray-900">
+          <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-8 text-center max-w-md">
+            <div className="w-16 h-16 rounded-2xl bg-red-50 flex items-center justify-center mx-auto">
+              <User
+                size={28}
+                className="text-red-500"
+              />
+            </div>
+
+            <h2 className="text-lg font-semibold text-gray-900 mt-5">
               Unable to load profile
             </h2>
 
@@ -179,8 +269,9 @@ function Profile() {
 
             <button
               onClick={fetchProfile}
-              className="mt-5 px-5 py-2.5 rounded-xl bg-teal-700 text-white text-sm font-medium hover:bg-teal-800 transition"
+              className="mt-5 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-teal-700 text-white text-sm font-medium hover:bg-teal-800 transition"
             >
+              <RefreshCw size={16} />
               Try Again
             </button>
           </div>
@@ -194,6 +285,10 @@ function Profile() {
     );
   }
 
+  // =====================================================
+  // PROFILE PAGE
+  // =====================================================
+
   return (
     <div className="flex min-h-screen bg-slate-50">
       <Sidebar />
@@ -201,6 +296,7 @@ function Profile() {
       <main className="flex-1 p-6 md:p-8 lg:p-10">
         <div className="max-w-5xl mx-auto">
 
+          {/* HEADER */}
           <div className="mb-8">
             <p className="text-sm font-medium text-teal-700 mb-1">
               Account
@@ -218,6 +314,7 @@ function Profile() {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
+            {/* PROFILE CARD */}
             <div className="lg:col-span-1">
               <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
 
@@ -225,23 +322,45 @@ function Profile() {
 
                 <div className="px-6 pb-7">
 
+                  {/* AVATAR */}
                   <div className="relative -mt-14 mb-5">
                     <div className="relative w-28 h-28">
 
                       <div className="w-28 h-28 rounded-full border-4 border-white shadow-lg overflow-hidden bg-teal-100 flex items-center justify-center">
+
                         {user.avatarUrl ? (
                           <img
-                            src={user.avatarUrl}
+                            src={getAvatarUrl(
+                              user.avatarUrl
+                            )}
                             alt={user.name}
                             className="w-full h-full object-cover"
+                            onError={(event) => {
+                              console.error(
+                                "Avatar failed to load:",
+                                getAvatarUrl(
+                                  user.avatarUrl
+                                )
+                              );
+
+                              event.currentTarget.style.display =
+                                "none";
+                            }}
                           />
                         ) : (
                           <span className="text-3xl font-bold text-teal-700">
                             {getInitials()}
                           </span>
                         )}
+
+                        {!user.avatarUrl && (
+                          <span className="absolute inset-0 flex items-center justify-center text-3xl font-bold text-teal-700">
+                            {getInitials()}
+                          </span>
+                        )}
                       </div>
 
+                      {/* CAMERA */}
                       <button
                         type="button"
                         onClick={() =>
@@ -271,14 +390,17 @@ function Profile() {
                     </div>
                   </div>
 
+                  {/* NAME */}
                   <h2 className="text-xl font-bold text-gray-900">
                     {user.name}
                   </h2>
 
-                  <p className="text-sm text-gray-500 mt-1">
-                    Mentor
+                  {/* ROLE */}
+                  <p className="text-sm text-gray-500 mt-1 capitalize">
+                    {user.role || "Mentor"}
                   </p>
 
+                  {/* ACTIVE */}
                   <div className="flex items-center gap-2 mt-5 px-3 py-2.5 rounded-xl bg-emerald-50 text-emerald-700">
                     <CheckCircle2 size={16} />
 
@@ -287,6 +409,7 @@ function Profile() {
                     </span>
                   </div>
 
+                  {/* PHOTO INFO */}
                   <div className="mt-5 p-4 rounded-2xl bg-gray-50 border border-gray-100">
                     <div className="flex items-start gap-3">
                       <Camera
@@ -300,19 +423,20 @@ function Profile() {
                         </p>
 
                         <p className="text-xs text-gray-500 mt-1 leading-5">
-                          JPG, PNG or WebP. Maximum
-                          size is 5 MB.
+                          JPG, PNG or WebP.
+                          Maximum size is 5 MB.
                         </p>
                       </div>
                     </div>
                   </div>
-
                 </div>
               </div>
             </div>
 
+            {/* INFORMATION */}
             <div className="lg:col-span-2 space-y-6">
 
+              {/* PERSONAL INFORMATION */}
               <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 md:p-7">
 
                 <div className="flex items-center gap-3 mb-6">
@@ -337,6 +461,7 @@ function Profile() {
 
                 <div className="space-y-5">
 
+                  {/* NAME */}
                   <div>
                     <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
                       Full Name
@@ -354,6 +479,7 @@ function Profile() {
                     </div>
                   </div>
 
+                  {/* EMAIL */}
                   <div>
                     <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
                       Email Address
@@ -371,6 +497,7 @@ function Profile() {
                     </div>
                   </div>
 
+                  {/* ROLE */}
                   <div>
                     <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
                       Account Role
@@ -383,15 +510,74 @@ function Profile() {
                       />
 
                       <span className="text-sm font-medium text-gray-800 capitalize">
-                        {user.role}
+                        {user.role || "mentor"}
                       </span>
                     </div>
                   </div>
 
+                  {/* BATCH */}
+                  {user.batch && (
+                    <div>
+                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                        Assigned Batch
+                      </label>
+
+                      <div className="mt-2 flex items-center gap-3 px-4 py-3.5 rounded-xl border border-gray-200 bg-gray-50">
+                        <Users
+                          size={17}
+                          className="text-gray-400"
+                        />
+
+                        <span className="text-sm font-medium text-gray-800">
+                          {user.batch.name ||
+                            user.batch}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
                 </div>
               </div>
 
-            
+              {/* ACCOUNT STATUS */}
+              <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 md:p-7">
+
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
+                    <ShieldCheck
+                      size={19}
+                      className="text-emerald-600"
+                    />
+                  </div>
+
+                  <div>
+                    <h2 className="font-bold text-gray-900">
+                      Account Status
+                    </h2>
+
+                    <p className="text-xs text-gray-500 mt-1">
+                      Your account is currently active.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-5 flex items-center justify-between p-4 rounded-2xl bg-emerald-50 border border-emerald-100">
+                  <div>
+                    <p className="text-sm font-semibold text-emerald-800">
+                      Active Account
+                    </p>
+
+                    <p className="text-xs text-emerald-600 mt-1">
+                      You can access the mentor dashboard.
+                    </p>
+                  </div>
+
+                  <CheckCircle2
+                    size={24}
+                    className="text-emerald-600"
+                  />
+                </div>
+              </div>
 
             </div>
           </div>

@@ -1,7 +1,9 @@
 const Batch = require("../models/Batch");
 const User = require("../models/User");
 
-// Create batch
+// ======================================================
+// CREATE BATCH
+// ======================================================
 
 const createBatch = async (req, res) => {
   try {
@@ -10,6 +12,7 @@ const createBatch = async (req, res) => {
       track,
       startDate,
       endDate,
+      instructor,
       mentors,
     } = req.body;
 
@@ -40,17 +43,34 @@ const createBatch = async (req, res) => {
       track,
       startDate,
       endDate,
+      instructor,
       mentors: mentors || [],
     });
 
-    const populatedBatch = await Batch.findById(
-      batch._id
-    ).populate("mentors", "name email role");
+    const populatedBatch = await Batch.findById(batch._id).populate(
+      "mentors",
+      "name email role"
+    );
+
+    const mongoose = require("mongoose");
+
+    let batchObj = populatedBatch.toObject();
+
+    if (
+      batchObj.instructor &&
+      mongoose.Types.ObjectId.isValid(batchObj.instructor)
+    ) {
+      const user = await User.findById(batchObj.instructor).select("name");
+
+      if (user) {
+        batchObj.instructor = user;
+      }
+    }
 
     res.status(201).json({
       success: true,
       message: "Batch created successfully",
-      data: populatedBatch,
+      data: batchObj,
     });
   } catch (error) {
     console.error("Create batch error:", error);
@@ -58,7 +78,7 @@ const createBatch = async (req, res) => {
     if (error.code === 11000) {
       return res.status(400).json({
         success: false,
-        message: "Batch name already exists",
+        message: "Track name already exists",
       });
     }
 
@@ -70,46 +90,104 @@ const createBatch = async (req, res) => {
   }
 };
 
+// ======================================================
+// GET ALL BATCHES
+// ======================================================
 
-// Get all batches
 const getBatches = async (req, res) => {
   try {
     const batches = await Batch.find()
       .populate("mentors", "name email role")
       .sort({ createdAt: -1 });
 
+    const mongoose = require("mongoose");
+
+    const populatedBatches = await Promise.all(
+      batches.map(async (batch) => {
+        let batchObj = batch.toObject();
+
+        // Manually populate instructor if it is an ObjectId
+        if (
+          batchObj.instructor &&
+          mongoose.Types.ObjectId.isValid(batchObj.instructor)
+        ) {
+          const user = await User.findById(batchObj.instructor).select(
+            "name"
+          );
+
+          if (user) {
+            batchObj.instructor = user;
+          }
+        }
+
+        return batchObj;
+      })
+    );
+
     res.status(200).json({
       success: true,
-      count: batches.length,
-      data: batches,
+      count: populatedBatches.length,
+      data: populatedBatches,
     });
   } catch (error) {
     console.error("Get batches error:", error);
 
     res.status(500).json({
       success: false,
-      message: "Failed to get batches",
+      message: "Failed to get Tracks",
       error: error.message,
     });
   }
 };
 
+// ======================================================
+// GET MENTOR'S BATCHES
+// ======================================================
 
-// Get batches assigned to logged-in mentor
 const getMentorBatches = async (req, res) => {
   try {
-    const mentorId = req.user.id;
+    // Make sure the logged-in user is a mentor
+    if (!req.user || req.user.role !== "mentor") {
+      return res.status(403).json({
+        success: false,
+        message: "Only mentors can access mentor batches",
+      });
+    }
 
     const batches = await Batch.find({
-      mentors: mentorId,
+      mentors: req.user._id,
     })
-      .select("_id name track startDate endDate isActive mentors students")
+      .populate("mentors", "name email role")
       .sort({ createdAt: -1 });
+
+    const mongoose = require("mongoose");
+
+    const populatedBatches = await Promise.all(
+      batches.map(async (batch) => {
+        let batchObj = batch.toObject();
+
+        // Manually populate instructor if it is an ObjectId
+        if (
+          batchObj.instructor &&
+          mongoose.Types.ObjectId.isValid(batchObj.instructor)
+        ) {
+          const user = await User.findById(batchObj.instructor).select(
+            "name"
+          );
+
+          if (user) {
+            batchObj.instructor = user;
+          }
+        }
+
+        return batchObj;
+      })
+    );
 
     res.status(200).json({
       success: true,
-      count: batches.length,
-      data: batches,
+      count: populatedBatches.length,
+      data: populatedBatches,
     });
   } catch (error) {
     console.error("Get mentor batches error:", error);
@@ -122,13 +200,16 @@ const getMentorBatches = async (req, res) => {
   }
 };
 
-// Get one batch
+// ======================================================
+// GET ONE BATCH
+// ======================================================
 
 const getBatchById = async (req, res) => {
   try {
-    const batch = await Batch.findById(
-      req.params.id
-    ).populate("mentors", "name email role");
+    const batch = await Batch.findById(req.params.id).populate(
+      "mentors",
+      "name email role"
+    );
 
     if (!batch) {
       return res.status(404).json({
@@ -152,8 +233,10 @@ const getBatchById = async (req, res) => {
   }
 };
 
+// ======================================================
+// ASSIGN MENTORS TO BATCH
+// ======================================================
 
-// Assign mentors to batch
 const assignMentors = async (req, res) => {
   try {
     const { mentors } = req.body;
@@ -211,13 +294,13 @@ const assignMentors = async (req, res) => {
   }
 };
 
+// ======================================================
+// GET BATCH STUDENTS
+// ======================================================
 
-// Get students in batch
 const getBatchStudents = async (req, res) => {
   try {
-    const batch = await Batch.findById(
-      req.params.id
-    );
+    const batch = await Batch.findById(req.params.id);
 
     if (!batch) {
       return res.status(404).json({
@@ -249,8 +332,40 @@ const getBatchStudents = async (req, res) => {
   }
 };
 
+// ======================================================
+// DELETE BATCH
+// ======================================================
 
-// Export controller
+const deleteBatch = async (req, res) => {
+  try {
+    const batch = await Batch.findByIdAndDelete(req.params.id);
+
+    if (!batch) {
+      return res.status(404).json({
+        success: false,
+        message: "Batch not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Batch deleted successfully",
+    });
+  } catch (error) {
+    console.error("Delete batch error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete batch",
+      error: error.message,
+    });
+  }
+};
+
+// ======================================================
+// EXPORTS
+// ======================================================
+
 module.exports = {
   createBatch,
   getBatches,
@@ -258,4 +373,5 @@ module.exports = {
   getBatchById,
   assignMentors,
   getBatchStudents,
+  deleteBatch,
 };

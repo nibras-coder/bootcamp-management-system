@@ -9,17 +9,16 @@ const {
   deleteUser,
   getStudents,
   getMentorStudents,
+  warnStudent,
   uploadProfilePhoto,
 } = require("../controllers/userController");
 
-const {
-  protect,
-  authorize,
-} = require("../middleware/authMiddleware");
+const { protect, authorize } = require("../middleware/authMiddleware");
+const upload = require("../middleware/uploadMiddleware");
 
-const uploadProfilePhotoMiddleware = require(
-  "../middleware/uploadMiddleware"
-);
+// ======================================================
+// STUDENT ROUTES
+// ======================================================
 
 router.get(
   "/students",
@@ -28,6 +27,17 @@ router.get(
   getStudents
 );
 
+router.post(
+  "/students/:id/warn",
+  protect,
+  authorize("admin"),
+  warnStudent
+);
+
+// ======================================================
+// MENTOR ROUTES
+// ======================================================
+
 router.get(
   "/mentor/students",
   protect,
@@ -35,13 +45,20 @@ router.get(
   getMentorStudents
 );
 
+// ======================================================
+// PROFILE PHOTO
+// ======================================================
+
 router.post(
   "/profile/photo",
   protect,
-  authorize("mentor"),
-  uploadProfilePhotoMiddleware.single("photo"),
+  upload.single("photo"),
   uploadProfilePhoto
 );
+
+// ======================================================
+// USER ROUTES
+// ======================================================
 
 router
   .route("/")
@@ -55,6 +72,10 @@ router
     authorize("admin"),
     createUser
   );
+
+// ======================================================
+// USER BY ID
+// ======================================================
 
 router
   .route("/:id")
