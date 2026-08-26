@@ -9,8 +9,10 @@ import {
   User as UserIcon,
 } from "lucide-react";
 import API from "../../api/axios";
+import { useToast } from "../../context/ToastContext";
 
 const BatchesPage = () => {
+  const { toast, confirm } = useToast();
   const [batches, setBatches] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -68,6 +70,7 @@ const BatchesPage = () => {
       if (response.data.success) {
         setBatches([...batches, response.data.data]);
         setIsModalOpen(false);
+        toast.success("Track / Batch created successfully");
         setNewBatch({
           name: "",
           status: "Upcoming",
@@ -79,16 +82,25 @@ const BatchesPage = () => {
       }
     } catch (error) {
       console.error("Failed to add batch:", error);
+      toast.error(error.response?.data?.message || "Failed to create batch");
     }
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this batch?")) {
+    const ok = await confirm({
+      title: "Delete Track / Batch",
+      message: "Are you sure you want to delete this track batch? This action cannot be undone.",
+      confirmText: "Yes, Delete",
+      type: "danger",
+    });
+    if (ok) {
       try {
         await API.delete(`/batches/${id}`);
         setBatches(batches.filter((b) => b._id !== id));
+        toast.success("Track batch deleted successfully");
       } catch (error) {
         console.error("Failed to delete batch:", error);
+        toast.error(error.response?.data?.message || "Failed to delete batch");
       }
     }
   };

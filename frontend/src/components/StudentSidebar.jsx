@@ -82,14 +82,7 @@ export default function StudentSidebar({ sidebarOpen, setSidebarOpen, name, hand
         </nav>
       </div>
       <div className="p-4 border-t border-teal-800 bg-teal-950/30">
-        <button
-          onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-3 py-2.5 text-red-500 text-sm font-medium transition-colors mb-4 hover:bg-teal-900/50 rounded-lg"
-        >
-          <FiLogOut size={18} />
-          Logout
-        </button>
-        <div className="flex items-center gap-3 px-2">
+        <div className="flex items-center gap-3 px-2 mb-3">
           <div className="bg-teal-800 p-2 rounded-full">
             <FiUser size={24} className="text-teal-200" />
           </div>
@@ -98,11 +91,17 @@ export default function StudentSidebar({ sidebarOpen, setSidebarOpen, name, hand
               {name || "Student"}
             </p>
             <p className="text-xs text-teal-300 capitalize">
-              {/* Ensure it exactly matches the database case or defaults securely */}
-              {name !== "Student" ? "Student" : "Student"} 
+              Student
             </p>
           </div>
         </div>
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center gap-3 px-3 py-2 text-red-400 hover:text-red-300 text-sm font-medium transition-colors hover:bg-red-500/10 rounded-lg"
+        >
+          <FiLogOut size={17} />
+          Logout
+        </button>
       </div>
     </aside>
   );

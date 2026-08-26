@@ -30,6 +30,7 @@ import Progress from "./pages/Progress";
 import Assignments from "./pages/Assignments";
 import Grading from "./pages/Grading";
 import Announcements from "./pages/Announcements";
+import Resources from "./pages/Resources";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import BatchesPage from "./pages/admin/BatchesPage";
@@ -304,7 +305,7 @@ function SocialIcon({ type }) {
 
 function Footer() {
   const socials = [
-    ["telegram", "Telegram", "https://t.me/astumsj"],
+    ["telegram", "Telegram", "https://t.me/ASTUMSJ_GROUP"],
     ["instagram", "Instagram", "https://instagram.com/astumsj"],
     ["facebook", "Facebook", "https://facebook.com/astumsj"],
     ["youtube", "YouTube", "https://youtube.com/@astumsj"],
@@ -363,7 +364,7 @@ function Footer() {
           <h4>Contact</h4>
           <p>hello@astumsj.org</p>
           <p>ASTU, Adama, Ethiopia</p>
-          <p>Telegram: @astumsj</p>
+          <p>Telegram: @ASTUMSJ_GROUP</p>
         </div>
       </div>
       <div className="container footer-bottom">
@@ -730,14 +731,14 @@ function ContactPage() {
             <h2>Reach us directly</h2>
             <p>hello@astumsj.org</p>
             <p>ASTU Main Campus, Adama, Ethiopia</p>
-            <p>Telegram: @astumsj</p>
+            <p>Telegram: @ASTUMSJ_GROUP</p>
           </div>
           <div className="soft-card">
             <h2>Follow us</h2>
             <div className="socials contact-socials">
               <a
                 className="w-11 h-11 p-0 border border-[#cddedb] dark:border-gray-700 rounded-full grid place-items-center bg-white dark:bg-gray-800 shadow-[0_8px_22px_-16px_rgba(19,64,66,0.5)] transition duration-200 hover:-translate-y-[3px] hover:scale-[1.04] hover:bg-[#f7fbfa] dark:hover:bg-gray-700 text-[#229ed9]"
-                href="https://t.me/astumsj"
+                href="https://t.me/ASTUMSJ_GROUP"
                 target="_blank"
                 rel="noreferrer"
                 aria-label="Telegram"
@@ -852,6 +853,7 @@ function App() {
           <Route path="/assignments" element={<Assignments />} />
           <Route path="/grading" element={<Grading />} />
           <Route path="/announcements" element={<Announcements />} />
+          <Route path="/resources" element={<Resources />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/settings" element={<Settings />} />
         </Route>

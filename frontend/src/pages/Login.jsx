@@ -38,16 +38,6 @@ function Login() {
 
   return (
     <main className="min-h-screen flex flex-col md:flex-row bg-white dark:bg-gray-900">
-      
-      {/* Mobile Image (Top) */}
-      <div className="block md:hidden w-full h-48 sm:h-64 relative">
-        <img
-          src={calligraphy}
-          alt="Login Background Mobile"
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-teal-900/20 mix-blend-multiply" />
-      </div>
 
       {/* Image Half (Left) */}
       <div className="hidden md:block w-full md:w-1/2 relative">

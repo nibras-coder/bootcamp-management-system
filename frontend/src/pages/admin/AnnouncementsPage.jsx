@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Megaphone, Plus, Calendar, Trash2, X, Edit } from "lucide-react";
 import API from "../../api/axios";
+import { useToast } from "../../context/ToastContext";
 
 const AnnouncementsPage = () => {
+  const { toast, confirm } = useToast();
   const [announcements, setAnnouncements] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -47,7 +49,7 @@ const AnnouncementsPage = () => {
     e.preventDefault();
     try {
       if (!selectedBatch) {
-        alert("Please select a batch or 'All Tracks'");
+        toast.warning("Please select a batch or 'All Tracks'");
         return;
       }
 
@@ -60,11 +62,13 @@ const AnnouncementsPage = () => {
       if (response.data.success) {
         setAnnouncements([response.data.data, ...announcements]);
         setIsModalOpen(false);
+        toast.success("Announcement published successfully");
         setNewAnnouncement({ title: "", content: "", targetAudience: "all" });
         setSelectedBatch("");
       }
     } catch (error) {
       console.error("Failed to create announcement:", error);
+      toast.error(error.response?.data?.message || "Failed to create announcement");
     }
   };
 
@@ -83,18 +87,28 @@ const AnnouncementsPage = () => {
         );
         setIsEditModalOpen(false);
         setEditingAnnouncement(null);
+        toast.success("Announcement updated successfully");
       }
     } catch (error) {
       console.error("Failed to update announcement:", error);
+      toast.error(error.response?.data?.message || "Failed to update announcement");
     }
   };
   const handleDelete = async (id) => {
-    if (window.confirm("Delete this announcement?")) {
+    const ok = await confirm({
+      title: "Delete Announcement",
+      message: "Are you sure you want to delete this announcement?",
+      confirmText: "Yes, Delete",
+      type: "danger",
+    });
+    if (ok) {
       try {
         await API.delete(`/announcements/${id}`);
         setAnnouncements(announcements.filter((a) => a._id !== id));
+        toast.success("Announcement deleted successfully");
       } catch (error) {
         console.error("Failed to delete announcement:", error);
+        toast.error(error.response?.data?.message || "Failed to delete announcement");
       }
     }
   };

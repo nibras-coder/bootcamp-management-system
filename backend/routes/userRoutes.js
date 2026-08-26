@@ -9,13 +9,15 @@ const {
   deleteUser,
   getStudents,  
   getMentorStudents,
-  warnStudent
+  warnStudent,
+  assignStudentToMentor,
 } = require("../controllers/userController");
 
 const { protect, authorize } = require("../middleware/authMiddleware");
 
 router.get("/students", protect, authorize("admin"), getStudents);
 router.post("/students/:id/warn", protect, authorize("admin"), warnStudent);
+router.post("/students/:studentId/assign-mentor", protect, authorize("admin"), assignStudentToMentor);
 
 router.get("/mentor/students", protect, authorize("mentor"), getMentorStudents);
 

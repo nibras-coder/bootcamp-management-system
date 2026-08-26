@@ -25,13 +25,17 @@ const createAnnouncement = async (req, res) => {
     }
 
     if (!batch && req.user.role !== 'admin') {
-      return res.status(400).json({
-        success: false,
-        message: "Batch is required for mentors",
-      });
+      // Allow mentors with direct students to create batch-less announcements
+      const hasDirectStudents = await User.exists({ role: "student", mentor: req.user.id });
+      if (!hasDirectStudents) {
+        return res.status(400).json({
+          success: false,
+          message: "Batch is required for mentors without direct students",
+        });
+      }
     }
 
-    // Check mentor is assigned to batch
+    // Check mentor is assigned to batch (or has direct students)
     if (req.user.role !== 'admin' && batch) {
       const mentorBatch = await Batch.findOne({
         _id: batch,
@@ -39,11 +43,13 @@ const createAnnouncement = async (req, res) => {
       });
 
       if (!mentorBatch) {
-        return res.status(403).json({
-          success: false,
-          message:
-            "You are not assigned to this batch",
-        });
+        const hasDirectStudents = await User.exists({ role: "student", mentor: req.user.id });
+        if (!hasDirectStudents) {
+          return res.status(403).json({
+            success: false,
+            message: "You are not assigned to this batch",
+          });
+        }
       }
     }
 
@@ -86,34 +92,23 @@ const createAnnouncement = async (req, res) => {
     });
   }
 };
-// Get mentor announcement
-
-const getMentorAnnouncements = async (
-  req,
-  res
-) => {
+// Get mentor announcements (batch-based + authored by mentor)
+const getMentorAnnouncements = async (req, res) => {
   try {
     const mentorId = req.user.id;
 
-    const batches = await Batch.find({
-      mentors: mentorId,
-    }).select("_id");
+    const batches = await Batch.find({ mentors: mentorId }).select("_id");
+    const batchIds = batches.map((b) => b._id);
 
-    const batchIds = batches.map(
-      (batch) => batch._id
-    );
-
-    const announcements =
-      await Announcement.find({
-        batch: {
-          $in: batchIds,
-        },
-      })
-        .populate("batch", "name track")
-        .populate("author", "name email")
-        .sort({
-          publishDate: -1,
-        });
+    const announcements = await Announcement.find({
+      $or: [
+        { batch: { $in: batchIds } },
+        { author: mentorId },
+      ],
+    })
+      .populate("batch", "name track")
+      .populate("author", "name email")
+      .sort({ publishDate: -1 });
 
     res.status(200).json({
       success: true,
@@ -121,15 +116,10 @@ const getMentorAnnouncements = async (
       data: announcements,
     });
   } catch (error) {
-    console.error(
-      "Get announcements error:",
-      error
-    );
-
+    console.error("Get announcements error:", error);
     res.status(500).json({
       success: false,
-      message:
-        "Failed to get announcements",
+      message: "Failed to get announcements",
       error: error.message,
     });
   }
@@ -213,20 +203,11 @@ const getAnnouncementById = async (
   }
 };
 
-const getMyAnnouncements = async (
-  req,
-  res
-) => {
+const getMyAnnouncements = async (req, res) => {
   try {
-    // Get logged-in student's ID
     const studentId = req.user.id;
 
-    // Find logged-in student
-
-    const student = await User.findOne({
-      _id: studentId,
-      role: "student",
-    }).populate("batch", "name track");
+    const student = await User.findById(studentId).populate("batch", "name track");
 
     if (!student) {
       return res.status(404).json({
@@ -234,58 +215,39 @@ const getMyAnnouncements = async (
         message: "Student not found",
       });
     }
-    // Student must have a batch
 
-    if (!student.batch) {
-      return res.status(404).json({
-        success: false,
-        message:
-          "Student is not assigned to a batch",
+    const orConditions = [];
+    if (student.batch) orConditions.push({ batch: student.batch._id });
+    if (student.mentor) orConditions.push({ author: student.mentor }); // announcements from their assigned mentor
+    orConditions.push({ batch: null });
+    orConditions.push({ targetAudience: { $in: ["students", "all"] } });
+
+    const filter = { $or: orConditions };
+
+    const announcements = await Announcement.find(filter)
+      .populate("batch", "name track")
+      .populate("author", "name email")
+      .sort({
+        publishDate: -1,
+        createdAt: -1,
       });
-    }
-    // Find announcements for student's batch
-  
-    const announcements =
-      await Announcement.find({
-        batch: student.batch._id,
-        targetAudience: {
-          $in: ["students", "all"],
-        },
-        publishDate: {
-          $lte: new Date(),
-        },
-      })
-        .populate("batch", "name track")
-        .populate("author", "name email")
-        .sort({
-          publishDate: -1,
-        });
 
     res.status(200).json({
       success: true,
       count: announcements.length,
-
-      data: {
-        student: {
-          id: student._id,
-          name: student.name,
-          email: student.email,
-          batch: student.batch,
-        },
-
-        announcements,
+      data: announcements,
+      student: {
+        id: student._id,
+        name: student.name,
+        email: student.email,
+        batch: student.batch,
       },
     });
   } catch (error) {
-    console.error(
-      "Get my announcements error:",
-      error
-    );
-
+    console.error("Get my announcements error:", error);
     res.status(500).json({
       success: false,
-      message:
-        "Failed to get your announcements",
+      message: "Failed to get your announcements",
       error: error.message,
     });
   }
@@ -311,18 +273,21 @@ const updateAnnouncement = async (
       });
     }
 
-    const mentorBatch =
-      await Batch.findOne({
-        _id: announcement.batch,
-        mentors: mentorId,
-      });
-
-    if (req.user.role !== "admin" && !mentorBatch) {
-      return res.status(403).json({
-        success: false,
-        message:
-          "You cannot update this announcement",
-      });
+    // Check mentor is the author or owns the batch
+    if (req.user.role !== "admin") {
+      const isAuthor = String(announcement.author) === String(mentorId);
+      if (!isAuthor) {
+        const mentorBatch = await Batch.findOne({
+          _id: announcement.batch,
+          mentors: mentorId,
+        });
+        if (!mentorBatch) {
+          return res.status(403).json({
+            success: false,
+            message: "You cannot update this announcement",
+          });
+        }
+      }
     }
 
     const {
@@ -398,18 +363,21 @@ const deleteAnnouncement = async (
       });
     }
 
-    const mentorBatch =
-      await Batch.findOne({
-        _id: announcement.batch,
-        mentors: mentorId,
-      });
-
-    if (!mentorBatch) {
-      return res.status(403).json({
-        success: false,
-        message:
-          "You cannot delete this announcement",
-      });
+    // Check mentor is author or owns batch
+    if (req.user.role !== "admin") {
+      const isAuthor = String(announcement.author) === String(mentorId);
+      if (!isAuthor) {
+        const mentorBatch = await Batch.findOne({
+          _id: announcement.batch,
+          mentors: mentorId,
+        });
+        if (!mentorBatch) {
+          return res.status(403).json({
+            success: false,
+            message: "You cannot delete this announcement",
+          });
+        }
+      }
     }
 
     await Announcement.findByIdAndDelete(id);
