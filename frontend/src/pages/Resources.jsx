@@ -17,6 +17,7 @@ import {
   X,
   Sparkles,
   UserCheck,
+  ShieldCheck,
   Menu,
 } from "lucide-react";
 

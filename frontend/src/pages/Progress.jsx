@@ -15,17 +15,22 @@ import {
 } from "lucide-react";
 
 const statusStyles = {
-  "Not Started": "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-700",
-  "In Progress": "bg-orange-50 dark:bg-orange-950/60 text-orange-600 dark:text-orange-400 font-semibold border border-orange-200 dark:border-orange-800",
-  "Completed": "bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 font-semibold border border-teal-200 dark:border-teal-800",
-  "Need Help": "bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 font-semibold border border-red-200 dark:border-red-800",
-  "Needs Improvement": "bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 font-semibold border border-red-200 dark:border-red-800",
+  "Not Started":
+    "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-700",
+  "In Progress":
+    "bg-orange-50 dark:bg-orange-950/60 text-orange-600 dark:text-orange-400 font-semibold border border-orange-200 dark:border-orange-800",
+  Completed:
+    "bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 font-semibold border border-teal-200 dark:border-teal-800",
+  "Need Help":
+    "bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 font-semibold border border-red-200 dark:border-red-800",
+  "Needs Improvement":
+    "bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 font-semibold border border-red-200 dark:border-red-800",
 };
 
 const statusIcons = {
   "Not Started": Clock,
   "In Progress": TrendingUp,
-  "Completed": CheckCircle,
+  Completed: CheckCircle,
   "Need Help": AlertTriangle,
   "Needs Improvement": AlertTriangle,
 };
@@ -119,13 +124,20 @@ function Progress() {
   };
 
   const totalCount = topicsList.length;
-  const completedCount = topicsList.filter((t) => t.status === "Completed").length;
-  const inProgressCount = topicsList.filter((t) => t.status === "In Progress").length;
-  const needHelpCount = topicsList.filter(
-    (t) => t.status === "Need Help" || t.status === "Needs Improvement"
+  const completedCount = topicsList.filter(
+    (t) => t.status === "Completed",
   ).length;
-  const notStartedCount = topicsList.filter((t) => !t.status || t.status === "Not Started").length;
-  const progressPct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+  const inProgressCount = topicsList.filter(
+    (t) => t.status === "In Progress",
+  ).length;
+  const needHelpCount = topicsList.filter(
+    (t) => t.status === "Need Help" || t.status === "Needs Improvement",
+  ).length;
+  const notStartedCount = topicsList.filter(
+    (t) => !t.status || t.status === "Not Started",
+  ).length;
+  const progressPct =
+    totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
   return (
     <div className="bg-gray-50 min-h-screen text-gray-900 dark:text-gray-100 dark:bg-gray-900">
@@ -149,11 +161,15 @@ function Progress() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1 flex items-center gap-2">
-              <TrendingUp className="text-teal-600 dark:text-teal-400" size={26} />
+              <TrendingUp
+                className="text-teal-600 dark:text-teal-400"
+                size={26}
+              />
               Student Progress & Feedback
             </h1>
             <p className="text-gray-500 dark:text-gray-400 text-sm">
-              Review self-reported learning progress from your students and provide coaching notes.
+              Review self-reported learning progress from your students and
+              provide coaching notes.
             </p>
           </div>
         </div>
@@ -161,31 +177,38 @@ function Progress() {
         {/* Student Selector Carousel/Pills */}
         {loading ? (
           <div className="py-12 text-center text-gray-400">
-            <Loader2 className="animate-spin mx-auto mb-2 text-teal-600" size={28} />
+            <Loader2
+              className="animate-spin mx-auto mb-2 text-teal-600"
+              size={28}
+            />
             <p className="text-sm">Loading students roster...</p>
           </div>
         ) : students.length > 0 ? (
           <div>
-            <div className="flex gap-2 overflow-x-auto pb-4 mb-4">
-              {students.map((student) => {
-                const isSelected = selectedStudent?._id === student._id;
-                return (
-                  <button
-                    key={student._id}
-                    onClick={() => setSelectedStudent(student)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
-                      isSelected
-                        ? "bg-teal-600 text-white shadow-sm"
-                        : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50"
-                    }`}
-                  >
-                    <div className="w-5 h-5 rounded-full bg-teal-100 text-teal-800 flex items-center justify-center text-[10px] font-bold">
-                      {(student.name || "S").charAt(0)}
-                    </div>
-                    <span>{student.name}</span>
-                  </button>
-                );
-              })}
+            <div className="mb-6 max-w-sm">
+              <label
+                htmlFor="studentSelect"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >
+                Select Student
+              </label>
+              <select
+                id="studentSelect"
+                value={selectedStudent?._id || ""}
+                onChange={(e) => {
+                  const student = students.find(
+                    (s) => s._id === e.target.value,
+                  );
+                  setSelectedStudent(student);
+                }}
+                className="block w-full rounded-xl border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm p-2.5 border"
+              >
+                {students.map((student) => (
+                  <option key={student._id} value={student._id}>
+                    {student.name}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {selectedStudent && (
@@ -193,9 +216,13 @@ function Progress() {
                 {/* Stats Summary for this student */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                   <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-                    <span className="text-xs text-gray-500 font-medium">Overall Mastery</span>
+                    <span className="text-xs text-gray-500 font-medium">
+                      Overall Mastery
+                    </span>
                     <div className="flex items-baseline justify-between mt-2">
-                      <strong className="text-2xl font-bold text-teal-600 dark:text-teal-400">{progressPct}%</strong>
+                      <strong className="text-2xl font-bold text-teal-600 dark:text-teal-400">
+                        {progressPct}%
+                      </strong>
                       <span className="text-xs px-2 py-0.5 rounded-full bg-teal-50 dark:bg-teal-950 text-teal-700 dark:text-teal-300 font-semibold">
                         {completedCount}/{totalCount} Modules
                       </span>
@@ -203,17 +230,27 @@ function Progress() {
                   </div>
 
                   <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-                    <span className="text-xs text-gray-500 font-medium">In Progress</span>
+                    <span className="text-xs text-gray-500 font-medium">
+                      In Progress
+                    </span>
                     <div className="flex items-baseline justify-between mt-2">
-                      <strong className="text-2xl font-bold text-orange-500">{inProgressCount}</strong>
-                      <span className="text-xs text-gray-400">active modules</span>
+                      <strong className="text-2xl font-bold text-orange-500">
+                        {inProgressCount}
+                      </strong>
+                      <span className="text-xs text-gray-400">
+                        active modules
+                      </span>
                     </div>
                   </div>
 
                   <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-                    <span className="text-xs text-gray-500 font-medium">Student Needs Help</span>
+                    <span className="text-xs text-gray-500 font-medium">
+                      Student Needs Help
+                    </span>
                     <div className="flex items-baseline justify-between mt-2">
-                      <strong className="text-2xl font-bold text-red-500">{needHelpCount}</strong>
+                      <strong className="text-2xl font-bold text-red-500">
+                        {needHelpCount}
+                      </strong>
                       <span className="text-xs text-red-500 font-semibold">
                         {needHelpCount > 0 ? "Requires Attention" : "All Good"}
                       </span>
@@ -221,9 +258,13 @@ function Progress() {
                   </div>
 
                   <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-                    <span className="text-xs text-gray-500 font-medium">Not Started</span>
+                    <span className="text-xs text-gray-500 font-medium">
+                      Not Started
+                    </span>
                     <div className="flex items-baseline justify-between mt-2">
-                      <strong className="text-2xl font-bold text-gray-500">{notStartedCount}</strong>
+                      <strong className="text-2xl font-bold text-gray-500">
+                        {notStartedCount}
+                      </strong>
                       <span className="text-xs text-gray-400">upcoming</span>
                     </div>
                   </div>
@@ -242,14 +283,21 @@ function Progress() {
                         </p>
                       </div>
                       <div className="text-right">
-                        <span className="text-xs font-bold text-teal-600 dark:text-teal-400">{progressPct}%</span>
-                        <span className="text-[10px] text-gray-400 block">Completed</span>
+                        <span className="text-xs font-bold text-teal-600 dark:text-teal-400">
+                          {progressPct}%
+                        </span>
+                        <span className="text-[10px] text-gray-400 block">
+                          Completed
+                        </span>
                       </div>
                     </div>
 
                     {fetchingTopics ? (
                       <div className="py-12 text-center text-gray-400 text-xs">
-                        <Loader2 className="animate-spin mx-auto mb-2 text-teal-600" size={24} />
+                        <Loader2
+                          className="animate-spin mx-auto mb-2 text-teal-600"
+                          size={24}
+                        />
                         <p>Loading curriculum topics...</p>
                       </div>
                     ) : topicsList.length > 0 ? (
@@ -257,7 +305,8 @@ function Progress() {
                         {topicsList.map((item) => {
                           const topicTitle = item.topic || item.title;
                           const currentStatus = item.status || "Not Started";
-                          const StatusIcon = statusIcons[currentStatus] || Clock;
+                          const StatusIcon =
+                            statusIcons[currentStatus] || Clock;
 
                           return (
                             <div
@@ -273,14 +322,16 @@ function Progress() {
                                     {topicTitle}
                                   </h4>
                                   <span className="text-xs text-gray-400">
-                                    Week {item.week || 1} Curriculum · {item.target || "All Tracks"}
+                                    Week {item.week || 1} Curriculum ·{" "}
+                                    {item.target || "All Tracks"}
                                   </span>
                                 </div>
                               </div>
 
                               <span
                                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold ${
-                                  statusStyles[currentStatus] || statusStyles["Not Started"]
+                                  statusStyles[currentStatus] ||
+                                  statusStyles["Not Started"]
                                 }`}
                               >
                                 <StatusIcon size={13} />
@@ -292,9 +343,17 @@ function Progress() {
                       </div>
                     ) : (
                       <div className="py-12 text-center text-gray-400 text-xs p-6">
-                        <BookOpen size={28} className="mx-auto mb-2 text-gray-500" />
-                        <p className="font-semibold text-gray-300">No learning resources published yet</p>
-                        <p className="mt-1">Add resources in the Resources tab to track student progress.</p>
+                        <BookOpen
+                          size={28}
+                          className="mx-auto mb-2 text-gray-500"
+                        />
+                        <p className="font-semibold text-gray-300">
+                          No learning resources published yet
+                        </p>
+                        <p className="mt-1">
+                          Add resources in the Resources tab to track student
+                          progress.
+                        </p>
                       </div>
                     )}
                   </div>
@@ -309,13 +368,15 @@ function Progress() {
                         </h3>
                       </div>
                       <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
-                        Leave coaching remarks or focus areas for <strong>{selectedStudent.name}</strong>. The student can read your notes on their dashboard.
+                        Leave coaching remarks or focus areas for{" "}
+                        <strong>{selectedStudent.name}</strong>. The student can
+                        read your notes on their dashboard.
                       </p>
                       <textarea
                         rows={8}
                         value={note}
                         onChange={(e) => setNote(e.target.value)}
-                        placeholder="e.g. Great progress! Focus next on asynchronous fetching and backend APIs before next week's review..."
+                        placeholder="e.g. Great progress! Focus next on practicing..."
                         className="w-full text-sm p-3.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"
                       />
                     </div>
@@ -326,7 +387,11 @@ function Progress() {
                       disabled={saving}
                       className="w-full flex items-center justify-center gap-2 bg-teal-600 hover:bg-teal-700 text-white py-2.5 rounded-xl text-xs font-bold transition-all shadow-sm disabled:opacity-50"
                     >
-                      {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                      {saving ? (
+                        <Loader2 size={16} className="animate-spin" />
+                      ) : (
+                        <Save size={16} />
+                      )}
                       <span>Save Mentor Notes</span>
                     </button>
                   </div>

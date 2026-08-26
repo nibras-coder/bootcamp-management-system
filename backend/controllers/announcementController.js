@@ -24,32 +24,24 @@ const createAnnouncement = async (req, res) => {
       });
     }
 
-    if (!batch && req.user.role !== 'admin') {
-      // Allow mentors with direct students to create batch-less announcements
-      const hasDirectStudents = await User.exists({ role: "student", mentor: req.user.id });
-      if (!hasDirectStudents) {
+    if (req.user.role !== 'admin') {
+      if (!batch) {
         return res.status(400).json({
           success: false,
-          message: "Batch is required for mentors without direct students",
+          message: "Batch is required to create an announcement.",
         });
       }
-    }
 
-    // Check mentor is assigned to batch (or has direct students)
-    if (req.user.role !== 'admin' && batch) {
       const mentorBatch = await Batch.findOne({
         _id: batch,
         mentors: req.user.id,
       });
 
       if (!mentorBatch) {
-        const hasDirectStudents = await User.exists({ role: "student", mentor: req.user.id });
-        if (!hasDirectStudents) {
-          return res.status(403).json({
-            success: false,
-            message: "You are not assigned to this batch",
-          });
-        }
+        return res.status(403).json({
+          success: false,
+          message: "You cannot create announcements or assignments for a batch you do not mentor.",
+        });
       }
     }
 

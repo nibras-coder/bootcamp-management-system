@@ -89,27 +89,28 @@ function Attendance() {
       return;
     }
     setSaving(true);
-    let successCount = 0;
     try {
-      for (const student of students) {
-        const status = attendanceMap[student._id] || "Present";
-        const batchId = student.batch?._id || selectedBatch;
-        if (!batchId) continue;
-        try {
-          await API.post("/attendance", {
-            student: student._id,
-            batch: batchId,
-            date,
-            status,
-          });
-          successCount++;
-        } catch (err) {
-          // Might already exist; ignore single duplicate errors
+      const records = students.map((student) => ({
+        student: student._id,
+        status: attendanceMap[student._id] || "Present",
+      }));
+
+      const res = await API.post("/attendance", {
+        batchId: selectedBatch,
+        date,
+        records,
+      });
+
+      if (res.data.success) {
+        toast.success(`Attendance saved for ${date}! (${res.data.data.length} records marked)`);
+        if (res.data.errors && res.data.errors.length > 0) {
+          toast.warning(`Some records failed to save. Check console for details.`);
+          console.warn("Attendance errors:", res.data.errors);
         }
       }
-      toast.success(`Attendance saved for ${date}! (${successCount} records marked)`);
     } catch (err) {
-      toast.error("Failed to save all attendance records");
+      toast.error(err.response?.data?.message || "Failed to save attendance records");
+      console.error("Save attendance error:", err);
     } finally {
       setSaving(false);
     }
