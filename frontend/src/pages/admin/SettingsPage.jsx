@@ -13,8 +13,10 @@ import {
   CheckCircle,
 } from "lucide-react";
 import API from "../../api/axios";
+import { useToast } from "../../context/ToastContext";
 
 const SettingsPage = () => {
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("profile");
   const [isSaving, setIsSaving] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
@@ -71,14 +73,12 @@ const SettingsPage = () => {
       
       const response = await API.put(`/users/${user.id}`, updateData);
       if (response.data.success) {
-        setSaveSuccess(true);
-        // update local storage
+        toast.success("Settings updated successfully");
         localStorage.setItem("user", JSON.stringify({ ...user, name: profile.name, email: profile.email, phone: profile.phone }));
-        setTimeout(() => setSaveSuccess(false), 3000);
       }
     } catch (error) {
       console.error("Failed to save settings:", error);
-      alert(error.response?.data?.message || "Failed to update profile");
+      toast.error(error.response?.data?.message || "Failed to update profile");
     } finally {
       setIsSaving(false);
     }

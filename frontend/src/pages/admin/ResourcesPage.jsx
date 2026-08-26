@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { BookOpen, Plus, Trash2, X, Link as LinkIcon, Paperclip } from "lucide-react";
 import API from "../../api/axios";
+import { useToast } from "../../context/ToastContext";
 
 const ResourcesPage = () => {
+  const { toast, confirm } = useToast();
   const [resources, setResources] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newResource, setNewResource] = useState({
@@ -46,20 +48,30 @@ const ResourcesPage = () => {
       if (response.data.success) {
         setResources([response.data.data, ...resources]);
         setIsModalOpen(false);
+        toast.success("Resource added successfully");
         setNewResource({ title: "", description: "", target: "All Tracks", link: "", file: null });
       }
     } catch (error) {
       console.error("Failed to add resource:", error);
+      toast.error(error.response?.data?.message || "Failed to add resource");
     }
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("Delete this resource?")) {
+    const ok = await confirm({
+      title: "Delete Resource",
+      message: "Are you sure you want to delete this resource file/link?",
+      confirmText: "Yes, Delete",
+      type: "danger",
+    });
+    if (ok) {
       try {
         await API.delete(`/resources/${id}`);
         setResources(resources.filter((r) => r._id !== id));
+        toast.success("Resource deleted successfully");
       } catch (error) {
         console.error("Failed to delete resource:", error);
+        toast.error(error.response?.data?.message || "Failed to delete resource");
       }
     }
   };
@@ -125,15 +137,15 @@ const ResourcesPage = () => {
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-lg overflow-hidden">
-            <div className="flex justify-between items-center p-6 border-b border-gray-100">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-700">
+            <div className="sticky top-0 bg-white dark:bg-gray-800 z-10 flex justify-between items-center p-6 border-b border-gray-100 dark:border-gray-700">
               <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
                 Add New Resource
               </h3>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="text-gray-400 hover:text-gray-600 dark:text-gray-300 transition-colors"
+                className="text-gray-400 hover:text-gray-600 dark:text-gray-300 transition-colors p-1"
               >
                 <X size={20} />
               </button>

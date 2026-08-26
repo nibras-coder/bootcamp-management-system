@@ -57,34 +57,34 @@ const createUser = asyncHandler(async (req, res) => {
     gender
   });
 
+  const safeCreatedUser = user.toObject({ transform: (_, value) => {
+    delete value.password;
+    return value;
+  } });
+
   res.status(201).json({
     success: true,
     message: "User created",
-    user: user.toObject({ transform: (_, value) => {
-      delete value.password;
-      return value;
-    } }),
+    data: safeCreatedUser,
+    user: safeCreatedUser,
   });
 });
 
 const updateUser = asyncHandler(async (req, res) => {
-  const { name, fullName, email, role, batch, mentorRole, expertise, phone, isActive, gender } = req.body;
+  const { name, fullName, email, password, role, batch, mentorRole, expertise, phone, isActive, gender } = req.body;
   const user = await User.findById(req.params.id);
   if (!user) return res.status(404).json({ success: false, message: "User not found" });
-
-  if (!user) {
-    return res.status(404).json({
-      success: false,
-      message: "User not found",
-    });
-  }
 
   if (name !== undefined || fullName !== undefined) {
     user.name = name !== undefined ? name : fullName;
   }
 
   if (email !== undefined) {
-    user.email = email.toLowerCase();
+    user.email = email.toLowerCase().trim();
+  }
+
+  if (password && password.trim().length >= 6) {
+    user.password = password;
   }
 
   if (role !== undefined) {
@@ -92,7 +92,7 @@ const updateUser = asyncHandler(async (req, res) => {
   }
 
   if (batch !== undefined) {
-    user.batch = batch;
+    user.batch = batch || null;
   }
   
   if (mentorRole !== undefined) user.mentorRole = mentorRole;
@@ -103,13 +103,16 @@ const updateUser = asyncHandler(async (req, res) => {
 
   await user.save();
 
+  const safeUpdatedUser = user.toObject({ transform: (_, value) => {
+    delete value.password;
+    return value;
+  } });
+
   res.status(200).json({
     success: true,
     message: "User updated",
-    user: user.toObject({ transform: (_, value) => {
-      delete value.password;
-      return value;
-    } }),
+    data: safeUpdatedUser,
+    user: safeUpdatedUser,
   });
 });
 
@@ -132,7 +135,8 @@ const getStudents = async (req, res) => {
 
     const students = await User.find(filter)
       .select("-password")
-      .populate("batch", "name track");
+      .populate("batch", "name track")
+      .populate("mentor", "name email");
     res.status(200).json({ success: true, count: students.length, data: students });
   } catch (error) {
     res.status(500).json({ success: false, message: "Failed to get students", error: error.message });
@@ -160,6 +164,41 @@ const warnStudent = async (req, res) => {
     res.status(500).json({ success: false, message: "Failed to warn student", error: error.message });
   }
 };
+
+const assignStudentToMentor = async (req, res) => {
+  try {
+    const { studentId } = req.params;
+    const { mentorId } = req.body;
+
+    const student = await User.findOne({ _id: studentId, role: "student" });
+    if (!student) {
+      return res.status(404).json({ success: false, message: "Student not found" });
+    }
+
+    if (mentorId) {
+      const mentor = await User.findOne({ _id: mentorId, role: "mentor" });
+      if (!mentor) {
+        return res.status(404).json({ success: false, message: "Mentor not found" });
+      }
+    }
+
+    student.mentor = mentorId || null;
+    await student.save();
+
+    const updatedStudent = await User.findById(studentId)
+      .select("-password")
+      .populate("batch", "name track")
+      .populate("mentor", "name email");
+
+    res.status(200).json({
+      success: true,
+      message: mentorId ? "Student assigned to mentor successfully" : "Student unassigned from mentor",
+      data: updatedStudent,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Failed to assign student to mentor", error: error.message });
+  }
+};
 // Get students assigned to the logged-in mentor
 const getMentorStudents = async (req, res) => {
   try {
@@ -182,4 +221,5 @@ module.exports = {
   getStudents,
   getMentorStudents,
   warnStudent,
+  assignStudentToMentor,
 };

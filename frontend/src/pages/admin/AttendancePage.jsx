@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Calendar,
   CheckCircle,
@@ -7,172 +7,195 @@ import {
   Loader,
   Clock,
   Shield,
+  Save,
+  Users,
 } from "lucide-react";
-
-const initialAttendance = [
-  {
-    id: 1,
-    name: "Eman Ahmen",
-    batch: "Web Dev Bootcamp",
-    date: "2026-08-18",
-    status: "Present",
-  },
-  {
-    id: 2,
-    name: "Adem Ali",
-    batch: "Web Dev Bootcamp",
-    date: "2026-08-18",
-    status: "Absent",
-  },
-  {
-    id: 3,
-    name: "Mohammed Musa",
-    batch: "DSA & Competitive Programming",
-    date: "2026-08-18",
-    status: "Present",
-  },
-  {
-    id: 4,
-    name: "Noah Ali",
-    batch: "Web Dev Bootcamp",
-    date: "2026-08-18",
-    status: "Late",
-  },
-  {
-    id: 5,
-    name: "Khulud Seid",
-    batch: "Web Dev Bootcamp",
-    date: "2026-08-18",
-    status: "Present",
-  },
-  {
-    id: 6,
-    name: "Aya Umer",
-    batch: "DSA",
-    date: "2026-08-20",
-    status: "Late",
-  },
-];
+import API from "../../api/axios";
+import { useToast } from "../../context/ToastContext";
 
 const AttendancePage = () => {
+  const { toast } = useToast();
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [records, setRecords] = useState([]);
   const [batches, setBatches] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
+  const [saving, setSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedBatch, setSelectedBatch] = useState("all");
 
-  // Real API integration
-  React.useEffect(() => {
+  useEffect(() => {
     fetchBatches();
+  }, []);
+
+  useEffect(() => {
     fetchAttendance();
   }, [date, selectedBatch]);
 
   const fetchBatches = async () => {
     try {
-      const { data } = await API.get("/batches");
-      if (data.success) setBatches(data.data);
+      const response = await API.get("/batches");
+      if (response.data.success) {
+        setBatches(response.data.data || []);
+      }
     } catch (err) {
-      console.error(err);
+      console.error("Failed to fetch batches:", err);
     }
   };
 
   const fetchAttendance = async () => {
+    setLoading(true);
     try {
-      const { data } = await API.get("/attendance");
-      if (data.success) {
-        // Filter by date and optionally batch
-        let filtered = data.data.filter((r) => {
-          const recDate = new Date(r.date).toISOString().split("T")[0];
+      const response = await API.get("/attendance");
+      if (response.data.success) {
+        const allRecords = response.data.data || [];
+        const filtered = allRecords.filter((r) => {
+          const recDate = r.date ? new Date(r.date).toISOString().split("T")[0] : "";
           const matchesDate = recDate === date;
+          const batchId = r.batch?._id || r.batch;
           const matchesBatch =
-            selectedBatch === "all" ||
-            (r.batch && r.batch._id === selectedBatch);
+            selectedBatch === "all" || batchId === selectedBatch;
           return matchesDate && matchesBatch;
         });
         setRecords(filtered);
       }
     } catch (err) {
-      console.error(err);
+      console.error("Failed to fetch attendance:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleStatusChange = async (id, newStatus) => {
-    // Optimistic update
-    setRecords(
-      records.map((record) =>
-        record._id === id ? { ...record, status: newStatus } : record,
-      ),
+  const handleStatusChange = async (recordId, newStatus) => {
+    setRecords((prev) =>
+      prev.map((r) => (r._id === recordId ? { ...r, status: newStatus } : r))
     );
     try {
-      await API.put(`/attendance/${id}`, { status: newStatus });
-      setMessage("Status updated successfully!");
-      setTimeout(() => setMessage(""), 2000);
+      await API.put(`/attendance/${recordId}`, { status: newStatus });
+      toast.success("Attendance status updated");
     } catch (error) {
-      console.error(error);
-      // Revert if needed (not implementing full revert for brevity)
+      console.error("Failed to update status:", error);
+      toast.error(error.response?.data?.message || "Failed to update status");
+      fetchAttendance();
     }
   };
 
-  const handleSave = () => {
+  const handleLoadStudentsForMarking = async () => {
+    if (selectedBatch === "all") {
+      toast.warning("Please select a specific track to mark attendance");
+      return;
+    }
     setLoading(true);
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      const response = await API.get(`/batches/${selectedBatch}/students`);
+      if (response.data.success && response.data.data.length > 0) {
+        const batchStudentsList = response.data.data;
+        const newRecords = batchStudentsList.map((st) => ({
+          _id: `temp-${st._id}`,
+          student: { _id: st._id, name: st.name, email: st.email },
+          batch: { _id: selectedBatch, name: batches.find(b => b._id === selectedBatch)?.name || "Selected Track" },
+          status: "Present",
+          date: date,
+          isNew: true,
+        }));
+        setRecords(newRecords);
+        toast.info(`Loaded ${batchStudentsList.length} students. Set statuses and click Save Attendance.`);
+      } else {
+        toast.warning("No students found in this track.");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to load track students");
+    } finally {
       setLoading(false);
-      setMessage("Attendance successfully saved for Regular Session!");
-      setTimeout(() => setMessage(""), 3000);
-    }, 1000);
+    }
+  };
+
+  const handleSaveAll = async () => {
+    if (records.length === 0) {
+      toast.warning("No attendance records to save");
+      return;
+    }
+    setSaving(true);
+    try {
+      let savedCount = 0;
+      for (const rec of records) {
+        if (rec.isNew) {
+          await API.post("/attendance", {
+            student: rec.student._id,
+            batch: rec.batch._id || selectedBatch,
+            date: date,
+            status: rec.status,
+          });
+          savedCount++;
+        }
+      }
+      toast.success(`Saved attendance for ${savedCount || records.length} students!`);
+      await fetchAttendance();
+    } catch (error) {
+      console.error("Failed to save attendance:", error);
+      toast.error(error.response?.data?.message || "Attendance saved or partially recorded.");
+      await fetchAttendance();
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
     <div className="space-y-6">
-      {/* Success Message */}
-      {message && (
-        <div className="bg-green-50 text-green-700 p-3 rounded-lg border border-green-200 text-sm font-medium">
-          {message}
-        </div>
-      )}
-
       {/* Header Controls */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-        <div className="flex items-center space-x-4">
+        <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center space-x-2 text-gray-700 dark:text-gray-300">
-            <Calendar size={20} className="text-teal-600" />
-            <span className="font-medium">Date:</span>
+            <Calendar size={18} className="text-teal-600" />
+            <span className="font-medium text-sm">Date:</span>
             <input
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1.5 text-sm focus:ring-teal-500 focus:border-teal-500"
+              className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1.5 text-sm focus:ring-teal-500 focus:border-teal-500 bg-white dark:bg-gray-800"
             />
           </div>
-          <select className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1.5 text-sm focus:ring-teal-500 focus:border-teal-500">
-            <option>All Tracks (3x/Week Sessions)</option>
-            <option>Web Dev Bootcamp</option>
-            <option>DSA & CP</option>
-          </select>
+
+          <div className="flex items-center space-x-2">
+            <span className="font-medium text-sm text-gray-700 dark:text-gray-300">Track:</span>
+            <select
+              value={selectedBatch}
+              onChange={(e) => setSelectedBatch(e.target.value)}
+              className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1.5 text-sm focus:ring-teal-500 focus:border-teal-500 bg-white dark:bg-gray-800"
+            >
+              <option value="all">All Tracks</option>
+              {batches.map((b) => (
+                <option key={b._id} value={b._id}>
+                  {b.name || b.track}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
-        <button
-          onClick={handleSave}
-          disabled={loading}
-          className="flex items-center space-x-2 bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors text-sm font-medium disabled:opacity-50"
-        >
-          {loading ? <Loader className="animate-spin" size={18} /> : null}
-          <span>Mark Attendance</span>
-        </button>
-        <select
-          value={selectedBatch}
-          onChange={(e) => setSelectedBatch(e.target.value)}
-          className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1.5 text-sm focus:ring-teal-500 focus:border-teal-500"
-        >
-          <option value="all">All Tracks</option>
-          {batches.map((b) => (
-            <option key={b._id} value={b._id}>
-              {b.name || b.track}
-            </option>
-          ))}
-        </select>
+
+        <div className="flex items-center space-x-3">
+          {selectedBatch !== "all" && records.length === 0 && (
+            <button
+              onClick={handleLoadStudentsForMarking}
+              disabled={loading}
+              className="flex items-center space-x-2 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-3 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium"
+            >
+              <Users size={16} />
+              <span>Load Students</span>
+            </button>
+          )}
+
+          {records.some((r) => r.isNew) && (
+            <button
+              onClick={handleSaveAll}
+              disabled={saving}
+              className="flex items-center space-x-2 bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors text-sm font-medium disabled:opacity-50"
+            >
+              {saving ? <Loader className="animate-spin" size={16} /> : <Save size={16} />}
+              <span>Save Attendance</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Stats Grid */}

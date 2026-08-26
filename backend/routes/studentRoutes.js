@@ -12,6 +12,7 @@ const {
 
 const {
     getMyProgress,
+    updateMyProgress,
   } = require("../controllers/progressController");
 
   const {
@@ -58,11 +59,25 @@ router.get(
 );
 
 router.get(
-    "/progress",
-    protect,
-    roleMiddleware("student"),
-    getMyProgress
-  );
+  "/progress",
+  protect,
+  roleMiddleware("student"),
+  getMyProgress
+);
+
+router.post(
+  "/progress",
+  protect,
+  roleMiddleware("student"),
+  updateMyProgress
+);
+
+router.put(
+  "/progress",
+  protect,
+  roleMiddleware("student"),
+  updateMyProgress
+);
   
   router.get(
     "/assignments",

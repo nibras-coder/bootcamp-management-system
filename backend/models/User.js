@@ -32,6 +32,11 @@ const userSchema = new mongoose.Schema(
       ref: "Batch",
       default: null,
     },
+    mentor: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
     resetPasswordToken: {
       type: String,
       default: null,

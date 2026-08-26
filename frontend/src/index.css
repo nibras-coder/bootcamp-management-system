@@ -5,7 +5,7 @@
 @tailwind utilities;
 
 :root {
-  --bg: #fbfcfb;
+  --bg: #ffffff;
   --ink: #20363a;
   --muted: #5f7174;
   --primary: #0b746d;
@@ -79,7 +79,7 @@ h3 {
   position: sticky;
   top: 0;
   z-index: 50;
-  background: rgba(251, 252, 251, 0.92);
+  background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(223, 232, 231, 0.9);
 }
@@ -240,11 +240,11 @@ h3 {
   z-index: 1;
   background: linear-gradient(
     90deg,
-    #fbfcfb 0%,
-    rgba(251, 252, 251, 0.94) 24%,
-    rgba(251, 252, 251, 0.66) 42%,
-    rgba(251, 252, 251, 0.18) 62%,
-    rgba(251, 252, 251, 0) 78%
+    #ffffff 0%,
+    rgba(255, 255, 255, 0.94) 24%,
+    rgba(255, 255, 255, 0.66) 42%,
+    rgba(255, 255, 255, 0.18) 62%,
+    rgba(255, 255, 255, 0) 78%
   );
 }
 
@@ -1140,16 +1140,16 @@ h3 {
 ========================================================= */
 
 html.dark-mode {
-  --bg: #121a1b;
+  --bg: #000000;
   --ink: #edf2f0;
   --muted: #9eacab;
   --primary: #67bdb3;
   --primary2: #4fa39a;
-  --teal-soft: #1e3637;
-  --card: #1b2829;
-  --border: #2d3d3e;
-  --sand: #292b28;
-  --shadow: 0 18px 42px -24px rgba(0, 0, 0, 0.45);
+  --teal-soft: #1a1a1a;
+  --card: #0a0a0a;
+  --border: #1f1f1f;
+  --sand: #111111;
+  --shadow: 0 18px 42px -24px rgba(0, 0, 0, 0.65);
 }
 
 html.dark-mode body {
@@ -1164,8 +1164,8 @@ html.dark-mode #root {
 /* ---------- Header ---------- */
 
 html.dark-mode .header {
-  background: rgba(18, 26, 27, 0.94);
-  border-bottom-color: #2d3d3e;
+  background: rgba(0, 0, 0, 0.94);
+  border-bottom-color: #1f1f1f;
 }
 
 html.dark-mode .logo {
@@ -1188,7 +1188,7 @@ html.dark-mode .mobile-toggle {
 /* ---------- Home ---------- */
 
 html.dark-mode .hero {
-  background: #121a1b;
+  background: #000000;
 }
 
 html.dark-mode .hero-image {
@@ -1198,11 +1198,11 @@ html.dark-mode .hero-image {
 html.dark-mode .hero-fade {
   background: linear-gradient(
     90deg,
-    #121a1b 0%,
-    rgba(18, 26, 27, 0.9) 24%,
-    rgba(18, 26, 27, 0.55) 42%,
-    rgba(18, 26, 27, 0.12) 62%,
-    rgba(18, 26, 27, 0) 78%
+    #000000 0%,
+    rgba(0, 0, 0, 0.9) 24%,
+    rgba(0, 0, 0, 0.55) 42%,
+    rgba(0, 0, 0, 0.12) 62%,
+    rgba(0, 0, 0, 0) 78%
   );
 }
 
@@ -1243,8 +1243,8 @@ html.dark-mode .arabic-rule span:last-child {
 /* ---------- Stats ---------- */
 
 html.dark-mode .stats {
-  background: #182526;
-  border-color: #2d3d3e;
+  background: #0a0a0a;
+  border-color: #1f1f1f;
 }
 
 html.dark-mode .stats b {
@@ -1261,10 +1261,10 @@ html.dark-mode .card,
 html.dark-mode .track-card,
 html.dark-mode .feature-card,
 html.dark-mode .mentor-card {
-  background: #1b2829;
-  border-color: #2d3d3e;
+  background: #0a0a0a;
+  border-color: #1f1f1f;
   color: #edf2f0;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
 }
 
 html.dark-mode .track-card h3,
@@ -1286,11 +1286,21 @@ html.dark-mode .icon {
 /* ---------- How it works ---------- */
 
 html.dark-mode .how-card {
-  background: linear-gradient(
-    135deg,
-    #08756e,
-    #075f5a
-  );
+  background: #0a0a0a !important;
+  border: 1px solid #1f1f1f !important;
+  color: #edf2f0;
+}
+
+html.dark-mode .how-card .step {
+  border-top: 1px solid #1f1f1f;
+}
+
+html.dark-mode .how-card .step > span {
+  color: #67bdb3;
+}
+
+html.dark-mode .how-card .step p {
+  color: #9eacab;
 }
 
 /* ---------- Mentors ---------- */
@@ -1302,11 +1312,11 @@ html.dark-mode .mentor-card span {
 /* ---------- FAQ ---------- */
 
 html.dark-mode .faq {
-  border-color: #2d3d3e;
+  border-color: #1f1f1f;
 }
 
 html.dark-mode .faq-item {
-  border-color: #2d3d3e;
+  border-color: #1f1f1f;
 }
 
 html.dark-mode .faq-item button {
@@ -1334,8 +1344,8 @@ html.dark-mode .cta p {
 /* ---------- Footer ---------- */
 
 html.dark-mode .footer {
-  background: #172324;
-  border-top-color: #2d3d3e;
+  background: #050505;
+  border-top-color: #1f1f1f;
 }
 
 html.dark-mode .footer-grid h4 {
@@ -1349,7 +1359,7 @@ html.dark-mode .footer-grid p {
 }
 
 html.dark-mode .footer-bottom {
-  border-top-color: #2d3d3e;
+  border-top-color: #1f1f1f;
   color: #7f8d8b;
 }
 
@@ -1402,25 +1412,25 @@ html.dark-mode .soft-cta p {
 
 html.dark-mode .large-card,
 html.dark-mode .info-card {
-  background: #1b2829;
-  border-color: #2d3d3e;
+  background: #0a0a0a;
+  border-color: #1f1f1f;
 }
 
 html.dark-mode .soft-card,
 html.dark-mode .soft-cta {
-  background: #1b2829;
+  background: #0a0a0a;
 }
 
 html.dark-mode .pills span {
-  background: #243536;
+  background: #151515;
   color: #aebbb9;
 }
 
 /* ---------- Forms ---------- */
 
 html.dark-mode .form-card {
-  background: #1b2829;
-  border-color: #2d3d3e;
+  background: #0a0a0a;
+  border-color: #1f1f1f;
 }
 
 html.dark-mode .field > span {
@@ -1430,9 +1440,9 @@ html.dark-mode .field > span {
 html.dark-mode .field input,
 html.dark-mode .field select,
 html.dark-mode .field textarea {
-  background: #172324;
+  background: #0a0a0a;
   color: #edf2f0;
-  border-color: #354849;
+  border-color: #1f1f1f;
 }
 
 html.dark-mode .field input::placeholder,
@@ -1449,18 +1459,18 @@ html.dark-mode .field textarea:focus {
 /* ---------- Tables ---------- */
 
 html.dark-mode table {
-  background: #1b2829;
+  background: #0a0a0a;
   color: #edf2f0;
 }
 
 html.dark-mode th {
-  background: #203638;
+  background: #111111;
   color: #f7f7f1;
 }
 
 html.dark-mode td {
   color: #d5dfdc;
-  border-color: #2d3d3e;
+  border-color: #1f1f1f;
 }
 
 /* ---------- Sidebar ---------- */
@@ -1469,14 +1479,14 @@ html.dark-mode .sidebar,
 html.dark-mode .student-sidebar,
 html.dark-mode .admin-sidebar,
 html.dark-mode .mentor-sidebar {
-  background: #0d1718;
+  background: #050505;
   color: #edf2f0;
 }
 
 /* ---------- Horizontal lines ---------- */
 
 html.dark-mode hr {
-  border-color: #2d3d3e;
+  border-color: #1f1f1f;
 }
 
 /* =========================================================
@@ -2153,4 +2163,246 @@ html.dark-mode .global-theme-toggle:hover {
   .terms {
     font-size: 10px;
   }
+}
+
+/* =========================================================
+   MASTER LIGHT MODE OVERRIDES — White backgrounds
+========================================================= */
+
+/* Force all light-mode off-white tints to pure white */
+.hero { background: #ffffff !important; }
+.stats { background: #ffffff !important; }
+.feature-card { background: #ffffff !important; }
+.footer { background: #ffffff !important; }
+.soft-cta { background: #f5f5f5 !important; }
+.pills span { background: #f5f5f5 !important; }
+
+/* =========================================================
+   MASTER DARK MODE OVERRIDES — Black backgrounds
+   Catches ALL Tailwind dark:bg-* classes used in JSX files
+========================================================= */
+
+/* --- Page-level backgrounds --- */
+html.dark-mode .bg-white,
+html.dark-mode .dark\:bg-gray-900,
+html.dark-mode .dark\:bg-gray-800,
+html.dark-mode .bg-gray-50,
+html.dark-mode .bg-gray-100,
+html.dark-mode .bg-bootcamp-background,
+html.dark-mode .bg-bootcamp-surface {
+  background-color: #000000 !important;
+}
+
+/* --- Card / surface backgrounds --- */
+html.dark-mode [class*="bg-white"],
+html.dark-mode [class*="dark:bg-gray-800"] {
+  background-color: #000000 !important;
+}
+
+/* --- Sidebar overrides (all sidebars use bg-teal-900) --- */
+html.dark-mode .bg-teal-900,
+html.dark-mode .bg-bootcamp-sidebar,
+html.dark-mode .bg-teal-950\/30,
+html.dark-mode aside[class*="bg-teal"] {
+  background-color: #000000 !important;
+}
+
+html.dark-mode .border-teal-800 {
+  border-color: #1f1f1f !important;
+}
+
+html.dark-mode .bg-teal-800 {
+  background-color: #111111 !important;
+}
+
+html.dark-mode .bg-teal-800\/50 {
+  background-color: rgba(17, 17, 17, 0.5) !important;
+}
+
+html.dark-mode .hover\:bg-teal-800\/50:hover {
+  background-color: rgba(17, 17, 17, 0.5) !important;
+}
+
+html.dark-mode .bg-teal-700 {
+  background-color: #0a0a0a !important;
+}
+
+/* --- Input fields in dark mode --- */
+html.dark-mode input,
+html.dark-mode select,
+html.dark-mode textarea {
+  background-color: #000000 !important;
+  border-color: #1f1f1f !important;
+  color: #edf2f0 !important;
+}
+
+/* --- Modals --- */
+html.dark-mode [class*="dark:bg-gray-800"].rounded-xl,
+html.dark-mode .bg-white.rounded-xl {
+  background-color: #0a0a0a !important;
+  border-color: #1f1f1f !important;
+}
+
+/* --- Text color overrides --- */
+html.dark-mode .text-gray-900,
+html.dark-mode .text-gray-800,
+html.dark-mode .text-gray-700 {
+  color: #edf2f0 !important;
+}
+
+html.dark-mode .text-gray-600,
+html.dark-mode .text-gray-500,
+html.dark-mode .text-gray-400 {
+  color: #9eacab !important;
+}
+
+/* --- Border overrides --- */
+html.dark-mode .border-gray-200,
+html.dark-mode .border-gray-300,
+html.dark-mode [class*="dark:border-gray-700"],
+html.dark-mode [class*="dark:border-gray-600"] {
+  border-color: #1f1f1f !important;
+}
+
+/* --- Hover states --- */
+html.dark-mode .hover\:bg-gray-50:hover,
+html.dark-mode [class*="dark:hover:bg-gray-700"]:hover {
+  background-color: #111111 !important;
+}
+
+/* --- Status / accent pills (keep subtle backgrounds but darken) --- */
+html.dark-mode .bg-teal-50 {
+  background-color: #0a1a1a !important;
+}
+
+html.dark-mode .bg-red-50,
+html.dark-mode [class*="dark:bg-red-900"] {
+  background-color: #1a0808 !important;
+}
+
+html.dark-mode .bg-green-50,
+html.dark-mode [class*="dark:bg-green-900"] {
+  background-color: #081a0a !important;
+}
+
+html.dark-mode .bg-orange-50 {
+  background-color: #1a1200 !important;
+}
+
+html.dark-mode .bg-gray-200 {
+  background-color: #1f1f1f !important;
+}
+
+/* --- Admin layout header --- */
+html.dark-mode .bg-bootcamp-surface {
+  background-color: #000000 !important;
+}
+
+html.dark-mode .text-bootcamp-textDark {
+  color: #edf2f0 !important;
+}
+
+html.dark-mode .text-bootcamp-textLight {
+  color: #9eacab !important;
+}
+
+/* --- Shadow fixes for dark mode --- */
+html.dark-mode .shadow-sm,
+html.dark-mode .shadow-md,
+html.dark-mode .shadow-lg,
+html.dark-mode .shadow-2xl {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* --- Misc dark-mode hamburger / mobile header --- */
+html.dark-mode .bg-gray-100 {
+  background-color: #111111 !important;
+}
+
+/* --- Dark mode toggle button fix --- */
+html.dark-mode .global-theme-toggle {
+  background: rgba(10, 10, 10, 0.95) !important;
+  border-color: #1f1f1f !important;
+  color: #efd98f !important;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.5) !important;
+}
+
+.student-sidebar {
+  height: 100vh !important;
+  box-sizing: border-box !important;
+}
+
+.student-nav {
+  flex: 1 !important;
+  overflow-y: auto !important;
+}
+
+.student-sidebar-bottom {
+  margin-top: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+  flex-shrink: 0 !important;
+  padding-top: 12px !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+
+.student-user-card {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+  padding: 8px !important;
+  border-radius: 12px !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.student-user-mini {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 2px 4px !important;
+}
+
+.student-logout-btn {
+  width: 100% !important;
+  border: 0 !important;
+  background: rgba(239, 68, 68, 0.16) !important;
+  color: #fca5a5 !important;
+  border-radius: 8px !important;
+  padding: 8px 12px !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.student-logout-btn:hover {
+  background: rgba(239, 68, 68, 0.32) !important;
+  color: #ffffff !important;
+  transform: translateY(-1px) !important;
+}
+
+.student-sidebar.collapsed .student-user-card {
+  background: transparent !important;
+  border: 0 !important;
+  padding: 0 !important;
+}
+
+.student-sidebar.collapsed .student-user-mini {
+  justify-content: center !important;
+  padding: 0 !important;
+}
+
+.student-sidebar.collapsed .student-logout-btn {
+  padding: 8px !important;
+  justify-content: center !important;
+}
+
+html.dark-mode .global-theme-toggle:hover {
+  background: #111111 !important;
 }

@@ -12,8 +12,10 @@ import {
   EyeOff,
 } from "lucide-react";
 import API from "../../api/axios";
+import { useToast } from "../../context/ToastContext";
 
 const MentorsPage = () => {
+  const { toast, confirm } = useToast();
   const [mentors, setMentors] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -91,22 +93,23 @@ const MentorsPage = () => {
       const response = await API.post("/users", payload);
 
       // Update local state with returned user
-      const m = response.data.data;
+      const m = response.data?.data || response.data?.user;
       const addedMentor = m
         ? {
-            id: m._id,
+            id: m._id || m.id,
             name: m.name,
             gender: m.gender || "Male",
             email: m.email,
             phone: m.phone || "",
-            role: m.mentorRole || "Mentor",
-            expertise: m.expertise || [],
+            role: m.mentorRole || m.role || "Mentor",
+            expertise: Array.isArray(m.expertise) ? m.expertise : expertiseArray,
             status: m.isActive ? "Active" : "Inactive",
           }
         : { ...newMentor, expertise: expertiseArray, id: Date.now() };
 
       setMentors([...mentors, addedMentor]);
       setIsModalOpen(false);
+      toast.success("Mentor added successfully");
       setNewMentor({
         name: "",
         gender: "Male",
@@ -119,7 +122,7 @@ const MentorsPage = () => {
       });
     } catch (error) {
       console.error("Failed to add mentor:", error);
-      alert(error.response?.data?.message || "Failed to add mentor");
+      toast.error(error.response?.data?.message || "Failed to add mentor");
     }
   };
 
@@ -140,32 +143,43 @@ const MentorsPage = () => {
         isActive: editingMentor.status === "Active",
       });
 
-      const updated = response.data.data;
-      setMentors(mentors.map(m => m.id === updated._id ? {
-        id: updated._id,
-        name: updated.name,
-        gender: updated.gender || "Male",
-        email: updated.email,
-        phone: updated.phone || "",
-        role: updated.mentorRole || "Mentor",
-        expertise: updated.expertise || [],
-        status: updated.isActive ? "Active" : "Inactive",
+      const updated = response.data?.data || response.data?.user || editingMentor;
+      const updatedId = updated?._id || updated?.id || editingMentor.id;
+
+      setMentors(mentors.map(m => m.id === updatedId ? {
+        id: updatedId,
+        name: updated.name || editingMentor.name,
+        gender: updated.gender || editingMentor.gender || "Male",
+        email: updated.email || editingMentor.email,
+        phone: updated.phone || editingMentor.phone || "",
+        role: updated.mentorRole || updated.role || editingMentor.role || "Mentor",
+        expertise: Array.isArray(updated.expertise) ? updated.expertise : expertiseArray,
+        status: updated.isActive !== undefined ? (updated.isActive ? "Active" : "Inactive") : editingMentor.status,
       } : m));
 
       setIsEditModalOpen(false);
       setEditingMentor(null);
+      toast.success("Mentor updated successfully");
     } catch (error) {
       console.error("Failed to update mentor:", error);
-      alert(error.response?.data?.message || "Failed to update mentor");
+      toast.error(error.response?.data?.message || "Failed to update mentor");
     }
   };
   const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to remove this mentor?")) {
+    const ok = await confirm({
+      title: "Remove Mentor",
+      message: "Are you sure you want to remove this mentor? They will lose access to their assigned tracks.",
+      confirmText: "Yes, Remove",
+      type: "danger",
+    });
+    if (ok) {
       try {
         await API.delete(`/users/${id}`);
         setMentors(mentors.filter((m) => m.id !== id));
+        toast.success("Mentor removed successfully");
       } catch (error) {
         console.error("Failed to delete mentor:", error);
+        toast.error(error.response?.data?.message || "Failed to delete mentor");
       }
     }
   };

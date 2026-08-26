@@ -3,6 +3,7 @@ const express = require("express");
 const {
   getMyProfile,
   updateProfilePhoto,
+  updateMyProfile,
 } = require("../controllers/profileController");
 
 const {
@@ -16,6 +17,19 @@ router.get(
   "/",
   protect,
   getMyProfile
+);
+
+// Update logged-in user's profile
+router.put(
+  "/",
+  protect,
+  updateMyProfile
+);
+
+router.patch(
+  "/",
+  protect,
+  updateMyProfile
 );
 
 // Change logged-in user's profile photo
