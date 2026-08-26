@@ -40,62 +40,98 @@ const getMentorStudentIds = async (mentorId) => {
   return Array.from(allMap.values());
 };
 
-// Mark attendance -> mentor
+// Mark attendance -> mentor/admin (bulk support)
 const markAttendance = async (req, res) => {
   try {
     const mentorId = req.user.id;
-    const { student, batch, date, status, note } = req.body;
+    const userRole = req.user.role;
+    
+    // Support bulk or single. Bulk is { batchId, date, records: [{ student, status, note }] }
+    // Single is { student, batch, date, status, note }
+    
+    let { batchId, date, records } = req.body;
 
-    if (!student || !date || !status) {
+    // Fallback if the frontend is still sending single payload
+    if (!records && req.body.student) {
+      records = [{
+        student: req.body.student,
+        status: req.body.status,
+        note: req.body.note
+      }];
+      batchId = batchId || req.body.batch;
+    }
+
+    if (!records || !Array.isArray(records) || !date) {
       return res.status(400).json({
         success: false,
-        message: "Student, date and status are required",
+        message: "Date and an array of records (student, status) are required",
       });
     }
 
-    // Verify mentor owns this student (direct OR batch)
-    const studentUser = await mentorOwnsStudent(mentorId, student);
-    if (!studentUser) {
-      return res.status(403).json({
-        success: false,
-        message: "This student is not assigned to you",
+    const savedRecords = [];
+    const errors = [];
+
+    for (const record of records) {
+      const { student, status, note } = record;
+      if (!student || !status) {
+        errors.push({ student, message: "Student and status are required" });
+        continue;
+      }
+
+      // Verify mentor owns this student (direct OR batch)
+      let studentUser = null;
+      if (userRole === "admin") {
+        studentUser = await User.findById(student);
+      } else {
+        studentUser = await mentorOwnsStudent(mentorId, student);
+      }
+      
+      if (!studentUser) {
+        errors.push({ student, message: "This student is not assigned to you" });
+        continue;
+      }
+
+      // Use student's actual batch if none provided
+      const actualBatch = batchId || studentUser.batch;
+
+      // Check duplicate attendance
+      const existingAttendance = await Attendance.findOne({
+        student,
+        date: new Date(date),
       });
+
+      if (existingAttendance) {
+        // Option 1: skip or update. Let's just update if it already exists for this bulk approach
+        existingAttendance.status = status;
+        if (note) existingAttendance.note = note;
+        await existingAttendance.save();
+        savedRecords.push(existingAttendance);
+      } else {
+        const attendance = await Attendance.create({
+          student,
+          batch: actualBatch,
+          date: new Date(date),
+          status,
+          note,
+          markedBy: mentorId,
+        });
+        savedRecords.push(attendance);
+      }
     }
 
-    // Use student's actual batch if none provided
-    const actualBatch = batch || studentUser.batch;
-
-    // Check duplicate attendance
-    const existingAttendance = await Attendance.findOne({
-      student,
-      date: new Date(date),
-    });
-
-    if (existingAttendance) {
+    if (savedRecords.length === 0 && errors.length > 0) {
       return res.status(400).json({
         success: false,
-        message: "Attendance already marked for this date",
+        message: "Failed to mark attendance for all students",
+        errors
       });
     }
 
-    const attendance = await Attendance.create({
-      student,
-      batch: actualBatch,
-      date: new Date(date),
-      status,
-      note,
-      markedBy: mentorId,
-    });
-
-    const populatedAttendance = await Attendance.findById(attendance._id)
-      .populate("student", "name email")
-      .populate("batch", "name track")
-      .populate("markedBy", "name email");
-
-    res.status(201).json({
+    res.status(200).json({
       success: true,
-      message: "Attendance marked successfully",
-      data: populatedAttendance,
+      message: `Attendance marked successfully for ${savedRecords.length} students`,
+      data: savedRecords,
+      errors: errors.length > 0 ? errors : undefined,
     });
   } catch (error) {
     console.error("Mark attendance error:", error);
@@ -146,14 +182,21 @@ const getMentorAttendance = async (req, res) => {
   }
 };
 
-// Get one student attendance -> mentor
+// Get one student attendance -> mentor/admin
 const getStudentAttendance = async (req, res) => {
   try {
-    const mentorId = req.user.id;
+    const userId = req.user.id;
+    const userRole = req.user.role;
     const { studentId } = req.params;
 
     // Check mentor has access to this student
-    const student = await mentorOwnsStudent(mentorId, studentId);
+    let student = null;
+    if (userRole === "admin") {
+      student = await User.findById(studentId);
+    } else {
+      student = await mentorOwnsStudent(userId, studentId);
+    }
+    
     if (!student) {
       return res.status(403).json({
         success: false,
@@ -246,10 +289,11 @@ const getMyAttendance = async (req, res) => {
   }
 };
 
-// Update attendance - mentor
+// Update attendance - mentor/admin
 const updateAttendance = async (req, res) => {
   try {
-    const mentorId = req.user.id;
+    const userId = req.user.id;
+    const userRole = req.user.role;
     const { id } = req.params;
     const { status, note } = req.body;
 
@@ -261,19 +305,21 @@ const updateAttendance = async (req, res) => {
       });
     }
 
-    // Check mentor owns this student (direct or batch)
-    const studentUser = await mentorOwnsStudent(mentorId, attendance.student);
-    if (!studentUser) {
-      // Fallback: also check batch ownership
-      const mentorBatch = await Batch.findOne({
-        _id: attendance.batch,
-        mentors: mentorId,
-      });
-      if (!mentorBatch) {
-        return res.status(403).json({
-          success: false,
-          message: "You cannot update this attendance",
+    if (userRole !== "admin") {
+      // Check mentor owns this student (direct or batch)
+      const studentUser = await mentorOwnsStudent(userId, attendance.student);
+      if (!studentUser) {
+        // Fallback: also check batch ownership
+        const mentorBatch = await Batch.findOne({
+          _id: attendance.batch,
+          mentors: userId,
         });
+        if (!mentorBatch) {
+          return res.status(403).json({
+            success: false,
+            message: "You cannot update this attendance",
+          });
+        }
       }
     }
 

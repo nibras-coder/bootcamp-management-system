@@ -69,6 +69,11 @@ const AttendancePage = () => {
     setRecords((prev) =>
       prev.map((r) => (r._id === recordId ? { ...r, status: newStatus } : r))
     );
+    
+    if (String(recordId).startsWith("temp-")) {
+      return;
+    }
+
     try {
       await API.put(`/attendance/${recordId}`, { status: newStatus });
       toast.success("Attendance status updated");

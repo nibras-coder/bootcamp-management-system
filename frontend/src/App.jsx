@@ -227,12 +227,12 @@ function Header() {
     <header className="header">
       <div className="nav container">
         <Logo />
-        <nav className={open ? "nav-links open" : "nav-links"}>
+        <nav className={`nav-links ${open ? "open" : ""} dark:max-[700px]:bg-gray-900 dark:max-[700px]:!border-gray-800`}>
           {navItems.map(([path, label]) => (
             <a
               key={path}
               href={path}
-              className={location.pathname === path ? "active" : ""}
+              className={`${location.pathname === path ? "active" : ""} dark:text-gray-100 dark:hover:text-teal-400`}
               onClick={(e) => {
                 e.preventDefault();
                 navigate(path);

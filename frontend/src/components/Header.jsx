@@ -103,23 +103,23 @@ const Header = ({ title, subtitle, userProfile = null }) => {
 
           {/* Notification Dropdown */}
           {isDropdownOpen && (
-            <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden z-50">
-              <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-700/50">
+            <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-900 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)] border border-gray-100 dark:border-gray-800 overflow-hidden z-50">
+              <div className="p-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50/50 dark:bg-gray-800/30">
                 <h3 className="font-semibold text-gray-800 dark:text-gray-200">Notifications</h3>
                 <span onClick={markAllAsRead} className="text-xs text-teal-600 font-medium cursor-pointer hover:underline">Mark all as read</span>
               </div>
               <div className="max-h-96 overflow-y-auto">
                 {notifications.length > 0 ? notifications.map((notif) => (
-                  <div key={notif._id} onClick={(e) => markAsRead(notif._id, e)} className="p-4 border-b border-gray-50 dark:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer">
-                    <p className="text-sm text-gray-800 dark:text-gray-200">{notif.title || notif.text}</p>
+                  <div key={notif._id} onClick={(e) => markAsRead(notif._id, e)} className="p-4 border-b border-gray-50 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors cursor-pointer group">
+                    <p className="text-sm text-gray-800 dark:text-gray-200 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">{notif.title || notif.text}</p>
                     <p className="text-xs text-gray-500 mt-1">{new Date(notif.publishDate).toLocaleDateString()}</p>
                   </div>
                 )) : (
                   <div className="p-4 text-center text-sm text-gray-500">No new notifications</div>
                 )}
               </div>
-              <div className="p-3 text-center border-t border-gray-100 dark:border-gray-700">
-                <button className="text-sm font-medium text-teal-600 hover:text-teal-700">View All Announcements</button>
+              <div className="p-3 text-center border-t border-gray-100 dark:border-gray-800 bg-gray-50/30 dark:bg-gray-900">
+                <button className="text-sm font-medium text-teal-600 dark:text-teal-500 hover:text-teal-700 dark:hover:text-teal-400 transition-colors">View All Announcements</button>
               </div>
             </div>
           )}

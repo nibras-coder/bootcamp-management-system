@@ -4,6 +4,26 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  select {
+    @apply bg-white/40 backdrop-blur-lg border border-white/30 shadow-lg text-gray-900 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all duration-300 !important;
+    border-radius: 0.75rem !important;
+  }
+  
+  .dark select {
+    @apply bg-gray-800/60 border-gray-600/50 text-gray-100 !important;
+  }
+
+  /* Defensive fallback for option readability */
+  select option {
+    @apply bg-white text-gray-900 !important;
+  }
+
+  .dark select option {
+    @apply bg-gray-800 text-gray-100 !important;
+  }
+}
+
 :root {
   --bg: #ffffff;
   --ink: #20363a;

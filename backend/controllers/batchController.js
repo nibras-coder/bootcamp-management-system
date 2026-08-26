@@ -127,6 +127,43 @@ const getBatches = async (req, res) => {
     });
   }
 };
+// Get mentor's assigned batches
+const getMyBatches = async (req, res) => {
+  try {
+    const batches = await Batch.find({ mentors: req.user.id })
+      .populate("mentors", "name email role")
+      .sort({ createdAt: -1 });
+
+    const mongoose = require("mongoose");
+    const User = require("../models/User");
+
+    // Manually populate instructor if it's an ObjectId
+    const populatedBatches = await Promise.all(batches.map(async (batch) => {
+      let batchObj = batch.toObject();
+      if (batchObj.instructor && mongoose.Types.ObjectId.isValid(batchObj.instructor)) {
+        const user = await User.findById(batchObj.instructor).select("name");
+        if (user) {
+          batchObj.instructor = user;
+        }
+      }
+      return batchObj;
+    }));
+
+    res.status(200).json({
+      success: true,
+      count: populatedBatches.length,
+      data: populatedBatches,
+    });
+  } catch (error) {
+    console.error("Get my batches error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to get your assigned batches",
+      error: error.message,
+    });
+  }
+};
+
 // Get one batch
 
 const getBatchById = async (req, res) => {
@@ -296,6 +333,7 @@ const deleteBatch = async (req, res) => {
 module.exports = {
   createBatch,
   getBatches,
+  getMyBatches,
   getBatchById,
   assignMentors,
   getBatchStudents,

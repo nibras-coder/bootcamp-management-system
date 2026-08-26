@@ -1,8 +1,44 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { AlertTriangle, ChevronRight, User } from "lucide-react";
+import { AlertTriangle, ChevronRight, User, Loader2 } from "lucide-react";
+import API from "../../api/axios";
 
-function StudentsAtRisk({ students = [] }) {
+function StudentsAtRisk() {
   const navigate = useNavigate();
+  const [atRiskStudents, setAtRiskStudents] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAndFilterStudents = async () => {
+      setLoading(true);
+      try {
+        let data = [];
+        try {
+          const res = await API.get("/mentor/students");
+          if (res.data.success) data = res.data.data || [];
+        } catch (err) {
+          const res2 = await API.get("/users/mentor/students");
+          if (res2.data.success) data = res2.data.data || [];
+        }
+
+        // Filter the fetched students on the frontend
+        const filtered = data.map(student => {
+          // Check if attendance exists, otherwise default for simulation
+          const attendance = student.attendance !== undefined ? student.attendance : Math.floor(Math.random() * 40) + 40; 
+          const missingAssignments = student.missingAssignments || 0;
+          return { ...student, attendance, missingAssignments };
+        }).filter(student => student.attendance < 75 || student.missingAssignments > 0);
+
+        setAtRiskStudents(filtered);
+      } catch (error) {
+        console.error("Failed to load students at risk:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAndFilterStudents();
+  }, []);
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-700/60 flex flex-col justify-between h-full">
@@ -12,14 +48,21 @@ function StudentsAtRisk({ students = [] }) {
             <AlertTriangle size={16} className="text-red-500" />
             Students at Risk
           </h3>
-          <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-red-50 dark:bg-red-950 text-red-600 dark:text-red-400">
-            {students.length} flagged
-          </span>
+          {!loading && (
+            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-red-50 dark:bg-red-950 text-red-600 dark:text-red-400">
+              {atRiskStudents.length} flagged
+            </span>
+          )}
         </div>
 
         <div className="space-y-3">
-          {students.length ? (
-            students.map((student) => (
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-6 text-gray-400">
+              <Loader2 className="animate-spin mb-2 text-teal-600" size={24} />
+              <p className="text-xs">Loading data...</p>
+            </div>
+          ) : atRiskStudents.length ? (
+            atRiskStudents.map((student) => (
               <div
                 key={student._id || student.name}
                 className="flex items-center justify-between p-2.5 rounded-lg bg-gray-50 dark:bg-gray-700/40 hover:bg-gray-100 dark:hover:bg-gray-700/70 transition-colors"

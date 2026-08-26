@@ -13,10 +13,12 @@ const authorize = require(
 const {
   createBatch,
   getBatches,
+  getMyBatches,
   getBatchById,
   assignMentors,
   getBatchStudents,
   deleteBatch,
+  updateBatch,
 } = require("../controllers/batchController");
 
 // Admin
@@ -44,7 +46,22 @@ router.put(
   authorize("admin"),
   assignMentors
 );
+
+// Update batch
+router.put(
+  "/:id",
+  protect,
+  authorize("admin"),
+  updateBatch
+);
 // Authenticated uers
+
+// Get all batches
+router.get(
+  "/my-batches",
+  protect,
+  getMyBatches
+);
 
 // Get all batches
 router.get(

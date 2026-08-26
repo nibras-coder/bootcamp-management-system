@@ -140,4 +140,60 @@ const deleteResource = async (req, res) => {
   }
 };
 
-module.exports = { getResources, createResource, deleteResource };
+// Update a resource
+const updateResource = async (req, res) => {
+  try {
+    const resourceId = req.params.id;
+    const { title, description, target, category, link, batch } = req.body;
+
+    let resource = await Resource.findById(resourceId);
+    if (!resource) {
+      return res.status(404).json({
+        success: false,
+        message: "Resource not found",
+      });
+    }
+
+    // Check authority: admin or the mentor who uploaded it
+    if (req.user.role !== "admin" && String(resource.uploadedBy) !== String(req.user.id)) {
+      return res.status(403).json({
+        success: false,
+        message: "You can only update resources you uploaded",
+      });
+    }
+
+    if (title) resource.title = title;
+    if (description) resource.description = description;
+    if (target) resource.target = target;
+    if (category) resource.category = category;
+    if (link !== undefined) resource.link = link;
+    if (batch !== undefined) resource.batch = batch || null;
+
+    if (req.file) {
+      resource.fileUrl = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
+    } else if (req.body.fileUrl !== undefined) {
+      resource.fileUrl = req.body.fileUrl; // Allowing removal or update of fileUrl text if needed
+    }
+
+    await resource.save();
+
+    const populatedResource = await Resource.findById(resource._id)
+      .populate("uploadedBy", "name email role")
+      .populate("batch", "name track");
+
+    res.status(200).json({
+      success: true,
+      message: "Resource updated successfully",
+      data: populatedResource,
+    });
+  } catch (error) {
+    console.error("Update resource error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update resource",
+      error: error.message,
+    });
+  }
+};
+
+module.exports = { getResources, createResource, updateResource, deleteResource };
