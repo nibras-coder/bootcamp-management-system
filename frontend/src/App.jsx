@@ -34,7 +34,10 @@ import Resources from "./pages/Resources";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import BatchesPage from "./pages/admin/BatchesPage";
+import ApplicationsPage from "./pages/admin/ApplicationsPage";
+import ApplyPage from "./pages/ApplyPage";
 import MentorsPage from "./pages/admin/MentorsPage";
+import AdminSettings from "./pages/admin/SettingsPage";
 import StudentsPage from "./pages/admin/StudentsPage";
 import AttendancePage from "./pages/admin/AttendancePage";
 import AssignmentsPage from "./pages/admin/AssignmentsPage";
@@ -841,6 +844,9 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPage />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
 
+        {/* Apply Page */}
+        <Route path="/apply" element={<ProtectedRoute allowedRoles={["student"]}><ApplyPage /></ProtectedRoute>} />
+
         {/* Student Dashboard */}
         <Route path="/student-dashboard/*" element={<ProtectedRoute allowedRoles={["student"]}><StudentDashboard /></ProtectedRoute>} />
 
@@ -863,6 +869,7 @@ function App() {
           <Route index element={<Navigate to="/admin/dashboard" replace />} />
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="batches" element={<BatchesPage />} />
+          <Route path="applications" element={<ApplicationsPage />} />
           <Route path="mentors" element={<MentorsPage />} />
           <Route path="students" element={<StudentsPage />} />
           <Route path="attendance" element={<AttendancePage />} />
