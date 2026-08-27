@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef, useMemo} from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import React, { useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate, Navigate } from "react-router-dom";
 import {
   Bell,
   BookOpen,
@@ -69,6 +69,7 @@ const navItems = [
     icon: FileText,
   },
   { path: "/student-dashboard/grades", label: "Grades", icon: GraduationCap },
+  { path: "/apply", label: "Admissions", icon: Sparkles },
   {
     path: "/student-dashboard/announcements",
     label: "Announcements",
@@ -90,8 +91,6 @@ const formatDate = (date) =>
 
 const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-
-
 function StudentSidebar({ mobileOpen, onClose, collapsed, onCollapse, unreadCommunityCount = 0 }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -102,6 +101,12 @@ function StudentSidebar({ mobileOpen, onClose, collapsed, onCollapse, unreadComm
     localStorage.removeItem("user");
     navigate("/login", { replace: true });
   };
+
+  const visibleNavItems = navItems.filter((item) => {
+    if (isAdmitted) return true; // Show all if admitted
+    // If not admitted, only show Dashboard, Admissions, Profile, Settings
+    return ["/student-dashboard", "/apply", "/student-dashboard/profile", "/student-dashboard/settings"].includes(item.path);
+  });
 
   return (
     <>
@@ -135,7 +140,7 @@ function StudentSidebar({ mobileOpen, onClose, collapsed, onCollapse, unreadComm
         </div>
 
         <nav className="student-nav">
-          {navItems.map(({ path, label, icon: Icon }) => {
+          {visibleNavItems.map(({ path, label, icon: Icon }) => {
             const active =
               path === "/student-dashboard"
                 ? location.pathname === path
@@ -946,8 +951,6 @@ function StudentCommunitiesPage({ user, toast, communityUnreadCounts = {}, setCo
 }
 
 export default function StudentDashboard() {
-
-
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
@@ -1041,6 +1044,16 @@ export default function StudentDashboard() {
     };
   }, [user]);
 
+  const user = useMemo(
+    () => JSON.parse(localStorage.getItem("user") || "{}"),
+    [],
+  );
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/login", { replace: true });
+  };
 
   useEffect(() => {
     document.body.classList.add("student-app-body");
@@ -1117,7 +1130,8 @@ export default function StudentDashboard() {
       toast.success("Assignment submitted successfully!");
       await refresh();
     } catch (err) {
-      const msg = err.response?.data?.message || "Could not submit the assignment.";
+      const msg =
+        err.response?.data?.message || "Could not submit the assignment.";
       setError(msg);
       toast.error(msg);
     } finally {
@@ -1182,7 +1196,6 @@ export default function StudentDashboard() {
           </p>
         </div>
         <div className="student-heading-actions">
-
           <button className="student-notification" title="Notifications">
             <Bell size={21} />
             <span>{announcements.length}</span>
@@ -1199,23 +1212,30 @@ export default function StudentDashboard() {
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-lg font-bold text-white">{data.student.mentor.name}</h2>
+                <h2 className="text-lg font-bold text-white">
+                  {data.student.mentor.name}
+                </h2>
                 <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-teal-700/80 text-teal-100 border border-teal-600/60">
                   Your Assigned Mentor
                 </span>
               </div>
               <p className="text-xs text-teal-200 mt-0.5">
-                {data.student.mentor.mentorRole || "Bootcamp Mentor"} · {data.student.mentor.email}
+                {data.student.mentor.mentorRole || "Bootcamp Mentor"} ·{" "}
+                {data.student.mentor.email}
               </p>
-              {data.student.mentor.expertise && data.student.mentor.expertise.length > 0 && (
-                <div className="flex gap-1.5 mt-2 flex-wrap">
-                  {data.student.mentor.expertise.map((exp, i) => (
-                    <span key={i} className="text-[10px] bg-teal-950/40 text-teal-200 px-2 py-0.5 rounded">
-                      {exp}
-                    </span>
-                  ))}
-                </div>
-              )}
+              {data.student.mentor.expertise &&
+                data.student.mentor.expertise.length > 0 && (
+                  <div className="flex gap-1.5 mt-2 flex-wrap">
+                    {data.student.mentor.expertise.map((exp, i) => (
+                      <span
+                        key={i}
+                        className="text-[10px] bg-teal-950/40 text-teal-200 px-2 py-0.5 rounded"
+                      >
+                        {exp}
+                      </span>
+                    ))}
+                  </div>
+                )}
             </div>
           </div>
           <div className="flex items-center gap-2 self-stretch md:self-auto justify-end">
@@ -1310,155 +1330,160 @@ export default function StudentDashboard() {
           )}
         </SectionCard>
 
-        <SectionCard
-          title="Upcoming Assignments"
-          action={
-            <button
-              className="student-view-btn"
-              onClick={() => navigate("/student-dashboard/assignments")}
-            >
-              View All <ChevronRight size={15} />
-            </button>
-          }
-        >
-          {upcoming.length ? (
-            <div className="assignment-list compact">
-              {upcoming.slice(0, 4).map((assignment) => {
-                const daysLeft = Math.ceil(
-                  (new Date(assignment.deadline) - new Date()) / 86400000,
-                );
-                const urgent = daysLeft <= 2;
-                const mentorId = data?.student?.mentor?._id || data?.student?.mentor;
-                const isFromMentor = Boolean(
-                  mentorId && (
-                    assignment.createdBy?._id === mentorId ||
-                    assignment.createdBy === mentorId ||
-                    (assignment.createdBy?.email && assignment.createdBy.email === data?.student?.mentor?.email)
-                  )
-                );
-
-                return (
-                  <button
-                    className="assignment-row"
-                    key={assignment._id}
-                    onClick={() => setSelectedAssignment(assignment)}
-                  >
-                    <span className="assignment-row-icon">
-                      <FileText size={18} />
-                    </span>
-                    <span className="assignment-row-info">
-                      <div className="flex items-center gap-2">
-                        <strong>{assignment.title}</strong>
-                        {isFromMentor && (
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-100 dark:bg-teal-950 text-teal-800 dark:text-teal-300 border border-teal-300 dark:border-teal-700">
-                            From your mentor
-                          </span>
-                        )}
-                      </div>
-                      <small>Due: {formatDate(assignment.deadline)}</small>
-                    </span>
-                    <span
-                      className={`deadline-badge ${urgent ? "urgent" : ""}`}
-                    >
-                      {daysLeft <= 0 ? "Due today" : `${daysLeft} Days Left`}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          ) : (
-            <EmptyState text="No upcoming assignments." />
-          )}
-        </SectionCard>
-
-        <SectionCard
-          title="Recent Announcements"
-          action={
-            <button
-              className="student-view-btn"
-              onClick={() => navigate("/student-dashboard/announcements")}
-            >
-              View All <ChevronRight size={15} />
-            </button>
-          }
-        >
-          {announcements.length ? (
-            <div className="announcement-list">
-              {announcements.slice(0, 3).map((item) => {
-                const mentorId = data?.student?.mentor?._id || data?.student?.mentor;
-                const isFromMentor = Boolean(
-                  mentorId && (
-                    item.author?._id === mentorId ||
-                    item.author === mentorId ||
-                    (item.author?.email && item.author.email === data?.student?.mentor?.email)
-                  )
-                );
-
-                return (
-                  <div className="announcement-row" key={item._id}>
-                    <span className="announcement-icon">
-                      <Megaphone size={16} />
-                    </span>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <strong>{item.title}</strong>
-                        {isFromMentor && (
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-100 dark:bg-orange-950 text-orange-800 dark:text-orange-300 border border-orange-300 dark:border-orange-700">
-                            From your mentor
-                          </span>
-                        )}
-                      </div>
-                      <p>{item.content}</p>
-                    </div>
-                    <small>
-                      {formatDate(item.publishDate || item.createdAt)}
-                    </small>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <EmptyState text="No announcements yet." />
-          )}
-        </SectionCard>
-
-        <SectionCard title="Attendance This Week">
-          <div className="weekly-attendance">
-            {weeklyAttendance.map(({ day, record }) => (
-              <div className="weekly-day" key={day}>
-                <span>{day}</span>
-                <div
-                  className={`weekly-status ${record?.status?.toLowerCase() || "not-marked"}`}
+            <SectionCard
+              title="Upcoming Assignments"
+              action={
+                <button
+                  className="student-view-btn"
+                  onClick={() => navigate("/student-dashboard/assignments")}
                 >
-                  {record?.status === "Present" || record?.status === "Late" ? (
-                    <Check size={20} />
-                  ) : record?.status === "Absent" ? (
-                    <X size={19} />
-                  ) : (
-                    <span>—</span>
-                  )}
+                  View All <ChevronRight size={15} />
+                </button>
+              }
+            >
+              {upcoming.length ? (
+                <div className="assignment-list compact">
+                  {upcoming.slice(0, 4).map((assignment) => {
+                    const daysLeft = Math.ceil(
+                      (new Date(assignment.deadline) - new Date()) / 86400000,
+                    );
+                    const urgent = daysLeft <= 2;
+                    const mentorId =
+                      data?.student?.mentor?._id || data?.student?.mentor;
+                    const isFromMentor = Boolean(
+                      mentorId &&
+                      (assignment.createdBy?._id === mentorId ||
+                        assignment.createdBy === mentorId ||
+                        (assignment.createdBy?.email &&
+                          assignment.createdBy.email ===
+                            data?.student?.mentor?.email)),
+                    );
+
+                    return (
+                      <button
+                        className="assignment-row"
+                        key={assignment._id}
+                        onClick={() => setSelectedAssignment(assignment)}
+                      >
+                        <span className="assignment-row-icon">
+                          <FileText size={18} />
+                        </span>
+                        <span className="assignment-row-info">
+                          <div className="flex items-center gap-2">
+                            <strong>{assignment.title}</strong>
+                            {isFromMentor && (
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-100 dark:bg-teal-950 text-teal-800 dark:text-teal-300 border border-teal-300 dark:border-teal-700">
+                                From your mentor
+                              </span>
+                            )}
+                          </div>
+                          <small>Due: {formatDate(assignment.deadline)}</small>
+                        </span>
+                        <span
+                          className={`deadline-badge ${urgent ? "urgent" : ""}`}
+                        >
+                          {daysLeft <= 0 ? "Due today" : `${daysLeft} Days Left`}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
+              ) : (
+                <EmptyState text="No upcoming assignments." />
+              )}
+            </SectionCard>
+
+            <SectionCard
+              title="Recent Announcements"
+              action={
+                <button
+                  className="student-view-btn"
+                  onClick={() => navigate("/student-dashboard/announcements")}
+                >
+                  View All <ChevronRight size={15} />
+                </button>
+              }
+            >
+              {announcements.length ? (
+                <div className="announcement-list">
+                  {announcements.slice(0, 3).map((item) => {
+                    const mentorId =
+                      data?.student?.mentor?._id || data?.student?.mentor;
+                    const isFromMentor = Boolean(
+                      mentorId &&
+                      (item.author?._id === mentorId ||
+                        item.author === mentorId ||
+                        (item.author?.email &&
+                          item.author.email === data?.student?.mentor?.email)),
+                    );
+
+                    return (
+                      <div className="announcement-row" key={item._id}>
+                        <span className="announcement-icon">
+                          <Megaphone size={16} />
+                        </span>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <strong>{item.title}</strong>
+                            {isFromMentor && (
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-100 dark:bg-orange-950 text-orange-800 dark:text-orange-300 border border-orange-300 dark:border-orange-700">
+                                From your mentor
+                              </span>
+                            )}
+                          </div>
+                          <p>{item.content}</p>
+                        </div>
+                        <small>
+                          {formatDate(item.publishDate || item.createdAt)}
+                        </small>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <EmptyState text="No announcements yet." />
+              )}
+            </SectionCard>
+
+            <SectionCard title="Attendance This Week">
+              <div className="weekly-attendance">
+                {weeklyAttendance.map(({ day, record }) => (
+                  <div className="weekly-day" key={day}>
+                    <span>{day}</span>
+                    <div
+                      className={`weekly-status ${record?.status?.toLowerCase() || "not-marked"}`}
+                    >
+                      {record?.status === "Present" || record?.status === "Late" ? (
+                        <Check size={20} />
+                      ) : record?.status === "Absent" ? (
+                        <X size={19} />
+                      ) : (
+                        <span>—</span>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-          <div className="attendance-legend">
-            <span>
-              <i className="present" /> Present
-            </span>
-            <span>
-              <i className="absent" /> Absent
-            </span>
-            <span>
-              <i className="not-marked" /> Not Marked
-            </span>
-          </div>
-        </SectionCard>
+              <div className="attendance-legend">
+                <span>
+                  <i className="present" /> Present
+                </span>
+                <span>
+                  <i className="absent" /> Absent
+                </span>
+                <span>
+                  <i className="not-marked" /> Not Marked
+                </span>
+              </div>
+            </SectionCard>
       </div>
     </>
   );
 
   const AssignmentsPage = () => {
-    const [assignmentsList, setAssignmentsList] = React.useState(data?.assignments || []);
+    const [assignmentsList, setAssignmentsList] = React.useState(
+      data?.assignments || [],
+    );
     const [asgLoading, setAsgLoading] = React.useState(false);
 
     React.useEffect(() => {
@@ -1469,7 +1494,7 @@ export default function StudentDashboard() {
             setAssignmentsList(res.data.data || []);
           }
         })
-        .catch(() => { })
+        .catch(() => {})
         .finally(() => setAsgLoading(false));
     }, []);
 
@@ -1489,18 +1514,20 @@ export default function StudentDashboard() {
                 </div>
                 <div className="list-card-main">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="font-bold text-gray-900 dark:text-gray-100">{assignment.title}</h3>
+                    <h3 className="font-bold text-gray-900 dark:text-gray-100">
+                      {assignment.title}
+                    </h3>
                     {Boolean(
-                      data?.student?.mentor && (
-                        assignment.createdBy?._id === data.student.mentor._id ||
+                      data?.student?.mentor &&
+                      (assignment.createdBy?._id === data.student.mentor._id ||
                         assignment.createdBy === data.student.mentor._id ||
-                        assignment.createdBy?.email === data.student.mentor.email
-                      )
+                        assignment.createdBy?.email ===
+                          data.student.mentor.email),
                     ) && (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-teal-100 dark:bg-teal-950 text-teal-800 dark:text-teal-300 border border-teal-300 dark:border-teal-700 shadow-sm">
-                          ★ From your mentor
-                        </span>
-                      )}
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-teal-100 dark:bg-teal-950 text-teal-800 dark:text-teal-300 border border-teal-300 dark:border-teal-700 shadow-sm">
+                        ★ From your mentor
+                      </span>
+                    )}
                     {assignment.link && (
                       <a
                         href={assignment.link}
@@ -1512,13 +1539,23 @@ export default function StudentDashboard() {
                       </a>
                     )}
                   </div>
-                  <p className="text-gray-600 dark:text-gray-300 text-sm mt-1">{assignment.description}</p>
+                  <p className="text-gray-600 dark:text-gray-300 text-sm mt-1">
+                    {assignment.description}
+                  </p>
                   <small className="text-xs text-gray-400 mt-2 block">
-                    Due {formatDate(assignment.deadline)} · Max score {assignment.maxScore || 100} · {assignment.createdBy?.name ? `Assigned by ${assignment.createdBy.name}` : `Track: ${assignment.batch?.name || assignment.batch?.track || "Your Track"}`}
+                    Due {formatDate(assignment.deadline)} · Max score{" "}
+                    {assignment.maxScore || 100} ·{" "}
+                    {assignment.createdBy?.name
+                      ? `Assigned by ${assignment.createdBy.name}`
+                      : `Track: ${assignment.batch?.name || assignment.batch?.track || "Your Track"}`}
                   </small>
                 </div>
                 <span
-                  className={`status-pill ${String(assignment.status || "Pending").toLowerCase().replaceAll(" ", "-")}`}
+                  className={`status-pill ${String(
+                    assignment.status || "Pending",
+                  )
+                    .toLowerCase()
+                    .replaceAll(" ", "-")}`}
                 >
                   {assignment.status || "Pending"}
                 </span>
@@ -1557,7 +1594,7 @@ export default function StudentDashboard() {
             setAllAttendance(records);
           }
         })
-        .catch(() => { })
+        .catch(() => {})
         .finally(() => setAttLoading(false));
     }, []);
 
@@ -1566,7 +1603,8 @@ export default function StudentDashboard() {
     const absent = attList.filter((r) => r && r.status === "Absent").length;
     const late = attList.filter((r) => r && r.status === "Late").length;
     const total = attList.length;
-    const rate = total > 0 ? Math.round((present / total) * 100) : stats.attendance || 0;
+    const rate =
+      total > 0 ? Math.round((present / total) * 100) : stats.attendance || 0;
 
     return (
       <PageSection
@@ -1608,10 +1646,20 @@ export default function StudentDashboard() {
                   </div>
                   <div className="list-card-main">
                     <h3>{item.date ? formatDate(item.date) : "Session"}</h3>
-                    <p>{item.batch?.name || item.batch?.track || "Bootcamp Track Session"}</p>
-                    {item.note && <small className="text-xs text-gray-400 mt-1 block">Note: {item.note}</small>}
+                    <p>
+                      {item.batch?.name ||
+                        item.batch?.track ||
+                        "Bootcamp Track Session"}
+                    </p>
+                    {item.note && (
+                      <small className="text-xs text-gray-400 mt-1 block">
+                        Note: {item.note}
+                      </small>
+                    )}
                   </div>
-                  <span className={`status-pill ${String(item.status || "unknown").toLowerCase()}`}>
+                  <span
+                    className={`status-pill ${String(item.status || "unknown").toLowerCase()}`}
+                  >
                     {item.status || "Unknown"}
                   </span>
                 </div>
@@ -1655,10 +1703,10 @@ export default function StudentDashboard() {
       // Optimistic update
       setResources((prev) =>
         prev.map((r) =>
-          (r.title === topicName || r._id === resource._id)
+          r.title === topicName || r._id === resource._id
             ? { ...r, status: newStatus }
-            : r
-        )
+            : r,
+        ),
       );
 
       try {
@@ -1694,10 +1742,19 @@ export default function StudentDashboard() {
     };
 
     const totalCount = resources.length;
-    const completedCount = resources.filter((r) => r.status === "Completed").length;
-    const inProgCount = resources.filter((r) => r.status === "In Progress").length;
-    const needHelpCount = resources.filter((r) => r.status === "Need Help" || r.status === "Needs Improvement").length;
-    const overallPct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : (stats.progress || 0);
+    const completedCount = resources.filter(
+      (r) => r.status === "Completed",
+    ).length;
+    const inProgCount = resources.filter(
+      (r) => r.status === "In Progress",
+    ).length;
+    const needHelpCount = resources.filter(
+      (r) => r.status === "Need Help" || r.status === "Needs Improvement",
+    ).length;
+    const overallPct =
+      totalCount > 0
+        ? Math.round((completedCount / totalCount) * 100)
+        : stats.progress || 0;
 
     return (
       <PageSection
@@ -1706,37 +1763,51 @@ export default function StudentDashboard() {
       >
         {/* KPI Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <div className="bg-[#0e0e0e] dark:bg-[#0a0a0a] p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800">
-            <span className="text-xs text-gray-500 font-medium">Completion Rate</span>
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+            <span className="text-xs text-gray-500 font-medium">
+              Completion Rate
+            </span>
             <div className="flex items-baseline justify-between mt-2">
-              <strong className="text-2xl font-bold text-teal-500 dark:text-teal-400">{overallPct}%</strong>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-teal-950 text-teal-300 font-semibold border border-teal-800">
+              <strong className="text-2xl font-bold text-teal-600 dark:text-teal-400">
+                {overallPct}%
+              </strong>
+              <span className="text-xs px-2 py-0.5 rounded-full bg-teal-50 dark:bg-teal-950 text-teal-700 dark:text-teal-300 font-semibold border border-teal-200 dark:border-teal-800">
                 {overallPct >= 70 ? "On Track" : "In Progress"}
               </span>
             </div>
           </div>
 
-          <div className="bg-[#0e0e0e] dark:bg-[#0a0a0a] p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800">
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
             <span className="text-xs text-gray-500 font-medium">Completed</span>
             <div className="flex items-baseline justify-between mt-2">
-              <strong className="text-2xl font-bold text-teal-400">{completedCount}</strong>
-              <span className="text-xs text-gray-400">of {totalCount} resources</span>
+              <strong className="text-2xl font-bold text-teal-600 dark:text-teal-400">
+                {completedCount}
+              </strong>
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                of {totalCount} resources
+              </span>
             </div>
           </div>
 
-          <div className="bg-[#0e0e0e] dark:bg-[#0a0a0a] p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800">
-            <span className="text-xs text-gray-500 font-medium">In Progress</span>
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+            <span className="text-xs text-gray-500 font-medium">
+              In Progress
+            </span>
             <div className="flex items-baseline justify-between mt-2">
-              <strong className="text-2xl font-bold text-orange-400">{inProgCount}</strong>
-              <span className="text-xs text-gray-400">active modules</span>
+              <strong className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                {inProgCount}
+              </strong>
+              <span className="text-xs text-gray-500 dark:text-gray-400">active modules</span>
             </div>
           </div>
 
-          <div className="bg-[#0e0e0e] dark:bg-[#0a0a0a] p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800">
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
             <span className="text-xs text-gray-500 font-medium">Need Help</span>
             <div className="flex items-baseline justify-between mt-2">
-              <strong className="text-2xl font-bold text-red-400">{needHelpCount}</strong>
-              <span className="text-xs text-gray-400">needs review</span>
+              <strong className="text-2xl font-bold text-red-600 dark:text-red-400">
+                {needHelpCount}
+              </strong>
+              <span className="text-xs text-gray-500 dark:text-gray-400">needs review</span>
             </div>
           </div>
         </div>
@@ -1745,7 +1816,10 @@ export default function StudentDashboard() {
         <div className="space-y-4">
           {progLoading ? (
             <div className="py-16 text-center text-gray-400">
-              <Loader2 className="animate-spin mx-auto mb-2 text-teal-500" size={28} />
+              <Loader2
+                className="animate-spin mx-auto mb-2 text-teal-500"
+                size={28}
+              />
               <p className="text-sm">Loading learning resources...</p>
             </div>
           ) : resources.length > 0 ? (
@@ -1754,30 +1828,37 @@ export default function StudentDashboard() {
               const pct = getStatusPct(currentStatus);
               const isSaving = savingTopic === (item.title || item.topic);
 
-              const mentorId = data?.student?.mentor?._id || data?.student?.mentor;
+              const mentorId =
+                data?.student?.mentor?._id || data?.student?.mentor;
               const isFromMentor = Boolean(
-                mentorId && (
-                  item.uploadedBy?._id === mentorId ||
+                mentorId &&
+                (item.uploadedBy?._id === mentorId ||
                   item.uploadedBy === mentorId ||
-                  (item.uploadedBy?.email && item.uploadedBy.email === data?.student?.mentor?.email) ||
-                  item.target === "My Assigned Students"
-                )
+                  (item.uploadedBy?.email &&
+                    item.uploadedBy.email === data?.student?.mentor?.email) ||
+                  item.target === "My Assigned Students"),
               );
-              const isFromAdmin = item.uploadedBy?.role === "admin" || !item.uploadedBy;
+              const isFromAdmin =
+                item.uploadedBy?.role === "admin" || !item.uploadedBy;
 
               return (
                 <div
                   key={item._id || item.title}
-                  className="bg-[#0a0a0a] rounded-2xl p-6 border border-gray-800 transition-all hover:border-gray-700 shadow-sm"
+                  className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 transition-all hover:border-gray-300 dark:hover:border-gray-600 shadow-sm"
                 >
                   {/* Top: Title, Subtitle, Percentage */}
                   <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                     <div>
                       <div className="flex items-center gap-2.5">
-                        <h3 className="text-lg font-bold text-white tracking-wide">
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-white tracking-wide">
                           {item.title}
                         </h3>
-                        {isSaving && <Loader2 size={14} className="animate-spin text-teal-400" />}
+                        {isSaving && (
+                          <Loader2
+                            size={14}
+                            className="animate-spin text-teal-400"
+                          />
+                        )}
                       </div>
 
                       <div className="mt-1 text-xs text-gray-400">
@@ -1809,7 +1890,7 @@ export default function StudentDashboard() {
                   </div>
 
                   {/* Progress Bar Line */}
-                  <div className="w-full bg-[#161616] h-2 rounded-full overflow-hidden my-4">
+                  <div className="w-full bg-gray-100 dark:bg-gray-700 h-2 rounded-full overflow-hidden my-4">
                     <div
                       className="h-full rounded-full transition-all duration-300"
                       style={{
@@ -1827,9 +1908,9 @@ export default function StudentDashboard() {
                   </div>
 
                   {/* Bottom: Update your status + 4 Pill Buttons */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-gray-800/80">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-gray-200 dark:border-gray-700">
                     <div className="flex items-center gap-3">
-                      <span className="text-xs font-medium text-gray-400">
+                      <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
                         Update your status:
                       </span>
                       {item.link && (
@@ -1837,7 +1918,7 @@ export default function StudentDashboard() {
                           href={item.link}
                           target="_blank"
                           rel="noreferrer"
-                          className="inline-flex items-center gap-1 text-xs text-teal-400 hover:underline"
+                          className="inline-flex items-center gap-1 text-xs text-teal-600 dark:text-teal-400 hover:underline"
                         >
                           <ExternalLink size={12} /> Open Resource
                         </a>
@@ -1848,7 +1929,7 @@ export default function StudentDashboard() {
                           target="_blank"
                           rel="noreferrer"
                           download
-                          className="inline-flex items-center gap-1 text-xs text-gray-300 hover:underline"
+                          className="inline-flex items-center gap-1 text-xs text-gray-600 dark:text-gray-300 hover:underline"
                         >
                           <Download size={12} /> Download File
                         </a>
@@ -1866,8 +1947,8 @@ export default function StudentDashboard() {
                             disabled={isSaving}
                             className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all ${
                               isSelected
-                                ? "bg-teal-950/70 text-teal-300 border border-teal-500 shadow-sm"
-                                : "bg-[#151515] hover:bg-[#202020] text-gray-400 border border-gray-800"
+                                ? "bg-teal-100 dark:bg-teal-950/70 text-teal-800 dark:text-teal-300 border border-teal-300 dark:border-teal-500 shadow-sm"
+                                : "bg-gray-50 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700"
                             }`}
                           >
                             {opt.label}
@@ -1879,8 +1960,10 @@ export default function StudentDashboard() {
 
                   {/* Mentor feedback note if any */}
                   {item.notes && (
-                    <div className="mt-3 p-2.5 bg-teal-950/40 rounded-xl text-xs text-teal-300 border border-teal-800/70 flex items-start gap-1.5">
-                      <span className="font-bold flex-shrink-0">Mentor Note:</span>
+                    <div className="mt-3 p-2.5 bg-teal-50 dark:bg-teal-950/40 rounded-xl text-xs text-teal-800 dark:text-teal-300 border border-teal-200 dark:border-teal-800/70 flex items-start gap-1.5">
+                      <span className="font-bold flex-shrink-0">
+                        Mentor Note:
+                      </span>
                       <span>{item.notes}</span>
                     </div>
                   )}
@@ -1888,11 +1971,15 @@ export default function StudentDashboard() {
               );
             })
           ) : (
-            <div className="p-12 text-center bg-[#0a0a0a] rounded-2xl border border-gray-800 text-gray-400">
-              <BookOpen size={32} className="mx-auto mb-2 text-gray-600" />
-              <p className="text-sm font-semibold text-gray-300">No learning resources published yet</p>
+            <div className="p-12 text-center bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400">
+              <BookOpen size={32} className="mx-auto mb-2 text-gray-400 dark:text-gray-600" />
+              <p className="text-sm font-semibold text-gray-900 dark:text-gray-300">
+                No learning resources published yet
+              </p>
               <p className="text-xs text-gray-500 mt-1">
-                When your mentor or admin shares learning materials and curriculum topics for your track, they will appear here for you to track and complete.
+                When your mentor or admin shares learning materials and
+                curriculum topics for your track, they will appear here for you
+                to track and complete.
               </p>
             </div>
           )}
@@ -1914,25 +2001,30 @@ export default function StudentDashboard() {
             setSubmissionsList(res.data.data);
           } else {
             // Fallback to data.assignments
-            const asg = (data?.assignments || []).filter((a) => a.submission || a.status === "Graded");
+            const asg = (data?.assignments || []).filter(
+              (a) => a.submission || a.status === "Graded",
+            );
             setSubmissionsList(asg);
           }
         })
         .catch(() => {
-          const asg = (data?.assignments || []).filter((a) => a.submission || a.status === "Graded");
+          const asg = (data?.assignments || []).filter(
+            (a) => a.submission || a.status === "Graded",
+          );
           setSubmissionsList(asg);
         })
         .finally(() => setGradesLoading(false));
     }, []);
 
     const gradedItems = submissionsList.filter(
-      (s) => s.status === "Graded" || (s.score !== null && s.score !== undefined)
+      (s) =>
+        s.status === "Graded" || (s.score !== null && s.score !== undefined),
     );
     const pendingItems = submissionsList.filter(
-      (s) => s.status === "Submitted" || s.status === "Pending"
+      (s) => s.status === "Submitted" || s.status === "Pending",
     );
     const resubmitItems = submissionsList.filter(
-      (s) => s.status === "Resubmission Required" || s.status === "Resubmit"
+      (s) => s.status === "Resubmission Required" || s.status === "Resubmit",
     );
 
     const totalGradedScore = gradedItems.reduce((sum, item) => {
@@ -1941,12 +2033,18 @@ export default function StudentDashboard() {
       return sum + (score / max) * 100;
     }, 0);
 
-    const avgScore = gradedItems.length > 0 ? Math.round(totalGradedScore / gradedItems.length) : stats.averageGrade || 0;
+    const avgScore =
+      gradedItems.length > 0
+        ? Math.round(totalGradedScore / gradedItems.length)
+        : stats.averageGrade || 0;
 
     const filteredList = submissionsList.filter((item) => {
-      if (activeTab === "graded") return item.status === "Graded" || item.score != null;
-      if (activeTab === "pending") return item.status === "Submitted" || item.status === "Pending";
-      if (activeTab === "resubmit") return item.status === "Resubmission Required";
+      if (activeTab === "graded")
+        return item.status === "Graded" || item.score != null;
+      if (activeTab === "pending")
+        return item.status === "Submitted" || item.status === "Pending";
+      if (activeTab === "resubmit")
+        return item.status === "Resubmission Required";
       return true;
     });
 
@@ -1958,35 +2056,55 @@ export default function StudentDashboard() {
         {/* KPI Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-            <span className="text-xs text-gray-500 font-medium">Average Grade</span>
+            <span className="text-xs text-gray-500 font-medium">
+              Average Grade
+            </span>
             <div className="flex items-baseline justify-between mt-2">
-              <strong className="text-2xl font-bold text-teal-600 dark:text-teal-400">{avgScore}%</strong>
+              <strong className="text-2xl font-bold text-teal-600 dark:text-teal-400">
+                {avgScore}%
+              </strong>
               <span className="text-xs px-2 py-0.5 rounded-full bg-teal-50 dark:bg-teal-950 text-teal-700 dark:text-teal-300 font-semibold">
-                {avgScore >= 80 ? "Excellent" : avgScore >= 60 ? "Good" : "Needs Review"}
+                {avgScore >= 80
+                  ? "Excellent"
+                  : avgScore >= 60
+                    ? "Good"
+                    : "Needs Review"}
               </span>
             </div>
           </div>
 
           <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-            <span className="text-xs text-gray-500 font-medium">Graded Submissions</span>
+            <span className="text-xs text-gray-500 font-medium">
+              Graded Submissions
+            </span>
             <div className="flex items-baseline justify-between mt-2">
-              <strong className="text-2xl font-bold text-green-600 dark:text-green-400">{gradedItems.length}</strong>
+              <strong className="text-2xl font-bold text-green-600 dark:text-green-400">
+                {gradedItems.length}
+              </strong>
               <span className="text-xs text-gray-400">completed</span>
             </div>
           </div>
 
           <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-            <span className="text-xs text-gray-500 font-medium">Awaiting Review</span>
+            <span className="text-xs text-gray-500 font-medium">
+              Awaiting Review
+            </span>
             <div className="flex items-baseline justify-between mt-2">
-              <strong className="text-2xl font-bold text-orange-500">{pendingItems.length}</strong>
+              <strong className="text-2xl font-bold text-orange-500">
+                {pendingItems.length}
+              </strong>
               <span className="text-xs text-gray-400">with mentors</span>
             </div>
           </div>
 
           <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-            <span className="text-xs text-gray-500 font-medium">Resubmissions</span>
+            <span className="text-xs text-gray-500 font-medium">
+              Resubmissions
+            </span>
             <div className="flex items-baseline justify-between mt-2">
-              <strong className="text-2xl font-bold text-red-500">{resubmitItems.length}</strong>
+              <strong className="text-2xl font-bold text-red-500">
+                {resubmitItems.length}
+              </strong>
               <span className="text-xs text-gray-400">action required</span>
             </div>
           </div>
@@ -1997,30 +2115,33 @@ export default function StudentDashboard() {
           <button
             type="button"
             onClick={() => setActiveTab("all")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${activeTab === "all"
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+              activeTab === "all"
                 ? "bg-teal-600 text-white"
                 : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-              }`}
+            }`}
           >
             All Submissions ({submissionsList.length})
           </button>
           <button
             type="button"
             onClick={() => setActiveTab("graded")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${activeTab === "graded"
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+              activeTab === "graded"
                 ? "bg-teal-600 text-white"
                 : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-              }`}
+            }`}
           >
             Graded ({gradedItems.length})
           </button>
           <button
             type="button"
             onClick={() => setActiveTab("pending")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${activeTab === "pending"
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+              activeTab === "pending"
                 ? "bg-teal-600 text-white"
                 : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-              }`}
+            }`}
           >
             Pending Review ({pendingItems.length})
           </button>
@@ -2032,8 +2153,10 @@ export default function StudentDashboard() {
             <EmptyState text="Loading grades & submissions..." />
           ) : filteredList.length ? (
             filteredList.map((item) => {
-              const title = item.assignment?.title || item.title || "Assignment";
-              const maxScore = item.assignment?.maxScore || item.maxScore || 100;
+              const title =
+                item.assignment?.title || item.title || "Assignment";
+              const maxScore =
+                item.assignment?.maxScore || item.maxScore || 100;
               const hasScore = item.score !== null && item.score !== undefined;
               const isGraded = item.status === "Graded" || hasScore;
 
@@ -2044,15 +2167,25 @@ export default function StudentDashboard() {
                   </div>
                   <div className="list-card-main">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-bold text-gray-900 dark:text-gray-100">{title}</h3>
-                      <span className={`status-pill ${String(item.status || "submitted").toLowerCase().replaceAll(" ", "-")}`}>
+                      <h3 className="font-bold text-gray-900 dark:text-gray-100">
+                        {title}
+                      </h3>
+                      <span
+                        className={`status-pill ${String(
+                          item.status || "submitted",
+                        )
+                          .toLowerCase()
+                          .replaceAll(" ", "-")}`}
+                      >
                         {item.status || "Submitted"}
                       </span>
                     </div>
 
                     {item.feedback && (
                       <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg mt-2 text-sm text-gray-700 dark:text-gray-200 border-l-4 border-teal-500">
-                        <strong className="text-xs text-gray-500 dark:text-gray-400 block mb-0.5">Mentor Feedback:</strong>
+                        <strong className="text-xs text-gray-500 dark:text-gray-400 block mb-0.5">
+                          Mentor Feedback:
+                        </strong>
                         <p>{item.feedback}</p>
                       </div>
                     )}
@@ -2079,7 +2212,9 @@ export default function StudentDashboard() {
                         </a>
                       )}
                       {item.submittedAt && (
-                        <span className="text-gray-400">Submitted on {formatDate(item.submittedAt)}</span>
+                        <span className="text-gray-400">
+                          Submitted on {formatDate(item.submittedAt)}
+                        </span>
                       )}
                     </div>
                   </div>
@@ -2123,7 +2258,7 @@ export default function StudentDashboard() {
             setAnnList(res.data.data || []);
           }
         })
-        .catch(() => { })
+        .catch(() => {})
         .finally(() => setAnnLoading(false));
     }, []);
 
@@ -2145,24 +2280,31 @@ export default function StudentDashboard() {
                   <div className="flex items-center gap-2 flex-wrap">
                     <h3>{item.title}</h3>
                     {Boolean(
-                      data?.student?.mentor && (
-                        item.author?._id === data.student.mentor._id ||
+                      data?.student?.mentor &&
+                      (item.author?._id === data.student.mentor._id ||
                         item.author === data.student.mentor._id ||
-                        item.author?.email === data.student.mentor.email
-                      )
+                        item.author?.email === data.student.mentor.email),
                     ) && (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-orange-100 dark:bg-orange-950 text-orange-800 dark:text-orange-300 border border-orange-300 dark:border-orange-700 shadow-sm">
-                          ★ From your mentor
-                        </span>
-                      )}
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-orange-100 dark:bg-orange-950 text-orange-800 dark:text-orange-300 border border-orange-300 dark:border-orange-700 shadow-sm">
+                        ★ From your mentor
+                      </span>
+                    )}
                     {item.targetAudience && (
                       <span className="text-xs px-2 py-0.5 rounded-full bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 font-medium">
-                        {item.targetAudience === "all" ? "Everyone" : item.targetAudience === "students" ? "All Students" : "My Track"}
+                        {item.targetAudience === "all"
+                          ? "Everyone"
+                          : item.targetAudience === "students"
+                            ? "All Students"
+                            : "My Track"}
                       </span>
                     )}
                   </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-300 mt-1 whitespace-pre-line">{item.content}</p>
-                  <small className="text-xs text-gray-400 mt-2 block">{formatDate(item.publishDate || item.createdAt)}</small>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mt-1 whitespace-pre-line">
+                    {item.content}
+                  </p>
+                  <small className="text-xs text-gray-400 mt-2 block">
+                    {formatDate(item.publishDate || item.createdAt)}
+                  </small>
                 </div>
               </div>
             ))
@@ -2176,8 +2318,8 @@ export default function StudentDashboard() {
 
   const ProfilePage = () => {
     const [profile, setProfile] = React.useState(data?.student || user || {});
-
     const [editMode, setEditMode] = React.useState(false);
+    const [loading, setLoading] = React.useState(true);
     const [formData, setFormData] = React.useState({
       name: profile.name || "",
       phone: profile.phone || "",
@@ -2186,6 +2328,7 @@ export default function StudentDashboard() {
     const [saving, setSaving] = React.useState(false);
 
     React.useEffect(() => {
+      setLoading(true);
       API.get("/profile")
         .then((res) => {
           if (res.data.success && res.data.data) {
@@ -2197,7 +2340,8 @@ export default function StudentDashboard() {
             });
           }
         })
-        .catch(() => { });
+        .catch(() => {})
+        .finally(() => setLoading(false));
     }, []);
 
     const handleSaveProfile = async (e) => {
@@ -2208,7 +2352,10 @@ export default function StudentDashboard() {
         if (res.data.success) {
           setProfile(res.data.data);
           const curUser = JSON.parse(localStorage.getItem("user") || "{}");
-          localStorage.setItem("user", JSON.stringify({ ...curUser, name: res.data.data.name }));
+          localStorage.setItem(
+            "user",
+            JSON.stringify({ ...curUser, name: res.data.data.name }),
+          );
           toast.success("Profile updated successfully!");
           setEditMode(false);
         }
@@ -2220,18 +2367,31 @@ export default function StudentDashboard() {
     };
 
     return (
-      <PageSection title="My Profile" subtitle="Manage your student profile and contact details.">
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 max-w-2xl">
+      <PageSection
+        title="My Profile"
+        subtitle="Manage your student profile and contact details."
+      >
+        {loading ? (
+          <div className="py-16 text-center text-gray-400">
+            <Loader2 className="animate-spin mx-auto mb-2 text-teal-600" size={28} />
+            <p className="text-sm">Loading your profile...</p>
+          </div>
+        ) : (
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 max-w-2xl">
           <div className="flex items-center justify-between pb-6 border-b border-gray-100 dark:border-gray-700">
             <div className="flex items-center space-x-4">
               <div className="w-16 h-16 rounded-full bg-teal-600 text-white flex items-center justify-center font-bold text-2xl shadow">
                 {(profile.name || "S").charAt(0).toUpperCase()}
               </div>
               <div>
-                <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">{profile.name}</h2>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+                  {profile.name}
+                </h2>
                 <p className="text-sm text-gray-500">{profile.email}</p>
                 <span className="inline-block mt-1 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300">
-                  {profile.batch?.name || profile.batch?.track || "Student Track"}
+                  {profile.batch?.name ||
+                    profile.batch?.track ||
+                    "Student Track"}
                 </span>
               </div>
             </div>
@@ -2255,7 +2415,9 @@ export default function StudentDashboard() {
                   type="text"
                   required
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm"
                 />
               </div>
@@ -2268,7 +2430,9 @@ export default function StudentDashboard() {
                   type="tel"
                   placeholder="+251 ..."
                   value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, phone: e.target.value })
+                  }
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm"
                 />
               </div>
@@ -2279,12 +2443,13 @@ export default function StudentDashboard() {
                 </label>
                 <select
                   value={formData.gender}
-                  onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, gender: e.target.value })
+                  }
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm"
                 >
                   <option value="Male">Male</option>
                   <option value="Female">Female</option>
-                  <option value="Other">Other</option>
                 </select>
               </div>
 
@@ -2294,7 +2459,11 @@ export default function StudentDashboard() {
                   disabled={saving}
                   className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 font-medium text-sm disabled:opacity-50 transition-colors"
                 >
-                  {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                  {saving ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    <Save size={16} />
+                  )}
                   <span>Save Changes</span>
                 </button>
               </div>
@@ -2302,23 +2471,39 @@ export default function StudentDashboard() {
           ) : (
             <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
               <div className="p-3.5 bg-gray-50 dark:bg-gray-700/40 rounded-lg">
-                <span className="text-xs text-gray-400 block mb-1">Email Address</span>
-                <span className="font-medium text-gray-800 dark:text-gray-200">{profile.email}</span>
+                <span className="text-xs text-gray-400 block mb-1">
+                  Email Address
+                </span>
+                <span className="font-medium text-gray-800 dark:text-gray-200">
+                  {profile.email}
+                </span>
               </div>
               <div className="p-3.5 bg-gray-50 dark:bg-gray-700/40 rounded-lg">
-                <span className="text-xs text-gray-400 block mb-1">Phone Number</span>
-                <span className="font-medium text-gray-800 dark:text-gray-200">{profile.phone || "Not set"}</span>
+                <span className="text-xs text-gray-400 block mb-1">
+                  Phone Number
+                </span>
+                <span className="font-medium text-gray-800 dark:text-gray-200">
+                  {profile.phone || "Not set"}
+                </span>
               </div>
               <div className="p-3.5 bg-gray-50 dark:bg-gray-700/40 rounded-lg">
                 <span className="text-xs text-gray-400 block mb-1">Gender</span>
-                <span className="font-medium text-gray-800 dark:text-gray-200">{profile.gender || "Not set"}</span>
+                <span className="font-medium text-gray-800 dark:text-gray-200">
+                  {profile.gender || "Not set"}
+                </span>
               </div>
               <div className="p-3.5 bg-gray-50 dark:bg-gray-700/40 rounded-lg">
-                <span className="text-xs text-gray-400 block mb-1">Assigned Track</span>
-                <span className="font-medium text-gray-800 dark:text-gray-200">{profile.batch?.name || profile.batch?.track || "None"}</span>
+                <span className="text-xs text-gray-400 block mb-1">
+                  Assigned Track
+                </span>
+                <span className="font-medium text-gray-800 dark:text-gray-200">
+                  {profile.batch?.name || profile.batch?.track || "None"}
+                </span>
               </div>
               <div className="p-3.5 bg-teal-50 dark:bg-teal-950/40 rounded-lg col-span-1 sm:col-span-2 border border-teal-200 dark:border-teal-800">
-                <span className="text-xs text-teal-600 dark:text-teal-400 font-semibold block mb-1">Assigned Mentor</span>
+                <span className="text-xs text-teal-600 dark:text-teal-400 font-semibold block mb-1">
+                  Assigned Mentor
+                </span>
                 {profile.mentor?.name ? (
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-gray-900 dark:text-white">
@@ -2331,12 +2516,15 @@ export default function StudentDashboard() {
                     )}
                   </div>
                 ) : (
-                  <span className="text-gray-500 italic">No mentor assigned yet by admin</span>
+                  <span className="text-gray-500 italic">
+                    No mentor assigned yet by admin
+                  </span>
                 )}
               </div>
             </div>
           )}
         </div>
+        )}
       </PageSection>
     );
   };
@@ -2356,7 +2544,7 @@ export default function StudentDashboard() {
             setSettings(res.data.data);
           }
         })
-        .catch(() => { });
+        .catch(() => {});
     }, []);
 
     const toggleSetting = async (key) => {
@@ -2374,17 +2562,28 @@ export default function StudentDashboard() {
     };
 
     return (
-      <PageSection title="Settings" subtitle="Manage your notification and portal preferences.">
+      <PageSection
+        title="Settings"
+        subtitle="Manage your notification and portal preferences."
+      >
         <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 max-w-2xl space-y-6">
           <div>
-            <h3 className="font-bold text-gray-900 dark:text-gray-100 mb-1">Notifications</h3>
-            <p className="text-xs text-gray-500 mb-4">Choose what updates you want to receive.</p>
+            <h3 className="font-bold text-gray-900 dark:text-gray-100 mb-1">
+              Notifications
+            </h3>
+            <p className="text-xs text-gray-500 mb-4">
+              Choose what updates you want to receive.
+            </p>
 
             <div className="space-y-3">
               <label className="flex items-center justify-between p-3.5 bg-gray-50 dark:bg-gray-700/40 rounded-lg cursor-pointer">
                 <div>
-                  <strong className="block text-sm text-gray-800 dark:text-gray-200">Email Notifications</strong>
-                  <span className="text-xs text-gray-400">Receive summary emails about your activity</span>
+                  <strong className="block text-sm text-gray-800 dark:text-gray-200">
+                    Email Notifications
+                  </strong>
+                  <span className="text-xs text-gray-400">
+                    Receive summary emails about your activity
+                  </span>
                 </div>
                 <input
                   type="checkbox"
@@ -2396,8 +2595,12 @@ export default function StudentDashboard() {
 
               <label className="flex items-center justify-between p-3.5 bg-gray-50 dark:bg-gray-700/40 rounded-lg cursor-pointer">
                 <div>
-                  <strong className="block text-sm text-gray-800 dark:text-gray-200">Announcement Alerts</strong>
-                  <span className="text-xs text-gray-400">Get notified whenever mentors post announcements</span>
+                  <strong className="block text-sm text-gray-800 dark:text-gray-200">
+                    Announcement Alerts
+                  </strong>
+                  <span className="text-xs text-gray-400">
+                    Get notified whenever mentors post announcements
+                  </span>
                 </div>
                 <input
                   type="checkbox"
@@ -2409,8 +2612,12 @@ export default function StudentDashboard() {
 
               <label className="flex items-center justify-between p-3.5 bg-gray-50 dark:bg-gray-700/40 rounded-lg cursor-pointer">
                 <div>
-                  <strong className="block text-sm text-gray-800 dark:text-gray-200">Assignment Deadlines</strong>
-                  <span className="text-xs text-gray-400">Alerts when assignments are due or graded</span>
+                  <strong className="block text-sm text-gray-800 dark:text-gray-200">
+                    Assignment Deadlines
+                  </strong>
+                  <span className="text-xs text-gray-400">
+                    Alerts when assignments are due or graded
+                  </span>
                 </div>
                 <input
                   type="checkbox"
@@ -2426,8 +2633,20 @@ export default function StudentDashboard() {
     );
   };
 
-  if (loading) {
+  const PageSection = ({ title, subtitle, children }) => (
+    <>
+      <div className="student-page-heading">
+        <div>
+          <h1>{title}</h1>
+          <p>{subtitle}</p>
+        </div>
+        <div className="student-heading-actions"></div>
+      </div>
+      {children}
+    </>
+  );
 
+  if (loading) {
     return (
       <div className="student-loading-screen">
         <div className="student-spinner" />
@@ -2452,8 +2671,10 @@ export default function StudentDashboard() {
     );
   }
 
-  return (
-    <div className={`student-app min-h-screen bg-gray-50 text-gray-900 dark:text-gray-100 dark:bg-gray-900 dark:text-gray-100 ${collapsed ? "sidebar-collapsed" : ""}`}>
+  const DashboardContent = () => (
+    <div
+      className={`student-app min-h-screen bg-gray-50 text-gray-900 dark:text-gray-100 dark:bg-gray-900 dark:text-gray-100 ${collapsed ? "sidebar-collapsed" : ""}`}
+    >
       <StudentSidebar
         mobileOpen={mobileOpen}
         onClose={() => setMobileOpen(false)}
@@ -2559,4 +2780,17 @@ export default function StudentDashboard() {
       )}
     </div>
   );
+
+  const isAdmitted = !!(data?.student?.batch || user?.batch);
+  
+  if (loading) {
+    return (
+      <div className="student-loading-screen">
+        <Loader2 className="animate-spin text-teal-600 mb-4" size={48} />
+        <h2>Loading your dashboard...</h2>
+      </div>
+    );
+  }
+
+  return isAdmitted ? <DashboardContent /> : <Navigate to="/apply" replace />;
 }

@@ -15,7 +15,7 @@ const userSchema = new mongoose.Schema(
       unique: true,
       lowercase: true,
       trim: true,
-      match: [/^\S+@astu\.edu\.et$/i, "Please use a valid ASTU email"],
+      match: [/^\S+@\S+\.\S+$/i, "Please use a valid email"]
     },
 
     password: {
@@ -36,7 +36,19 @@ const userSchema = new mongoose.Schema(
       ref: "Batch",
       default: null,
     },
-
+    mentor: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+    resetPasswordToken: {
+      type: String,
+      default: null,
+    },
+    resetPasswordExpires: {
+      type: Date,
+      default: null,
+    },
     profilePhoto: {
       type: String,
       default: null,
@@ -84,16 +96,27 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
-
     resetPasswordToken: {
       type: String,
       default: null,
     },
-
+    
     resetPasswordExpires: {
       type: Date,
       default: null,
     },
+    warnings: [
+      {
+        message: {
+          type: String,
+          required: true,
+        },
+        date: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
   },
   {
     timestamps: true,

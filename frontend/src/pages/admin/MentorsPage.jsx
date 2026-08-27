@@ -8,46 +8,20 @@ import {
   X,
   Filter,
   Edit,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import API from "../../api/axios";
-
-const initialMentors = [
-  {
-    id: 1,
-    name: "Yasmin Ali",
-    gender: "Female",
-    email: "jazmin@gmail.com",
-    phone: "+1 234 567 8900",
-    role: "Web Dev Mentor",
-    expertise: ["React", "Node.js", "MongoDB"],
-    status: "Active",
-  },
-  {
-    id: 2,
-    name: "Ahmed Sani",
-    gender: "Male",
-    email: "ahmed.sani@gmail.com",
-    phone: "+1 234 567 8901",
-    role: "CP Mentor",
-    expertise: ["C++", "Algorithms", "Codeforces"],
-    status: "Active",
-  },
-  {
-    id: 3,
-    name: "Sara Seid",
-    gender: "Female",
-    email: "sara.seid@gmail.com",
-    phone: "+1 234 567 8902",
-    role: "Backend Mentor",
-    expertise: ["Python", "Django", "PostgreSQL"],
-    status: "On Leave",
-  },
-];
+import { useToast } from "../../context/ToastContext";
 
 const MentorsPage = () => {
+  const { toast, confirm } = useToast();
   const [mentors, setMentors] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingMentor, setEditingMentor] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   // Filtering
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -109,28 +83,33 @@ const MentorsPage = () => {
         .filter(Boolean);
 
       // Post to backend
-      const response = await API.post("/users", {
+      const payload = {
         ...newMentor,
+        role: "mentor",
+        mentorRole: newMentor.role,
         expertise: expertiseArray,
-      });
+      };
+      
+      const response = await API.post("/users", payload);
 
       // Update local state with returned user
-      const m = response.data.data;
+      const m = response.data?.data || response.data?.user;
       const addedMentor = m
         ? {
-            id: m._id,
+            id: m._id || m.id,
             name: m.name,
             gender: m.gender || "Male",
             email: m.email,
             phone: m.phone || "",
-            role: m.mentorRole || "Mentor",
-            expertise: m.expertise || [],
+            role: m.mentorRole || m.role || "Mentor",
+            expertise: Array.isArray(m.expertise) ? m.expertise : expertiseArray,
             status: m.isActive ? "Active" : "Inactive",
           }
         : { ...newMentor, expertise: expertiseArray, id: Date.now() };
 
       setMentors([...mentors, addedMentor]);
       setIsModalOpen(false);
+      toast.success("Mentor added successfully");
       setNewMentor({
         name: "",
         gender: "Male",
@@ -143,13 +122,65 @@ const MentorsPage = () => {
       });
     } catch (error) {
       console.error("Failed to add mentor:", error);
-      alert(error.response?.data?.message || "Failed to add mentor");
+      toast.error(error.response?.data?.message || "Failed to add mentor");
     }
   };
 
-  const handleDelete = (id) => {
-    if (window.confirm("Are you sure you want to remove this mentor?")) {
-      setMentors(mentors.filter((m) => m.id !== id));
+  const handleUpdateMentor = async (e) => {
+    e.preventDefault();
+    try {
+      const expertiseArray = typeof editingMentor.expertise === "string" 
+        ? editingMentor.expertise.split(",").map((s) => s.trim()).filter(Boolean)
+        : editingMentor.expertise;
+
+      const response = await API.put(`/users/${editingMentor.id}`, {
+        name: editingMentor.name,
+        gender: editingMentor.gender,
+        email: editingMentor.email,
+        phone: editingMentor.phone,
+        mentorRole: editingMentor.role,
+        expertise: expertiseArray,
+        isActive: editingMentor.status === "Active",
+      });
+
+      const updated = response.data?.data || response.data?.user || editingMentor;
+      const updatedId = updated?._id || updated?.id || editingMentor.id;
+
+      setMentors(mentors.map(m => m.id === updatedId ? {
+        id: updatedId,
+        name: updated.name || editingMentor.name,
+        gender: updated.gender || editingMentor.gender || "Male",
+        email: updated.email || editingMentor.email,
+        phone: updated.phone || editingMentor.phone || "",
+        role: updated.mentorRole || updated.role || editingMentor.role || "Mentor",
+        expertise: Array.isArray(updated.expertise) ? updated.expertise : expertiseArray,
+        status: updated.isActive !== undefined ? (updated.isActive ? "Active" : "Inactive") : editingMentor.status,
+      } : m));
+
+      setIsEditModalOpen(false);
+      setEditingMentor(null);
+      toast.success("Mentor updated successfully");
+    } catch (error) {
+      console.error("Failed to update mentor:", error);
+      toast.error(error.response?.data?.message || "Failed to update mentor");
+    }
+  };
+  const handleDelete = async (id) => {
+    const ok = await confirm({
+      title: "Remove Mentor",
+      message: "Are you sure you want to remove this mentor? They will lose access to their assigned tracks.",
+      confirmText: "Yes, Remove",
+      type: "danger",
+    });
+    if (ok) {
+      try {
+        await API.delete(`/users/${id}`);
+        setMentors(mentors.filter((m) => m.id !== id));
+        toast.success("Mentor removed successfully");
+      } catch (error) {
+        console.error("Failed to delete mentor:", error);
+        toast.error(error.response?.data?.message || "Failed to delete mentor");
+      }
     }
   };
 
@@ -163,7 +194,7 @@ const MentorsPage = () => {
           </div>
           <input
             type="text"
-            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500 text-sm"
+            className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-teal-500 focus:border-teal-500 text-sm"
             placeholder="Search mentors by name..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -175,22 +206,22 @@ const MentorsPage = () => {
           <div className="relative">
             <button
               onClick={() => setIsFilterOpen(!isFilterOpen)}
-              className="flex items-center space-x-2 bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500"
+              className="flex items-center space-x-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all focus:outline-none focus:ring-2 focus:ring-teal-500/50 shadow-sm"
             >
-              <Filter size={18} />
-              <span>Filter</span>
+              <Filter size={16} />
+              <span className="text-sm font-medium">Filter</span>
             </button>
             {isFilterOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 p-4 z-10">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="absolute right-0 mt-2 w-52 bg-white dark:bg-gray-900 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)] border border-gray-100 dark:border-gray-800 p-4 z-20">
+                <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
                   Gender Filter
                 </label>
                 <select
                   value={genderFilter}
                   onChange={(e) => setGenderFilter(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 text-sm"
+                  className="w-full px-3 py-2 border-none bg-gray-50 dark:bg-gray-800 rounded-lg text-sm text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-teal-500/50 cursor-pointer"
                 >
-                  <option value="All">All</option>
+                  <option value="All">All Genders</option>
                   <option value="Male">Male</option>
                   <option value="Female">Female</option>
                 </select>
@@ -209,24 +240,24 @@ const MentorsPage = () => {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-gray-50 border-b border-gray-200">
-                <th className="px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+              <tr className="bg-gray-50 border-b border-gray-200 dark:border-gray-700">
+                <th className="px-6 py-4 text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
                   Profile
                 </th>
-                <th className="px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                <th className="px-6 py-4 text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
                   Name
                 </th>
-                <th className="px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                <th className="px-6 py-4 text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
                   Email
                 </th>
-                <th className="px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                <th className="px-6 py-4 text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
                   Track/Expertise
                 </th>
-                <th className="px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider text-right">
+                <th className="px-6 py-4 text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider text-right">
                   Actions
                 </th>
               </tr>
@@ -253,7 +284,7 @@ const MentorsPage = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
+                      <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
                         {mentor.name}
                       </div>
                       <div className="text-xs text-gray-500">
@@ -261,20 +292,20 @@ const MentorsPage = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900 flex items-center space-x-2">
+                      <div className="text-sm text-gray-900 dark:text-gray-100 flex items-center space-x-2">
                         <Mail size={14} className="text-gray-400" />
                         <span>{mentor.email}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm text-gray-900 font-medium mb-1">
+                      <div className="text-sm text-gray-900 dark:text-gray-100 font-medium mb-1">
                         {mentor.role}
                       </div>
                       <div className="flex flex-wrap gap-1">
                         {mentor.expertise.map((skill, index) => (
                           <span
                             key={index}
-                            className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-600"
+                            className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-600 dark:text-gray-300"
                           >
                             {skill}
                           </span>
@@ -285,6 +316,13 @@ const MentorsPage = () => {
                       <div className="flex justify-end space-x-3 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
                           title="Edit Mentor"
+                          onClick={() => {
+                            setEditingMentor({
+                              ...mentor,
+                              expertise: mentor.expertise.join(", ")
+                            });
+                            setIsEditModalOpen(true);
+                          }}
                           className="text-gray-400 hover:text-teal-600 transition-colors"
                         >
                           <Edit size={18} />
@@ -309,14 +347,14 @@ const MentorsPage = () => {
       {/* Add Mentor Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-xl">
+          <div className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full p-6 shadow-xl">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-800">
+              <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">
                 Add New Mentor
               </h2>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="text-gray-500 hover:text-gray-800"
+                className="text-gray-500 hover:text-gray-800 dark:text-gray-200"
               >
                 <X size={20} />
               </button>
@@ -324,7 +362,7 @@ const MentorsPage = () => {
             <form onSubmit={handleAddMentor} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Full Name
                   </label>
                   <input
@@ -339,7 +377,7 @@ const MentorsPage = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Gender
                   </label>
                   <select
@@ -357,7 +395,7 @@ const MentorsPage = () => {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Email
                   </label>
                   <input
@@ -372,22 +410,31 @@ const MentorsPage = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Password
                   </label>
-                  <input
-                    required
-                    type="password"
-                    value={newMentor.password}
-                    onChange={(e) =>
-                      setNewMentor({ ...newMentor, password: e.target.value })
-                    }
-                    className="w-full px-3 py-2 border rounded-lg focus:ring-teal-500"
-                    placeholder="Set a password"
-                  />
+                  <div className="relative">
+                    <input
+                      required
+                      type={showPassword ? "text" : "password"}
+                      value={newMentor.password}
+                      onChange={(e) =>
+                        setNewMentor({ ...newMentor, password: e.target.value })
+                      }
+                      className="w-full pl-3 pr-10 py-2 border rounded-lg focus:ring-teal-500"
+                      placeholder="Set a password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:text-gray-300"
+                    >
+                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Phone
                   </label>
                   <input
@@ -403,7 +450,7 @@ const MentorsPage = () => {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Role
                 </label>
                 <input
@@ -418,7 +465,7 @@ const MentorsPage = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Expertise (comma separated)
                 </label>
                 <input
@@ -436,7 +483,7 @@ const MentorsPage = () => {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                  className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 rounded-lg"
                 >
                   Cancel
                 </button>
@@ -445,6 +492,132 @@ const MentorsPage = () => {
                   className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700"
                 >
                   Add Mentor
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Mentor Modal */}
+      {isEditModalOpen && editingMentor && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full p-6 shadow-xl">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">
+                Edit Mentor
+              </h2>
+              <button
+                onClick={() => setIsEditModalOpen(false)}
+                className="text-gray-500 hover:text-gray-800 dark:text-gray-200"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <form onSubmit={handleUpdateMentor} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Full Name
+                  </label>
+                  <input
+                    required
+                    type="text"
+                    value={editingMentor.name}
+                    onChange={(e) =>
+                      setEditingMentor({ ...editingMentor, name: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border rounded-lg focus:ring-teal-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Gender
+                  </label>
+                  <select
+                    required
+                    value={editingMentor.gender}
+                    onChange={(e) =>
+                      setEditingMentor({ ...editingMentor, gender: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border rounded-lg focus:ring-teal-500"
+                  >
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                  </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Email
+                  </label>
+                  <input
+                    required
+                    type="email"
+                    value={editingMentor.email}
+                    onChange={(e) =>
+                      setEditingMentor({ ...editingMentor, email: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border rounded-lg focus:ring-teal-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Phone
+                  </label>
+                  <input
+                    required
+                    type="tel"
+                    value={editingMentor.phone}
+                    onChange={(e) =>
+                      setEditingMentor({ ...editingMentor, phone: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border rounded-lg focus:ring-teal-500"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Role
+                </label>
+                <input
+                  required
+                  type="text"
+                  value={editingMentor.role}
+                  onChange={(e) =>
+                    setEditingMentor({ ...editingMentor, role: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-teal-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Expertise (comma separated)
+                </label>
+                <input
+                  required
+                  type="text"
+                  value={editingMentor.expertise}
+                  onChange={(e) =>
+                    setEditingMentor({ ...editingMentor, expertise: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-teal-500"
+                />
+              </div>
+              <div className="flex justify-end space-x-3 mt-6">
+                <button
+                  type="button"
+                  onClick={() => setIsEditModalOpen(false)}
+                  className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 rounded-lg"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700"
+                >
+                  Save Changes
                 </button>
               </div>
             </form>

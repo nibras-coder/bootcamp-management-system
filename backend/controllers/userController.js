@@ -62,17 +62,8 @@ const getUserById = asyncHandler(async (req, res) => {
 
 // Admin creates a user
 const createUser = asyncHandler(async (req, res) => {
-  const {
-    name,
-    fullName,
-    email,
-    password,
-    role,
-    batch,
-  } = req.body;
-
-  // Support both name and fullName from frontend
-  const userName = (name || fullName || "").trim();
+  const { name, fullName, email, password, role, batch, mentorRole, expertise, phone, isActive, gender } = req.body;
+  const userName = name || fullName;
 
   if (!userName || !email || !password || !role) {
     return res.status(400).json({
@@ -121,6 +112,11 @@ const createUser = asyncHandler(async (req, res) => {
     password,
     role,
     batch: batch || null,
+    mentorRole,
+    expertise,
+    phone,
+    isActive: isActive !== undefined ? isActive : true,
+    gender
   });
 
   const safeUser = await User.findById(user._id)
@@ -288,4 +284,6 @@ module.exports = {
   deleteUser,
   getStudents,
   getMentorStudents,
+  warnStudent,
+  assignStudentToMentor,
 };

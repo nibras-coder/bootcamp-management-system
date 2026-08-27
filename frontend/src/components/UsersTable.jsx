@@ -38,13 +38,13 @@ const UsersTable = () => {
   ];
 
   return (
-    <div className="bg-bootcamp-surface mt-8 rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+    <div className="bg-white dark:bg-gray-800 mt-8 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
       {/* Table Header Section */}
-      <div className="px-6 py-5 border-b border-gray-200 flex justify-between items-center bg-white">
-        <h2 className="text-xl font-bold text-bootcamp-textDark">
+      <div className="px-6 py-5 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-white dark:bg-gray-800">
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white">
           Recent Users
         </h2>
-        <button className="bg-bootcamp-primary hover:bg-[#0f6c7a] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm">
+        <button className="bg-teal-600 dark:bg-teal-500 hover:bg-teal-700 dark:hover:bg-teal-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm">
           + Add New User
         </button>
       </div>
@@ -53,7 +53,7 @@ const UsersTable = () => {
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="bg-bootcamp-background text-bootcamp-textLight text-sm uppercase tracking-wider border-b border-gray-200">
+            <tr className="bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400 text-sm uppercase tracking-wider border-b border-gray-200 dark:border-gray-700">
               <th className="px-6 py-4 font-semibold">User</th>
               <th className="px-6 py-4 font-semibold">Role</th>
               <th className="px-6 py-4 font-semibold">Track</th>
@@ -61,19 +61,19 @@ const UsersTable = () => {
               <th className="px-6 py-4 font-semibold text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100 bg-white">
+          <tbody className="divide-y divide-gray-100 bg-white dark:bg-gray-800">
             {mockUsers.map((user) => (
               <tr key={user.id} className="hover:bg-gray-50 transition-colors">
                 {/* User Info Column */}
                 <div className="px-6 py-4 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-bootcamp-background text-bootcamp-primary flex items-center justify-center font-bold">
+                  <div className="w-10 h-10 rounded-full bg-gray-50 dark:bg-gray-900 text-teal-600 dark:text-teal-400 flex items-center justify-center font-bold">
                     {user.name.charAt(0)}
                   </div>
                   <div>
-                    <div className="font-semibold text-bootcamp-textDark">
+                    <div className="font-semibold text-gray-900 dark:text-white">
                       {user.name}
                     </div>
-                    <div className="text-sm text-bootcamp-textLight">
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
                       {user.email}
                     </div>
                   </div>
@@ -93,7 +93,7 @@ const UsersTable = () => {
                 </td>
 
                 {/* Batch Column */}
-                <td className="px-6 py-4 text-bootcamp-textDark font-medium">
+                <td className="px-6 py-4 text-gray-900 dark:text-white font-medium">
                   {user.batch}
                 </td>
 
@@ -112,7 +112,7 @@ const UsersTable = () => {
 
                 {/* Actions Column */}
                 <td className="px-6 py-4 text-right">
-                  <button className="text-bootcamp-primary hover:text-[#0f6c7a] font-medium text-sm mr-3">
+                  <button className="text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 font-medium text-sm mr-3">
                     Edit
                   </button>
                   <button className="text-red-500 hover:text-red-700 font-medium text-sm">

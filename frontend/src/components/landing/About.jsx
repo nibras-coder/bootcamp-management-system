@@ -25,7 +25,7 @@ const About = () => {
   const [activeItem, setActiveItem] = useState(0);
 
   return (
-    <section id="about" className="py-20 bg-white">
+    <section id="about" className="py-20 bg-white dark:bg-gray-800">
       <div className="max-w-7xl mx-auto px-6 lg:px-12">
         {/* Heading */}
         <div className="text-center max-w-3xl mx-auto mb-14">
@@ -38,7 +38,7 @@ const About = () => {
             <span className="text-[#0f766e]">Grow Together.</span>
           </h2>
 
-          <p className="mt-5 text-gray-600 text-lg leading-relaxed">
+          <p className="mt-5 text-gray-600 dark:text-gray-300 text-lg leading-relaxed">
             MSJ is a collaborative bootcamp designed to help students
             develop practical skills, build meaningful projects, and
             connect with mentors and fellow learners.
@@ -54,7 +54,7 @@ const About = () => {
               className={`text-left p-8 rounded-2xl border transition-all duration-300 ${
                 activeItem === index
                   ? "bg-[#0f766e] text-white border-[#0f766e] shadow-xl -translate-y-2"
-                  : "bg-[#f3f6f8] text-[#1f2937] border-gray-200 hover:-translate-y-1 hover:shadow-lg"
+                  : "bg-[#f3f6f8] text-[#1f2937] border-gray-200 dark:border-gray-700 hover:-translate-y-1 hover:shadow-lg"
               }`}
             >
               <div className="text-4xl mb-5">{item.icon}</div>
@@ -67,7 +67,7 @@ const About = () => {
                 className={`leading-relaxed ${
                   activeItem === index
                     ? "text-white/90"
-                    : "text-gray-600"
+                    : "text-gray-600 dark:text-gray-300"
                 }`}
               >
                 {item.description}

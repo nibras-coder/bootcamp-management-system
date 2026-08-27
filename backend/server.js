@@ -20,6 +20,7 @@ const settingsRoutes = require("./routes/settingsRoutes");
 const communityRoutes = require("./routes/communityRoutes");
 const http = require("http");
 const { initSocket } = require("./socket");
+const applicationRoutes = require("./routes/applicationRoutes");
 
 dotenv.config();
 
@@ -47,15 +48,15 @@ app.use("/api/mentor", mentorRoutes);
 app.use("/api/attendance", attendanceRoutes);
 app.use("/api/progress", progressRoutes);
 app.use("/api/assignments", assignmentRoutes);
-app.use("/api/submissions", submissionRoutes);
-app.use("/api/announcements", announcementRoutes);
-app.use("/api/users", userRoutes);
+app.use("/api/submissions",submissionRoutes);
+app.use("/api/announcements",announcementRoutes);
+app.use("/api/users",userRoutes);
 app.use("/api/batches", batchRoutes);
 app.use("/api/resources", resourceRoutes);
 app.use("/api/student", studentRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/settings", settingsRoutes);
-app.use("/api/communities", communityRoutes);
+app.use("/api/applications", applicationRoutes);
 
 app.get("/", (req, res) => {
   res.json({

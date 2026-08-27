@@ -35,7 +35,10 @@ import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import Communities from "./pages/Communities";
 import BatchesPage from "./pages/admin/BatchesPage";
+import ApplicationsPage from "./pages/admin/ApplicationsPage";
+import ApplyPage from "./pages/ApplyPage";
 import MentorsPage from "./pages/admin/MentorsPage";
+import AdminSettings from "./pages/admin/SettingsPage";
 import StudentsPage from "./pages/admin/StudentsPage";
 import AttendancePage from "./pages/admin/AttendancePage";
 import AssignmentsPage from "./pages/admin/AssignmentsPage";
@@ -44,6 +47,7 @@ import ReportsPage from "./pages/admin/ReportsPage";
 import SettingsPage from "./pages/admin/SettingsPage";
 import ResourcesPage from "./pages/admin/ResourcesPage";
 import ProtectedRoute from "./components/ProtectedRoute";
+import PWAInstallButton from "./components/PWAInstallButton";
 import StudentDashboard from "./pages/StudentDashboard";
 import MentorsSection from "./components/landing/Mentors";
 
@@ -228,12 +232,12 @@ function Header() {
     <header className="header">
       <div className="nav container">
         <Logo />
-        <nav className={open ? "nav-links open" : "nav-links"}>
+        <nav className={`nav-links ${open ? "open" : ""} dark:max-[700px]:bg-gray-900 dark:max-[700px]:!border-gray-800`}>
           {navItems.map(([path, label]) => (
             <a
               key={path}
               href={path}
-              className={location.pathname === path ? "active" : ""}
+              className={`${location.pathname === path ? "active" : ""} dark:text-gray-100 dark:hover:text-teal-400`}
               onClick={(e) => {
                 e.preventDefault();
                 navigate(path);
@@ -825,6 +829,8 @@ function PublicLayout() {
 
 function App() {
   return (
+    <>
+    <PWAInstallButton />
     <BrowserRouter>
       <Routes>
         {/* Public Landing Pages wrapped with Header & Footer */}
@@ -866,6 +872,7 @@ function App() {
           <Route index element={<Navigate to="/admin/dashboard" replace />} />
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="batches" element={<BatchesPage />} />
+          <Route path="applications" element={<ApplicationsPage />} />
           <Route path="mentors" element={<MentorsPage />} />
           <Route path="students" element={<StudentsPage />} />
           <Route path="attendance" element={<AttendancePage />} />
@@ -886,6 +893,7 @@ function App() {
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>
+    </>
   );
 }
 

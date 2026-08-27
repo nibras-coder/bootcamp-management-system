@@ -16,7 +16,7 @@ const AdminLayout = ({ children }) => {
       <aside className="w-72 bg-bootcamp-sidebar text-white flex flex-col z-20 shadow-2xl">
         {/* Brand Section */}
         <div className="flex items-center px-6 py-8 border-b border-white/10 gap-4 mt-2">
-          <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center p-2 shadow-lg shrink-0">
+          <div className="w-16 h-16 bg-white dark:bg-gray-800 rounded-2xl flex items-center justify-center p-2 shadow-lg shrink-0">
             <img
               src={logo}
               alt="ASTU MSJ Logo"
@@ -44,21 +44,21 @@ const AdminLayout = ({ children }) => {
           </a>
           <a
             href="#"
-            className="flex items-center gap-4 p-4 rounded-xl hover:bg-white/10 text-gray-300 hover:text-white text-lg font-medium transition-all"
+            className="flex items-center gap-4 p-4 rounded-xl hover:bg-white dark:bg-gray-800/10 text-gray-300 hover:text-white text-lg font-medium transition-all"
           >
             <LuUsers className="text-2xl" />
             <span>Users</span>
           </a>
           <a
             href="#"
-            className="flex items-center gap-4 p-4 rounded-xl hover:bg-white/10 text-gray-300 hover:text-white text-lg font-medium transition-all"
+            className="flex items-center gap-4 p-4 rounded-xl hover:bg-white dark:bg-gray-800/10 text-gray-300 hover:text-white text-lg font-medium transition-all"
           >
             <LuBookOpen className="text-2xl" />
             <span>Tracks</span>
           </a>
           <a
             href="#"
-            className="flex items-center gap-4 p-4 rounded-xl hover:bg-white/10 text-gray-300 hover:text-white text-lg font-medium transition-all"
+            className="flex items-center gap-4 p-4 rounded-xl hover:bg-white dark:bg-gray-800/10 text-gray-300 hover:text-white text-lg font-medium transition-all"
           >
             <LuMegaphone className="text-2xl" />
             <span>Announcements</span>
