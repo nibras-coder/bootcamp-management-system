@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Users, TrendingUp, FileText, Star, Bell } from "lucide-react";
+import { Users, TrendingUp, FileText, Star, Bell, Loader2, AlertCircle, RefreshCw, Menu } from "lucide-react";
 import API from "../api/axios";
 import Sidebar from "../components/mentor/Sidebar";
 import StatCard from "../components/mentor/StatCard";
@@ -14,149 +14,155 @@ function MentorDashboard() {
   const [error, setError] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  useEffect(() => {
-    const fetchDashboard = async () => {
-      try {
-        const res = await API.get("/mentor/dashboard");
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+  const fetchDashboard = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await API.get("/mentor/dashboard");
+      if (res.data && res.data.data) {
         setStats(res.data.data);
-      } catch (err) {
-        console.error("Failed to load mentor dashboard:", err);
-        setError(
-          err.response?.data?.message ||
-            "Unable to load your dashboard. Please try again.",
-        );
-      } finally {
-        setLoading(false);
       }
-    };
+    } catch (err) {
+      console.error("Failed to load mentor dashboard:", err);
+      setError(
+        err.response?.data?.message ||
+          "Unable to load your dashboard data. Please check your connection and retry."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchDashboard();
   }, []);
 
-  // if (loading) {
-  //   return <p className="p-8 text-gray-600">Loading dashboard...</p>;
-  // }
-
-  // if (error) {
-  //   return <p className="p-8 text-red-600">{error}</p>;
-  // }
+  const todayStr = new Date().toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 
   return (
-    <div className="flex flex-col md:flex-row bg-gray-50 min-h-screen relative">
-      {/* Mobile Header with Hamburger */}
-      <div className="md:hidden flex items-center justify-between p-4 bg-white border-b border-gray-200">
-        <h1 className="text-xl font-bold text-teal-900">ASTU MSJ</h1>
-        <button
-          onClick={() => setSidebarOpen(true)}
-          className="p-2 bg-gray-100 rounded-md text-gray-700"
-        >
-          <svg
-            className="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 6h16M4 12h16M4 18h16"
-            />
-          </svg>
-        </button>
-      </div>
+    <div className="min-h-screen bg-gray-50 text-gray-900 dark:text-gray-100 dark:bg-gray-900">
+      {/* Fixed/Responsive Sidebar */}
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-      {/* Sidebar - hidden on mobile unless toggled */}
-      <div
-        className={`${
-          sidebarOpen ? "fixed inset-0 z-50 flex" : "hidden"
-        } md:flex md:relative md:w-64`}
-      >
-        <div className="w-64 h-full">
-          <Sidebar onClose={() => setSidebarOpen(false)} />
+      <main className="md:ml-64 p-4 md:p-8 min-h-screen">
+        {/* Mobile top bar */}
+        <div className="md:hidden flex items-center justify-between p-3.5 bg-teal-900 dark:bg-black text-white mb-5 rounded-xl border border-teal-800 dark:border-gray-800">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="p-1 rounded-lg hover:bg-teal-800 text-teal-200"
+              aria-label="Open navigation menu"
+            >
+              <Menu size={22} />
+            </button>
+            <span className="font-bold text-sm">Mentor Portal</span>
+          </div>
+          <span className="text-xs text-teal-300 font-medium">{user.name || "Mentor"}</span>
         </div>
-        {/* Overlay to close sidebar on mobile */}
-        {sidebarOpen && (
-          <div
-            className="flex-1 bg-black/50 md:hidden"
-            onClick={() => setSidebarOpen(false)}
-          />
-        )}
-      </div>
-
-      <main className="flex-1 p-4 md:p-8 w-full">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
               Mentor Dashboard
             </h1>
-            <p className="text-gray-500 text-sm">
-              Welcome back, Amir! Here's your track overview.
+            <p className="text-gray-500 dark:text-gray-400 text-sm">
+              Welcome back, {user.name || "Mentor"}! Here's your track overview and student analytics.
             </p>
           </div>
 
-          <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end">
-            <div className="bg-white px-4 py-2 rounded-lg shadow-sm text-sm text-gray-600">
-              May 15, 2026
+          <div className="flex items-center gap-3">
+            <div className="bg-white dark:bg-gray-800 px-4 py-2 rounded-xl shadow-sm text-xs font-semibold text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
+              {todayStr}
             </div>
 
-            <button className="relative bg-white p-2.5 rounded-lg shadow-sm hover:bg-gray-50">
-              <Bell size={18} className="text-gray-600" />
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
-                1
-              </span>
+            <button
+              onClick={fetchDashboard}
+              title="Refresh Data"
+              className="bg-white dark:bg-gray-800 p-2.5 rounded-xl shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 transition-colors"
+            >
+              <RefreshCw size={16} className={loading ? "animate-spin text-teal-600" : ""} />
             </button>
           </div>
         </div>
 
-        {/* Stat cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6 w-full">
-          <StatCard
-            label="My Students"
-            value={stats?.studentsCount ?? 0}
-            sublabel="Total Students"
-            icon={<Users size={18} className="text-teal-700" />}
-          />
-          <StatCard
-            label="Attendance (Avg.)"
-            value={`${stats?.attendancePercentage ?? 0}%`}
-            sublabel="This Week"
-            icon={<TrendingUp size={18} className="text-teal-700" />}
-          />
-          <StatCard
-            label="Pending Submissions"
-            value={stats?.pendingSubmissions ?? 0}
-            sublabel="Needs Review"
-            icon={<FileText size={18} className="text-teal-700" />}
-          />
-          <StatCard
-            label="Average Grade"
-            value={`${stats?.averageGrade ?? 0}%`}
-            sublabel="This Track"
-            icon={<Star size={18} className="text-teal-700" />}
-          />
-        </div>
+        {error ? (
+          <div className="p-6 bg-red-50 dark:bg-red-950/40 rounded-2xl border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 flex items-center justify-between gap-4 my-6">
+            <div className="flex items-center gap-3">
+              <AlertCircle size={24} className="flex-shrink-0" />
+              <div>
+                <strong className="block text-sm font-bold">Failed to load Dashboard</strong>
+                <span className="text-xs">{error}</span>
+              </div>
+            </div>
+            <button
+              onClick={fetchDashboard}
+              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-xl transition-colors flex-shrink-0"
+            >
+              Try Again
+            </button>
+          </div>
+        ) : loading ? (
+          <div className="py-24 text-center text-gray-400">
+            <Loader2 className="animate-spin mx-auto mb-3 text-teal-600" size={32} />
+            <p className="text-sm font-medium">Loading your dashboard analytics...</p>
+          </div>
+        ) : (
+          <>
+            {/* Stat cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6 w-full">
+              <StatCard
+                label="My Students"
+                value={stats?.studentsCount ?? 0}
+                sublabel="Total Assigned Students"
+                icon={<Users size={18} className="text-teal-600 dark:text-teal-400" />}
+              />
+              <StatCard
+                label="Attendance Rate"
+                value={`${stats?.attendancePercentage ?? 0}%`}
+                sublabel="Overall Cohort"
+                icon={<TrendingUp size={18} className="text-teal-600 dark:text-teal-400" />}
+              />
+              <StatCard
+                label="Pending Submissions"
+                value={stats?.pendingSubmissions ?? 0}
+                sublabel="Needs Grading"
+                icon={<FileText size={18} className="text-teal-600 dark:text-teal-400" />}
+              />
+              <StatCard
+                label="Average Grade"
+                value={`${stats?.averageGrade ?? 0}%`}
+                sublabel="Cohort Performance"
+                icon={<Star size={18} className="text-teal-600 dark:text-teal-400" />}
+              />
+            </div>
 
-        {/* Chart + at-risk */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6 w-full">
-          <div className="lg:col-span-2 w-full">
-            <AttendanceChart />
-          </div>
-          <div className="w-full">
-            <StudentsAtRisk />
-          </div>
-        </div>
+            {/* Chart + at-risk */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6 w-full">
+              <div className="lg:col-span-2 w-full min-w-0">
+                <AttendanceChart data={stats?.attendanceOverview} />
+              </div>
+              <div className="w-full min-w-0">
+                <StudentsAtRisk students={stats?.studentsAtRisk || []} />
+              </div>
+            </div>
 
-        {/* Assignments + quick actions */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 w-full">
-          <div className="lg:col-span-2 w-full">
-            <RecentAssignments />
-          </div>
-          <div className="w-full">
-            <QuickActions />
-          </div>
-        </div>
+            {/* Assignments + quick actions */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 w-full">
+              <div className="lg:col-span-2 w-full min-w-0">
+                <RecentAssignments assignments={stats?.pendingGrading || []} />
+              </div>
+              <div className="w-full min-w-0">
+                <QuickActions />
+              </div>
+            </div>
+          </>
+        )}
       </main>
     </div>
   );

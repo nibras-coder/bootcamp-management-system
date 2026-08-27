@@ -12,6 +12,7 @@ const authorize = require(
 
 const {
   createSubmission,
+  getMySubmissions,
   getMentorSubmissions,
   getPendingSubmissions,
   getSubmissionById,
@@ -20,48 +21,56 @@ const {
 } = require(
   "../controllers/submissionController"
 );
-// Student submission
 
+// Student submission
 router.post(
   "/",
   protect,
   authorize("student"),
   createSubmission
 );
-// Mentor submission
 
+// Student's own submissions
+router.get(
+  "/my",
+  protect,
+  authorize("student"),
+  getMySubmissions
+);
+
+// Mentor / Admin submission
 router.get(
   "/",
   protect,
-  authorize("mentor"),
+  authorize("mentor", "admin"),
   getMentorSubmissions
 );
 
 router.get(
   "/pending",
   protect,
-  authorize("mentor"),
+  authorize("mentor", "admin"),
   getPendingSubmissions
 );
 
 router.get(
   "/:id",
   protect,
-  authorize("mentor"),
+  authorize("mentor", "admin"),
   getSubmissionById
 );
 
 router.put(
   "/:id/grade",
   protect,
-  authorize("mentor"),
+  authorize("mentor", "admin"),
   gradeSubmission
 );
 
 router.put(
   "/:id/resubmit",
   protect,
-  authorize("mentor"),
+  authorize("mentor", "admin"),
   requestResubmission
 );
 

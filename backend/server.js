@@ -13,15 +13,27 @@ const submissionRoutes = require("./routes/submissionRoutes");
 const announcementRoutes = require( "./routes/announcementRoutes");
 const userRoutes = require( "./routes/userRoutes");
 const batchRoutes = require("./routes/batchRoutes");
+const resourceRoutes = require("./routes/resourceRoutes");
 const studentRoutes = require("./routes/studentRoutes");
 const profileRoutes = require("./routes/profileRoutes");
 const settingsRoutes = require("./routes/settingsRoutes");
+const applicationRoutes = require("./routes/applicationRoutes");
 
 dotenv.config();
 
 const app = express();
 
-app.use(cors());
+const path = require("path");
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Reflect the request origin back to allow credentials without using '*'
+    callback(null, origin || true);
+  },
+  credentials: true,
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
@@ -32,10 +44,12 @@ app.use("/api/assignments", assignmentRoutes);
 app.use("/api/submissions",submissionRoutes);
 app.use("/api/announcements",announcementRoutes);
 app.use("/api/users",userRoutes);
-app.use( "/api/batches", batchRoutes);
+app.use("/api/batches", batchRoutes);
+app.use("/api/resources", resourceRoutes);
 app.use("/api/student", studentRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/settings", settingsRoutes);
+app.use("/api/applications", applicationRoutes);
 
 app.get("/", (req, res) => {
   res.json({

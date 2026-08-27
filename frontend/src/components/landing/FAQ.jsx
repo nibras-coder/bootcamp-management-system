@@ -31,7 +31,7 @@ function FAQ() {
         {faqs.map((faq, index) => (
           <div
             key={faq.question}
-            className="border border-gray-200 rounded-xl p-5 cursor-pointer"
+            className="border border-gray-200 dark:border-gray-700 rounded-xl p-5 cursor-pointer"
             onClick={() => toggle(index)}
           >
             <div className="flex justify-between items-center">
@@ -41,7 +41,7 @@ function FAQ() {
               </span>
             </div>
             {openIndex === index && (
-              <p className="text-gray-600 mt-3">{faq.answer}</p>
+              <p className="text-gray-600 dark:text-gray-300 mt-3">{faq.answer}</p>
             )}
           </div>
         ))}

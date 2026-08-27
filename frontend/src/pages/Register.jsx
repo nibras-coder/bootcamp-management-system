@@ -1,92 +1,81 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import calligraphy from "../assets/calligraphy.jpg";
+import registrationBg from "../assets/registration-bg.jpg";
 import logo from "../assets/logo.png";
 import API from "../api/axios";
+
+// Zod Schema
+const registerSchema = z
+  .object({
+    name: z.string().min(1, "Full name is required"),
+    email: z.string().email("Please use a valid email"),
+    gender: z.enum(["Male", "Female"], {
+      required_error: "Please select a gender",
+    }),
+    password: z.string().min(6, "Password must be at least 6 characters long"),
+    confirmPassword: z.string().min(6, "Please confirm your password"),
+    terms: z.boolean().refine((val) => val === true, {
+      message: "You must agree to the Terms and Conditions",
+    }),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
 
 function Register() {
   const navigate = useNavigate();
 
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-  });
-
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset,
+  } = useForm({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      gender: "Male",
+      password: "",
+      confirmPassword: "",
+      terms: false,
+    },
+  });
+
+  const onSubmit = async (data) => {
     setError("");
     setSuccess("");
-  };
-
-  const isValidASTUEmail = (email) => {
-    return /^[^\s@]+@astu\.edu\.et$/i.test(email);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    setSuccess("");
-
-    const name = formData.name.trim();
-    const email = formData.email.trim();
-    const password = formData.password;
-    const confirmPassword = formData.confirmPassword;
-
-    if (!name || !email || !password || !confirmPassword) {
-      setError("Please fill in all fields.");
-      return;
-    }
-
-    if (!isValidASTUEmail(email)) {
-      setError("Please use your ASTU email address (@astu.edu.et).");
-      return;
-    }
-
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters long.");
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setError("Passwords do not match.");
-      return;
-    }
-
-    setLoading(true);
 
     try {
       const response = await API.post("/auth/register", {
-        name,
-        email,
-        password,
-        confirmPassword,
+        name: data.name,
+        email: data.email,
+        password: data.password,
+        confirmPassword: data.confirmPassword,
+        gender: data.gender,
       });
+
+      if (response.data.token) {
+        localStorage.setItem("token", response.data.token);
+        localStorage.setItem("user", JSON.stringify(response.data.user));
+      }
 
       setSuccess(
-        response.data?.message ||
-          "Registration successful! You can now log in.",
+        "Registration successful! Redirecting to admissions..."
       );
-
-      setFormData({
-        name: "",
-        email: "",
-        password: "",
-        confirmPassword: "",
-      });
+      reset();
 
       setTimeout(() => {
-        navigate("/login");
+        navigate("/apply");
       }, 1500);
     } catch (err) {
       const backendMessage =
@@ -98,146 +87,162 @@ function Register() {
       } else {
         setError(backendMessage || "Registration failed. Please try again.");
       }
-    } finally {
-      setLoading(false);
     }
   };
 
   return (
-    <main className="auth-page">
-      <div className="auth-shell">
-        <div className="auth-main">
-          <h1>Create your account</h1>
+    <main className="min-h-screen flex flex-col md:flex-row bg-white dark:bg-gray-900">
 
-          <p className="auth-subtitle">
-            Join the bootcamp today and start your journey.
-          </p>
+      {/* Form Half */}
+      <div className="w-full md:w-1/2 flex items-center justify-center p-6 sm:p-12">
+        <div className="max-w-md w-full space-y-8">
+          <div className="text-center md:text-left">
+            <Link to="/" className="inline-flex items-center gap-2 mb-6 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-teal-600 dark:hover:text-teal-400 transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+              <span>Back to Home</span>
+            </Link>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+              Create your account
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              Join the bootcamp today and start your journey.
+            </p>
+          </div>
 
-          {/* Error and Success Messages */}
           {error && (
-            <div
-              style={{
-                color: "#dc2626",
-                marginBottom: "1rem",
-                fontSize: "0.875rem",
-              }}
-            >
+            <div className="p-4 rounded-md bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-sm">
               {error}
             </div>
           )}
           {success && (
-            <div
-              style={{
-                color: "#16a34a",
-                marginBottom: "1rem",
-                fontSize: "0.875rem",
-              }}
-            >
+            <div className="p-4 rounded-md bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-sm">
               {success}
             </div>
           )}
 
-          <form className="auth-form" onSubmit={handleSubmit}>
-            <label className="field">
-              <span>Full name</span>
+          <form className="mt-8 space-y-5" onSubmit={handleSubmit(onSubmit)}>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Full name
+              </label>
               <input
                 type="text"
-                name="name"
-                required
-                value={formData.name}
-                onChange={handleChange}
+                {...register("name")}
                 placeholder="Enter your full name"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-teal-500 focus:border-teal-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
               />
-            </label>
+              {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
+            </div>
 
-            <label className="field">
-              <span>Email</span>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Email
+              </label>
               <input
                 type="email"
-                name="email"
-                required
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="you@astu.edu.et"
+                {...register("email")}
+                placeholder="name@gmail.com"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-teal-500 focus:border-teal-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
               />
-            </label>
+              {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
+            </div>
 
-            <label className="field">
-              <span>Password</span>
-              <div className="password">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Gender
+              </label>
+              <select
+                {...register("gender")}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-teal-500 focus:border-teal-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              >
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+              </select>
+              {errors.gender && <p className="text-red-500 text-xs mt-1">{errors.gender.message}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Password
+              </label>
+              <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
-                  name="password"
-                  required
-                  value={formData.password}
-                  onChange={handleChange}
+                  {...register("password")}
                   placeholder="Create a password"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-teal-500 focus:border-teal-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white pr-16"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((value) => !value)}
+                  className="absolute inset-y-0 right-0 px-3 flex items-center text-sm font-medium text-teal-600 dark:text-teal-400 hover:text-teal-800"
                 >
                   {showPassword ? "Hide" : "Show"}
                 </button>
               </div>
-            </label>
+              {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
+            </div>
 
-            <label className="field">
-              <span>Confirm password</span>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Confirm password
+              </label>
               <input
                 type="password"
-                name="confirmPassword"
-                required
-                value={formData.confirmPassword}
-                onChange={handleChange}
+                {...register("confirmPassword")}
                 placeholder="Confirm your password"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-teal-500 focus:border-teal-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
               />
-            </label>
+              {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword.message}</p>}
+            </div>
 
-            <label className="terms">
-              <input type="checkbox" required />
-              <span>
-                I agree to the Terms and Conditions-
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                {...register("terms")}
+                className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded"
+              />
+              <label className="ml-2 block text-sm text-gray-600 dark:text-gray-400">
+                I agree to the{" "}
                 <Link
                   to="/terms"
-                  className="text-teal-600 hover:text-teal-800 font-semibold transition-colors"
+                  className="text-teal-600 dark:text-teal-400 hover:underline"
                 >
-                  Read Terms
+                  Terms and Conditions
                 </Link>
-              </span>
-            </label>
+              </label>
+            </div>
+            {errors.terms && <p className="text-red-500 text-xs mt-1">{errors.terms.message}</p>}
 
-            <button className="btn primary" type="submit" disabled={loading}>
-              {loading ? "Registering..." : "Register"}
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-colors disabled:opacity-70"
+            >
+              {isSubmitting ? "Registering..." : "Register"}
             </button>
 
-            <p className="auth-switch">
+            <p className="text-center text-sm text-gray-600 dark:text-gray-400 mt-4">
               Already have an account?{" "}
-              <Link to="/login" className="link-button">
+              <Link
+                to="/login"
+                className="font-medium text-teal-600 dark:text-teal-400 hover:underline"
+              >
                 Login here
               </Link>
             </p>
           </form>
         </div>
+      </div>
 
-        <div className="auth-art">
-          <img src={calligraphy} alt="Calligraphy" className="w-full h-full object-cover object-center" />
-
-          <div className="art-overlay"></div>
-
-          <div className="auth-brand">
-            <Link to="/" className="logo">
-              <img src={logo} alt="ASTU MSJ logo" />
-              <span>
-                ASTU MSJ <b>Bootcamp</b>
-              </span>
-            </Link>
-
-            <Link to="/" className="auth-home-hint">
-              Back to home
-            </Link>
-          </div>
-        </div>
+      {/* Image Half */}
+      <div className="hidden md:block w-full md:w-1/2 relative">
+        <img
+          src={registrationBg}
+          alt="Registration Background"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-teal-900/20 mix-blend-multiply" />
       </div>
     </main>
   );
