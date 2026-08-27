@@ -22,12 +22,7 @@ const assignmentSchema = new mongoose.Schema(
     batch: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Batch",
-      required: false,
-    },
-
-    link: {
-      type: String,
-      trim: true,
+      required: true,
     },
 
     createdBy: {
@@ -45,7 +40,6 @@ const assignmentSchema = new mongoose.Schema(
       type: Number,
       required: true,
       min: 0,
-      default: 100,
     },
   },
   {
