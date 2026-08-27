@@ -23,6 +23,7 @@ const Sidebar = () => {
   const navItems = [
     { label: "Dashboard", path: "/admin/dashboard", icon: FiGrid },
     { label: "Tracks", path: "/admin/batches", icon: FiLayers },
+    { label: "Applications", path: "/admin/applications", icon: FiUsers },
     { label: "Mentors", path: "/admin/mentors", icon: FiUser },
     { label: "Students", path: "/admin/students", icon: FiUsers },
     { label: "Attendance", path: "/admin/attendance", icon: FiCheckSquare },

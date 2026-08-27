@@ -39,6 +39,29 @@ const batchSchema = new mongoose.Schema(
       },
     ],
 
+    phases: [
+      {
+        name: { type: String, required: true },
+        shortMessage: { type: String, default: "" },
+        longMessage: { type: String, default: "" },
+        order: { type: Number, required: true },
+        deadline: { type: Date },
+        fields: [
+          {
+            name: { type: String, required: true },
+            type: { 
+              type: String, 
+              enum: ["text", "long_text", "url", "file", "number", "email", "checkbox", "select"], 
+              required: true 
+            },
+            required: { type: Boolean, default: true },
+            options: [{ type: String }] // For select types
+          }
+        ],
+        isActive: { type: Boolean, default: true }
+      }
+    ],
+
     isActive: {
       type: Boolean,
       default: true,

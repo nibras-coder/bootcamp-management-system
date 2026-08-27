@@ -8,9 +8,11 @@ import {
   X,
   User as UserIcon,
   Edit,
+  Layers,
 } from "lucide-react";
 import API from "../../api/axios";
 import { useToast } from "../../context/ToastContext";
+import PhaseBuilderModal from "../../components/admin/PhaseBuilderModal";
 
 const BatchesPage = () => {
   const { toast, confirm } = useToast();
@@ -18,7 +20,9 @@ const BatchesPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isPhaseModalOpen, setIsPhaseModalOpen] = useState(false);
   const [editingBatch, setEditingBatch] = useState(null);
+  const [selectedBatchForPhases, setSelectedBatchForPhases] = useState(null);
   
   const [newBatch, setNewBatch] = useState({
     name: "",
@@ -244,12 +248,19 @@ const BatchesPage = () => {
                 </div>
               </div>
             </div>
-            <div className="bg-gray-50 px-6 py-3 border-t border-gray-200 dark:border-gray-700">
+
+            <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex space-x-2">
               <button
                 onClick={() => openBatchDetail(batch)}
-                className="text-teal-600 text-sm font-medium hover:text-teal-700"
+                className="flex-1 text-sm font-medium text-teal-600 hover:text-teal-700 transition-colors"
               >
                 View Details
+              </button>
+              <button
+                onClick={() => { setSelectedBatchForPhases(batch); setIsPhaseModalOpen(true); }}
+                className="flex-1 flex items-center justify-center text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
+              >
+                <Layers className="w-4 h-4 mr-1" /> Phases
               </button>
             </div>
           </div>
@@ -553,6 +564,16 @@ const BatchesPage = () => {
           </div>
         </div>
       )}
+
+      {/* Phase Builder Modal */}
+      <PhaseBuilderModal 
+        isOpen={isPhaseModalOpen}
+        onClose={() => { setIsPhaseModalOpen(false); setSelectedBatchForPhases(null); }}
+        batch={selectedBatchForPhases}
+        onUpdated={(updatedBatch) => {
+          setBatches(batches.map((b) => (b._id === updatedBatch._id ? updatedBatch : b)));
+        }}
+      />
     </div>
   );
 };

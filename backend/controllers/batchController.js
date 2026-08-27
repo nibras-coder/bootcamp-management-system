@@ -12,6 +12,7 @@ const createBatch = async (req, res) => {
       endDate,
       instructor,
       mentors,
+      phases,
     } = req.body;
 
     if (!name || !startDate) {
@@ -47,6 +48,7 @@ const createBatch = async (req, res) => {
       endDate,
       instructor,
       mentors: mentors || [],
+      phases: phases || [],
     });
 
     const populatedBatch =
@@ -330,6 +332,35 @@ const deleteBatch = async (req, res) => {
   }
 };
 
+const updateBatch = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, track, startDate, endDate, instructor, mentors, phases } = req.body;
+
+    const batch = await Batch.findById(id);
+    if (!batch) {
+      return res.status(404).json({ success: false, message: "Batch not found" });
+    }
+
+    if (name) batch.name = name;
+    if (track) batch.track = track;
+    if (startDate) batch.startDate = startDate;
+    if (endDate !== undefined) batch.endDate = endDate;
+    if (instructor !== undefined) batch.instructor = instructor;
+    if (mentors) batch.mentors = mentors;
+    if (phases) batch.phases = phases;
+
+    await batch.save();
+
+    const updatedBatch = await Batch.findById(id).populate("mentors", "name email role");
+
+    res.status(200).json({ success: true, message: "Batch updated successfully", data: updatedBatch });
+  } catch (error) {
+    console.error("Update batch error:", error);
+    res.status(500).json({ success: false, message: "Failed to update batch", error: error.message });
+  }
+};
+
 module.exports = {
   createBatch,
   getBatches,
@@ -338,4 +369,5 @@ module.exports = {
   assignMentors,
   getBatchStudents,
   deleteBatch,
+  updateBatch,
 };

@@ -52,6 +52,7 @@ const navItems = [
     icon: FileText,
   },
   { path: "/student-dashboard/grades", label: "Grades", icon: GraduationCap },
+  { path: "/apply", label: "Admissions", icon: Sparkles },
   {
     path: "/student-dashboard/announcements",
     label: "Announcements",
