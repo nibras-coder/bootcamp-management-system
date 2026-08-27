@@ -38,6 +38,7 @@ import ReportsPage from "./pages/admin/ReportsPage";
 import SettingsPage from "./pages/admin/SettingsPage";
 import ResourcesPage from "./pages/admin/ResourcesPage";
 import ProtectedRoute from "./components/ProtectedRoute";
+import PWAInstallButton from "./components/PWAInstallButton";
 import StudentDashboard from "./pages/StudentDashboard";
 import MentorsSection from "./components/landing/Mentors";
 
@@ -914,6 +915,8 @@ function GlobalThemeToggle() {
 
 function App() {
   return (
+    <>
+    <PWAInstallButton />
     <BrowserRouter>
       <GlobalThemeToggle />
       <Routes>
@@ -971,6 +974,7 @@ function App() {
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>
+    </>
   );
 }
 
