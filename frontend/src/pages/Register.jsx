@@ -64,13 +64,18 @@ function Register() {
         gender: data.gender,
       });
 
+      if (response.data.token) {
+        localStorage.setItem("token", response.data.token);
+        localStorage.setItem("user", JSON.stringify(response.data.user));
+      }
+
       setSuccess(
-        response.data?.message || "Registration successful! You can now log in."
+        "Registration successful! Redirecting to admissions..."
       );
       reset();
 
       setTimeout(() => {
-        navigate("/login");
+        navigate("/apply");
       }, 1500);
     } catch (err) {
       const backendMessage =
