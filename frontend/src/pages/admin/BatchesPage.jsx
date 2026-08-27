@@ -97,7 +97,7 @@ const BatchesPage = () => {
   const handleUpdateBatch = async (e) => {
     e.preventDefault();
     try {
-      const response = await API.put(`/batches/${editingBatch._id}`, editingBatch);
+      const response = await API.put(`/tracks/${editingBatch._id}`, editingBatch);
       if (response.data.success) {
         setBatches(
           batches.map((b) => (b._id === editingBatch._id ? response.data.data : b))

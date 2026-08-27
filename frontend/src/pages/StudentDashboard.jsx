@@ -13,6 +13,7 @@ import {
   ExternalLink,
   FileText,
   GraduationCap,
+  Home,
   LayoutDashboard,
   Loader2,
   LogOut,
@@ -33,8 +34,10 @@ import {
 } from "lucide-react";
 import API from "../api/axios";
 import { useToast } from "../context/ToastContext";
+import NotificationDropdown from "../components/NotificationDropdown";
 
 const navItems = [
+  { path: "/", label: "Back to Home", icon: Home },
   { path: "/student-dashboard", label: "Dashboard", icon: LayoutDashboard },
   {
     path: "/student-dashboard/attendance",
@@ -87,7 +90,7 @@ function StudentSidebar({ mobileOpen, onClose, collapsed, onCollapse, isAdmitted
   const visibleNavItems = navItems.filter((item) => {
     if (isAdmitted) return true; // Show all if admitted
     // If not admitted, only show Dashboard, Admissions, Profile, Settings
-    return ["/student-dashboard", "/apply", "/student-dashboard/profile", "/student-dashboard/settings"].includes(item.path);
+    return ["/", "/student-dashboard", "/apply", "/student-dashboard/profile", "/student-dashboard/settings"].includes(item.path);
   });
 
   return (
@@ -124,7 +127,7 @@ function StudentSidebar({ mobileOpen, onClose, collapsed, onCollapse, isAdmitted
         <nav className="student-nav">
           {visibleNavItems.map(({ path, label, icon: Icon }) => {
             const active =
-              path === "/student-dashboard"
+              path === "/student-dashboard" || path === "/"
                 ? location.pathname === path
                 : location.pathname.startsWith(path);
             return (
@@ -380,10 +383,7 @@ export default function StudentDashboard() {
           </p>
         </div>
         <div className="student-heading-actions">
-          <button className="student-notification" title="Notifications">
-            <Bell size={21} />
-            <span>{announcements.length}</span>
-          </button>
+          <NotificationDropdown />
         </div>
       </div>
 

@@ -157,6 +157,7 @@ const AttendancePage = () => {
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
+              max={new Date().toISOString().split("T")[0]}
               className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1.5 text-sm focus:ring-teal-500 focus:border-teal-500 bg-white dark:bg-gray-800"
             />
           </div>

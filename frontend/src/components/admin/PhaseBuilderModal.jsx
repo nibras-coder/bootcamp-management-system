@@ -205,6 +205,7 @@ const PhaseBuilderModal = ({ batch, isOpen, onClose, onUpdated }) => {
                             <option value="long_text">Long Text</option>
                             <option value="url">URL Link</option>
                             <option value="email">Email</option>
+                            <option value="phone">Phone Number</option>
                             <option value="number">Number</option>
                             <option value="file">File Upload</option>
                           </select>

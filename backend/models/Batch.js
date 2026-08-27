@@ -51,7 +51,7 @@ const batchSchema = new mongoose.Schema(
             name: { type: String, required: true },
             type: { 
               type: String, 
-              enum: ["text", "long_text", "url", "file", "number", "email", "checkbox", "select"], 
+              enum: ["text", "long_text", "url", "file", "number", "email", "checkbox", "select", "phone"], 
               required: true 
             },
             required: { type: Boolean, default: true },

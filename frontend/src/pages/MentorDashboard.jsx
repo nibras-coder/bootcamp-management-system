@@ -7,6 +7,7 @@ import AttendanceChart from "../components/mentor/AttendanceChart";
 import StudentsAtRisk from "../components/mentor/StudentsAtRisk";
 import RecentAssignments from "../components/mentor/RecentAssignments";
 import QuickActions from "../components/mentor/QuickActions";
+import NotificationDropdown from "../components/NotificationDropdown";
 
 function MentorDashboard() {
   const [stats, setStats] = useState(null);
@@ -80,6 +81,8 @@ function MentorDashboard() {
             <div className="bg-white dark:bg-gray-800 px-4 py-2 rounded-xl shadow-sm text-xs font-semibold text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
               {todayStr}
             </div>
+
+            <NotificationDropdown />
 
             <button
               onClick={fetchDashboard}
