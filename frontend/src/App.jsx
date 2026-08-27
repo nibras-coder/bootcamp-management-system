@@ -33,6 +33,7 @@ import Announcements from "./pages/Announcements";
 import Resources from "./pages/Resources";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
+import Communities from "./pages/Communities";
 import BatchesPage from "./pages/admin/BatchesPage";
 import ApplicationsPage from "./pages/admin/ApplicationsPage";
 import ApplyPage from "./pages/ApplyPage";
@@ -847,9 +848,6 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPage />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
 
-        {/* Apply Page */}
-        <Route path="/apply" element={<ProtectedRoute allowedRoles={["student"]}><ApplyPage /></ProtectedRoute>} />
-
         {/* Student Dashboard */}
         <Route path="/student-dashboard/*" element={<ProtectedRoute allowedRoles={["student"]}><StudentDashboard /></ProtectedRoute>} />
 
@@ -857,6 +855,7 @@ function App() {
         <Route path="/mentor-dashboard/*" element={<ProtectedRoute allowedRoles={["mentor"]}><MentorDashboard /></ProtectedRoute>} />
         <Route element={<ProtectedRoute allowedRoles={["mentor"]} />}>
           <Route path="/my-students" element={<MyStudents />} />
+          <Route path="/communities" element={<Communities />} />
           <Route path="/attendance" element={<Attendance />} />
           <Route path="/progress" element={<Progress />} />
           <Route path="/assignments" element={<Assignments />} />
@@ -866,6 +865,7 @@ function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/settings" element={<Settings />} />
         </Route>
+
         
         {/* Admin Routes */}
         <Route path="/admin" element={<ProtectedRoute allowedRoles={["admin"]}><AdminLayout /></ProtectedRoute>}>

@@ -30,12 +30,29 @@ import {
   Sun,
   UserRound,
   X,
+  MessageSquare,
+
+  Users,
+  ArrowLeft,
+  Send,
+  Edit2,
+  Copy,
+  MoreVertical,
+  ArrowDown,
+  Trash2,
 } from "lucide-react";
 import API from "../api/axios";
 import { useToast } from "../context/ToastContext";
+import { getSocket } from "../utils/socket";
+
 
 const navItems = [
   { path: "/student-dashboard", label: "Dashboard", icon: LayoutDashboard },
+  {
+    path: "/student-dashboard/communities",
+    label: "My Communities",
+    icon: MessageSquare,
+  },
   {
     path: "/student-dashboard/attendance",
     label: "My Attendance",
@@ -62,6 +79,7 @@ const navItems = [
   { path: "/student-dashboard/settings", label: "Settings", icon: Settings },
 ];
 
+
 const getTheme = () => localStorage.getItem("theme") || "light";
 
 const formatDate = (date) =>
@@ -73,7 +91,7 @@ const formatDate = (date) =>
 
 const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-function StudentSidebar({ mobileOpen, onClose, collapsed, onCollapse, isAdmitted }) {
+function StudentSidebar({ mobileOpen, onClose, collapsed, onCollapse, unreadCommunityCount = 0 }) {
   const navigate = useNavigate();
   const location = useLocation();
   const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -140,10 +158,16 @@ function StudentSidebar({ mobileOpen, onClose, collapsed, onCollapse, isAdmitted
               >
                 <Icon size={19} />
                 {!collapsed && <span>{label}</span>}
+                {path === "/student-dashboard/communities" && unreadCommunityCount > 0 && !collapsed && (
+                  <span className="ml-auto px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-teal-500 text-white">
+                    {unreadCommunityCount}
+                  </span>
+                )}
               </button>
             );
           })}
         </nav>
+
 
         <div className="student-sidebar-bottom">
           <div className="student-user-card">
@@ -220,6 +244,712 @@ function EmptyState({ text }) {
   return <div className="student-empty">{text}</div>;
 }
 
+function PageSection({ title, subtitle, children }) {
+  return (
+    <>
+      <div className="student-page-heading">
+        <div>
+          <h1>{title}</h1>
+          <p>{subtitle}</p>
+        </div>
+        <div className="student-heading-actions"></div>
+      </div>
+      {children}
+    </>
+  );
+}
+
+function StudentCommunitiesPage({ user, toast, communityUnreadCounts = {}, setCommunityUnreadCounts }) {
+  const [communityList, setCommunityList] = useState([]);
+  const [commLoading, setCommLoading] = useState(true);
+  const [activeComm, setActiveComm] = useState(null);
+  const [chatMessages, setChatMessages] = useState([]);
+  const [chatLoading, setChatLoading] = useState(false);
+  const [chatInput, setChatInput] = useState("");
+  const [sending, setSending] = useState(false);
+  const [typingStatus, setTypingStatus] = useState({});
+  const [isUserTyping, setIsUserTyping] = useState(false);
+  const [showMemberList, setShowMemberList] = useState(false);
+  const [editingMessageId, setEditingMessageId] = useState(null);
+  const [editingContent, setEditingContent] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [isAtBottom, setIsAtBottom] = useState(true);
+  const [newMessagesBelow, setNewMessagesBelow] = useState(0);
+  const [copiedMessageId, setCopiedMessageId] = useState(null);
+  const chatEndRef = useRef(null);
+  const chatScrollContainerRef = useRef(null);
+
+  const fetchStudentCommunities = async () => {
+    setCommLoading(true);
+    try {
+      const res = await API.get("/communities");
+      if (res.data.success) {
+        setCommunityList(res.data.data || []);
+      }
+    } catch (err) {
+      console.error("Failed to load student communities:", err);
+    } finally {
+      setCommLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchStudentCommunities();
+  }, []);
+
+  // Socket events for active community chat
+  useEffect(() => {
+    if (!activeComm) return;
+
+    const socket = getSocket();
+
+    socket.emit("community:join", activeComm._id, (res) => {
+      if (res && !res.success) {
+        toast.error(res.message || "Failed to join community chat");
+      }
+    });
+
+    const handleMsg = (msg) => {
+      if (String(msg.community) === String(activeComm._id)) {
+        setChatMessages((prev) => {
+          if (prev.some((m) => String(m._id) === String(msg._id))) return prev;
+          return [...prev, msg];
+        });
+
+        if (isAtBottom) {
+          setTimeout(scrollToBottom, 50);
+        } else {
+          setNewMessagesBelow((prev) => prev + 1);
+        }
+
+        // Mark read in DB
+        API.put(`/communities/${activeComm._id}/read`).catch(() => {});
+      }
+    };
+
+    const handleMessageUpdated = (updatedMsg) => {
+      const commId = String(updatedMsg.community?._id || updatedMsg.community);
+      if (String(activeComm._id) === commId) {
+        setChatMessages((prev) =>
+          prev.map((m) => (String(m._id) === String(updatedMsg._id) ? updatedMsg : m))
+        );
+      }
+    };
+
+    const handleMessageDeleted = ({ messageId, communityId }) => {
+      if (String(activeComm._id) === String(communityId)) {
+        setChatMessages((prev) => prev.filter((m) => String(m._id) !== String(messageId)));
+      }
+    };
+
+    const handleTypingEvent = ({ communityId, userId, userName, isTyping: typing }) => {
+      if (String(communityId) === String(activeComm._id)) {
+        setTypingStatus((prev) => {
+          const next = { ...prev };
+          if (typing) next[userId] = userName;
+          else delete next[userId];
+          return next;
+        });
+      }
+    };
+
+    socket.on("community:message:new", handleMsg);
+    socket.on("community:message:updated", handleMessageUpdated);
+    socket.on("community:message:deleted", handleMessageDeleted);
+    socket.on("community:typing", handleTypingEvent);
+
+    return () => {
+      socket.emit("community:leave", activeComm._id);
+      socket.off("community:message:new", handleMsg);
+      socket.off("community:message:updated", handleMessageUpdated);
+      socket.off("community:message:deleted", handleMessageDeleted);
+      socket.off("community:typing", handleTypingEvent);
+    };
+  }, [activeComm, isAtBottom]);
+
+  // Scroll detection
+  const handleScroll = (e) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+    const atBottom = scrollHeight - scrollTop - clientHeight < 60;
+    setIsAtBottom(atBottom);
+    if (atBottom) {
+      setNewMessagesBelow(0);
+    }
+  };
+
+  // Auto-scroll chat
+  const scrollToBottom = () => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    setNewMessagesBelow(0);
+  };
+
+  useEffect(() => {
+    if (isAtBottom) {
+      scrollToBottom();
+    }
+  }, [chatMessages]);
+
+  // Open single community
+  const openCommunityChat = async (comm) => {
+    setActiveComm(comm);
+    setEditingMessageId(null);
+    setNewMessagesBelow(0);
+    if (typeof setCommunityUnreadCounts === "function") {
+      setCommunityUnreadCounts((prev) => ({
+        ...prev,
+        [String(comm._id)]: 0,
+      }));
+    }
+    setChatLoading(true);
+    setChatMessages([]);
+    setShowMemberList(false);
+    try {
+      const res = await API.get(`/communities/${comm._id}/messages`);
+      if (res.data.success) {
+        setChatMessages(res.data.data || []);
+      }
+      // Sync read state with backend
+      API.put(`/communities/${comm._id}/read`).catch(() => {});
+    } catch (err) {
+      console.error("Failed to load messages:", err);
+      toast.error("Failed to load community chat messages");
+    } finally {
+      setChatLoading(false);
+      setTimeout(scrollToBottom, 100);
+    }
+  };
+
+  // Message Actions: Edit, Delete, Copy
+  const handleStartEdit = (msg) => {
+    setEditingMessageId(msg._id);
+    setEditingContent(msg.content);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingMessageId(null);
+    setEditingContent("");
+  };
+
+  const handleSaveEdit = async (messageId) => {
+    if (!editingContent.trim() || savingEdit || !activeComm) return;
+    setSavingEdit(true);
+    try {
+      const res = await API.put(
+        `/communities/${activeComm._id}/messages/${messageId}`,
+        { content: editingContent.trim() }
+      );
+      if (res.data.success) {
+        setChatMessages((prev) =>
+          prev.map((m) => (String(m._id) === String(messageId) ? res.data.data : m))
+        );
+        setEditingMessageId(null);
+        setEditingContent("");
+        toast.success("Message edited successfully");
+      }
+    } catch (err) {
+      console.error("Failed to edit message:", err);
+      toast.error(err.response?.data?.message || "Failed to edit message");
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
+  const handleDeleteMessage = async (messageId) => {
+    if (!window.confirm("Are you sure you want to delete this message?")) return;
+    if (!activeComm) return;
+
+    try {
+      const res = await API.delete(
+        `/communities/${activeComm._id}/messages/${messageId}`
+      );
+      if (res.data.success) {
+        setChatMessages((prev) => prev.filter((m) => String(m._id) !== String(messageId)));
+        toast.success("Message deleted");
+      }
+    } catch (err) {
+      console.error("Failed to delete message:", err);
+      toast.error(err.response?.data?.message || "Failed to delete message");
+    }
+  };
+
+  const handleCopyMessage = (msg) => {
+    if (!msg?.content) return;
+    navigator.clipboard
+      .writeText(msg.content)
+      .then(() => {
+        setCopiedMessageId(msg._id);
+        toast.success("Message copied to clipboard");
+        setTimeout(() => setCopiedMessageId(null), 2000);
+      })
+      .catch((err) => {
+        console.error("Clipboard copy error:", err);
+        toast.error("Failed to copy message");
+      });
+  };
+
+  // Send chat message
+  const handleSendChatMessage = async (e) => {
+    e?.preventDefault();
+    if (!chatInput.trim() || !activeComm || sending) return;
+
+    const content = chatInput.trim();
+    setSending(true);
+
+    try {
+      const res = await API.post(`/communities/${activeComm._id}/messages`, {
+        content,
+      });
+
+      if (res.data.success) {
+        setChatInput("");
+        setChatMessages((prev) => {
+          if (prev.some((m) => String(m._id) === String(res.data.data._id))) return prev;
+          return [...prev, res.data.data];
+        });
+      }
+    } catch (err) {
+      console.error("Failed to send message:", err);
+      toast.error(err.response?.data?.message || "Failed to send message");
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <PageSection
+      title="My Communities"
+      subtitle="Private community circles created by your mentor for your track."
+    >
+      {activeComm ? (
+        /* Active Chat View */
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col min-h-[600px] mb-6">
+          {/* Chat Top Header */}
+          <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/80 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setActiveComm(null)}
+                className="p-2 rounded-xl bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors cursor-pointer"
+                title="Back to all communities"
+              >
+                <ArrowLeft size={18} />
+              </button>
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h2 className="font-bold text-lg text-gray-900 dark:text-white">
+                    {activeComm.name}
+                  </h2>
+                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 font-semibold border border-teal-200 dark:border-teal-800">
+                    {activeComm.track || "Track Circle"}
+                  </span>
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Mentor: <strong>{activeComm.mentor?.name || "Mentor"}</strong> · {activeComm.members?.length || 0} members
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowMemberList(!showMemberList)}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 transition-colors cursor-pointer"
+            >
+              <Users size={14} />
+              <span>{showMemberList ? "Hide Members" : "Members"}</span>
+            </button>
+          </div>
+
+          {/* Chat Body + Members Drawer */}
+          <div className="flex flex-1 min-h-[400px] overflow-hidden relative">
+            {/* Messages Feed */}
+            <div
+              ref={chatScrollContainerRef}
+              onScroll={handleScroll}
+              className="flex-1 p-4 md:p-6 overflow-y-auto space-y-4 max-h-[500px] min-h-[350px] bg-[#f8fafc] dark:bg-[#0c1220]/50 relative"
+            >
+              {chatLoading ? (
+                <div className="flex flex-col items-center justify-center py-20 text-gray-400">
+                  <Loader2 className="animate-spin mb-2 text-teal-600" size={28} />
+                  <p className="text-xs">Loading community messages...</p>
+                </div>
+              ) : chatMessages.length ? (
+                chatMessages.map((msg) => {
+                  const isMe = String(msg.sender?._id || msg.sender) === String(user?._id || user?.id);
+                  const isSenderMentor = msg.sender?.role === "mentor";
+                  const isEditingThis = editingMessageId === msg._id;
+
+                  return (
+                    <div
+                      key={msg._id}
+                      className={`flex items-start gap-2.5 group relative ${
+                        isMe ? "flex-row-reverse" : "flex-row"
+                      }`}
+                    >
+                      <div
+                        className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs shadow-sm flex-shrink-0 ${
+                          isSenderMentor
+                            ? "bg-teal-700 text-white"
+                            : "bg-teal-100 dark:bg-teal-950 text-teal-800 dark:text-teal-300"
+                        }`}
+                      >
+                        {(msg.sender?.name || (isSenderMentor ? "M" : "S")).charAt(0).toUpperCase()}
+                      </div>
+
+                      <div
+                        className={`max-w-[85%] sm:max-w-[75%] ${
+                          isMe ? "items-end" : "items-start"
+                        } flex flex-col relative`}
+                      >
+                        <div className="flex items-center gap-1.5 mb-1 px-1 flex-wrap">
+                          <span className="text-xs font-semibold text-gray-800 dark:text-gray-200">
+                            {isMe ? "You" : msg.sender?.name || "Member"}
+                          </span>
+                          {isSenderMentor && (
+                            <span className="text-[10px] px-1.5 py-0.2 rounded bg-teal-100 dark:bg-teal-950 text-teal-800 dark:text-teal-300 font-bold border border-teal-300 dark:border-teal-800">
+                              Mentor
+                            </span>
+                          )}
+                          <span className="text-[10px] text-gray-400">
+                            {new Date(msg.createdAt).toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </span>
+                          {msg.isEdited && (
+                            <span
+                              title={msg.editedAt ? `Edited at ${new Date(msg.editedAt).toLocaleTimeString()}` : "Edited"}
+                              className="text-[10px] text-gray-400 italic font-normal"
+                            >
+                              · Edited
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Inline Edit or Bubble */}
+                        {isEditingThis ? (
+                          <div className="w-full min-w-[240px] sm:min-w-[320px] p-3 rounded-2xl bg-white dark:bg-gray-800 border border-teal-500 shadow-md">
+                            <textarea
+                              rows={3}
+                              value={editingContent}
+                              onChange={(e) => setEditingContent(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter" && !e.shiftKey) {
+                                  e.preventDefault();
+                                  handleSaveEdit(msg._id);
+                                } else if (e.key === "Escape") {
+                                  handleCancelEdit();
+                                }
+                              }}
+                              className="w-full text-sm bg-gray-50 dark:bg-gray-700/60 p-2.5 rounded-xl border border-gray-200 dark:border-gray-600 focus:outline-none focus:ring-1 focus:ring-teal-500 resize-none text-gray-900 dark:text-gray-100"
+                              placeholder="Edit your message..."
+                              autoFocus
+                            />
+                            <div className="flex items-center justify-end gap-2 mt-2">
+                              <button
+                                type="button"
+                                onClick={handleCancelEdit}
+                                disabled={savingEdit}
+                                className="px-3 py-1 text-xs font-semibold rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleSaveEdit(msg._id)}
+                                disabled={!editingContent.trim() || savingEdit}
+                                className="px-3.5 py-1 text-xs font-semibold rounded-lg bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white flex items-center gap-1 shadow-sm transition-colors cursor-pointer"
+                              >
+                                {savingEdit ? (
+                                  <Loader2 size={12} className="animate-spin" />
+                                ) : (
+                                  <Check size={12} />
+                                )}
+                                <span>Save</span>
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="relative group/bubble flex items-center">
+                            {/* Message Content Bubble */}
+                            <div
+                              className={`p-3.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap break-words shadow-sm ${
+                                isMe
+                                  ? "bg-teal-600 text-white rounded-tr-none"
+                                  : "bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-tl-none border border-gray-200 dark:border-gray-700"
+                              }`}
+                            >
+                              {msg.content}
+                            </div>
+
+                            {/* Message Hover Actions */}
+                            <div
+                              className={`opacity-0 group-hover:opacity-100 group-hover/bubble:opacity-100 transition-opacity flex items-center gap-1 mx-1.5 ${
+                                isMe ? "order-first" : "order-last"
+                              }`}
+                            >
+                              {/* Copy Button */}
+                              <button
+                                type="button"
+                                onClick={() => handleCopyMessage(msg)}
+                                title="Copy message"
+                                className="p-1 rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-500 hover:text-teal-600 dark:hover:text-teal-400 shadow-xs transition-colors cursor-pointer"
+                              >
+                                {copiedMessageId === msg._id ? (
+                                  <Check size={13} className="text-teal-600" />
+                                ) : (
+                                  <Copy size={13} />
+                                )}
+                              </button>
+
+                              {/* Own Message Actions: Edit & Delete */}
+                              {isMe && (
+                                <>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleStartEdit(msg)}
+                                    title="Edit message"
+                                    className="p-1 rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-500 hover:text-teal-600 dark:hover:text-teal-400 shadow-xs transition-colors cursor-pointer"
+                                  >
+                                    <Edit2 size={13} />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteMessage(msg._id)}
+                                    title="Delete message"
+                                    className="p-1 rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-500 hover:text-red-600 dark:hover:text-red-400 shadow-xs transition-colors cursor-pointer"
+                                  >
+                                    <Trash2 size={13} />
+                                  </button>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="flex flex-col items-center justify-center py-20 text-center text-gray-400">
+                  <div className="w-14 h-14 rounded-2xl bg-teal-50 dark:bg-teal-950/40 text-teal-600 flex items-center justify-center mb-3">
+                    <MessageSquare size={28} />
+                  </div>
+                  <h3 className="font-semibold text-gray-700 dark:text-gray-300 text-sm">No messages yet</h3>
+                  <p className="text-xs text-gray-400 max-w-sm mt-1">
+                    Say hello to your mentor and fellow track students in <strong>{activeComm.name}</strong>!
+                  </p>
+                </div>
+              )}
+
+              {/* Floating scroll to bottom pill */}
+              {newMessagesBelow > 0 && (
+                <button
+                  type="button"
+                  onClick={scrollToBottom}
+                  className="sticky bottom-2 left-1/2 transform -translate-x-1/2 z-20 px-3.5 py-1.5 rounded-full bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow-lg flex items-center gap-1.5 transition-all animate-bounce cursor-pointer"
+                >
+                  <ArrowDown size={14} />
+                  <span>{newMessagesBelow} new message{newMessagesBelow > 1 ? "s" : ""}</span>
+                </button>
+              )}
+
+              <div ref={chatEndRef} />
+            </div>
+
+
+            {/* Members List Drawer */}
+            {showMemberList && (
+              <div className="w-64 border-l border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 overflow-y-auto hidden sm:block">
+                <h4 className="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-3">
+                  Community Members ({activeComm.members?.length || 0})
+                </h4>
+
+                {/* Mentor */}
+                <div className="p-2.5 rounded-xl bg-teal-50/70 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800 mb-3">
+                  <span className="text-[10px] uppercase font-bold text-teal-700 dark:text-teal-400 block mb-1">
+                    Mentor
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-full bg-teal-700 text-white flex items-center justify-center font-bold text-xs">
+                      {(activeComm.mentor?.name || "M").charAt(0).toUpperCase()}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-bold text-gray-900 dark:text-white truncate">
+                        {activeComm.mentor?.name || "Mentor"}
+                      </p>
+                      <p className="text-[10px] text-gray-500 truncate">
+                        {activeComm.mentor?.email}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Students */}
+                <div className="space-y-1.5">
+                  <span className="text-[10px] uppercase font-bold text-gray-400 block mb-1">
+                    Enrolled Students
+                  </span>
+                  {activeComm.members?.map((member) => (
+                    <div
+                      key={member._id}
+                      className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                    >
+                      <div className="w-6 h-6 rounded-full bg-teal-100 dark:bg-teal-950 text-teal-800 dark:text-teal-300 flex items-center justify-center font-bold text-[10px]">
+                        {(member.name || "S").charAt(0).toUpperCase()}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 truncate">
+                          {member.name}
+                        </p>
+                        <p className="text-[10px] text-gray-400 truncate">
+                          {member.batch?.name || member.batch?.track || "Student"}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Typing indicator */}
+          {Object.keys(typingStatus).length > 0 && (
+            <div className="px-4 py-1 text-xs text-teal-600 dark:text-teal-400 bg-gray-50 dark:bg-gray-800/40 italic flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse"></span>
+              <span>
+                {Object.values(typingStatus).join(", ")} {Object.keys(typingStatus).length === 1 ? "is" : "are"} typing...
+              </span>
+            </div>
+          )}
+
+          {/* Chat Input Bar */}
+          <form
+            onSubmit={handleSendChatMessage}
+            className="p-3 md:p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 flex items-center gap-2"
+          >
+            <input
+              type="text"
+              value={chatInput}
+              onChange={(e) => {
+                setChatInput(e.target.value);
+                const socket = getSocket();
+                if (!isUserTyping) {
+                  setIsUserTyping(true);
+                  socket.emit("community:typing", {
+                    communityId: activeComm._id,
+                    isTyping: true,
+                  });
+                }
+                clearTimeout(window.studentTypingTimeout);
+                window.studentTypingTimeout = setTimeout(() => {
+                  setIsUserTyping(false);
+                  socket.emit("community:typing", {
+                    communityId: activeComm._id,
+                    isTyping: false,
+                  });
+                }, 2000);
+              }}
+              placeholder={`Message ${activeComm.name}...`}
+              className="flex-1 px-4 py-2.5 text-sm bg-gray-50 dark:bg-gray-700/60 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 dark:text-gray-100 placeholder-gray-400"
+            />
+            <button
+              type="submit"
+              disabled={!chatInput.trim() || sending}
+              className="px-4 py-2.5 bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white font-semibold text-sm rounded-xl transition-all flex items-center gap-1.5 shadow-sm flex-shrink-0 cursor-pointer"
+            >
+              {sending ? (
+                <Loader2 size={16} className="animate-spin" />
+              ) : (
+                <Send size={16} />
+              )}
+              <span className="hidden sm:inline">Send</span>
+            </button>
+          </form>
+        </div>
+      ) : (
+        /* Communities Cards List */
+        <div className="student-full-list">
+          {commLoading ? (
+            <EmptyState text="Loading your communities..." />
+          ) : communityList.length ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {communityList.map((comm) => (
+                <div
+                  key={comm._id}
+                  className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col justify-between hover:shadow-md transition-shadow"
+                >
+                  <div>
+                    <div className="flex items-center justify-between gap-2 mb-3">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800 flex items-center gap-1">
+                          <BookOpen size={12} />
+                          {comm.track || "Track Community"}
+                        </span>
+                        {communityUnreadCounts[String(comm._id)] > 0 && (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-600 text-white flex items-center gap-1 shadow-sm animate-pulse">
+                            <Bell size={10} /> {communityUnreadCounts[String(comm._id)]} new
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-xs text-gray-400 font-medium">
+                        {comm.members?.length || 0} members
+                      </span>
+                    </div>
+
+                    <h3 className="font-bold text-lg text-gray-900 dark:text-white mb-1">
+                      {comm.name}
+                    </h3>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-4 line-clamp-2">
+                      {comm.description || "Active community circle with your mentor and cohort peers."}
+                    </p>
+
+                    {/* Mentor Badge */}
+                    {comm.mentor && (
+                      <div className="flex items-center gap-2 p-2.5 rounded-xl bg-gray-50 dark:bg-gray-700/50 mb-4">
+                        <div className="w-8 h-8 rounded-full bg-teal-700 text-white flex items-center justify-center font-bold text-xs">
+                          {(comm.mentor.name || "M").charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-gray-800 dark:text-gray-200">
+                            {comm.mentor.name}
+                          </p>
+                          <p className="text-[10px] text-teal-600 dark:text-teal-400 font-medium">
+                            {comm.mentor.mentorRole || "Assigned Mentor"}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => openCommunityChat(comm)}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-semibold text-xs transition-colors shadow-sm cursor-pointer"
+                  >
+                    <MessageSquare size={15} />
+                    <span>Open Community</span>
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-12 text-center text-gray-400 max-w-lg mx-auto">
+              <div className="w-16 h-16 rounded-2xl bg-teal-50 dark:bg-teal-950/50 text-teal-600 mx-auto flex items-center justify-center mb-3">
+                <Users size={32} />
+              </div>
+              <h3 className="font-bold text-gray-800 dark:text-gray-200 text-base mb-1">
+                No Communities Enrolled
+              </h3>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Your assigned mentor has not added you to a private community circle yet. Once added, your track discussion communities will appear here.
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+    </PageSection>
+  );
+}
+
 export default function StudentDashboard() {
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -238,6 +968,81 @@ export default function StudentDashboard() {
     notes: "",
   });
   const [submitting, setSubmitting] = useState(false);
+  const [communityUnreadCounts, setCommunityUnreadCounts] = useState({});
+
+  const user = useMemo(
+    () => JSON.parse(localStorage.getItem("user") || "{}"),
+    [],
+  );
+
+  const totalUnreadCommunities = useMemo(() => {
+    return Object.values(communityUnreadCounts).reduce((a, b) => a + b, 0);
+  }, [communityUnreadCounts]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/login", { replace: true });
+  };
+
+  useEffect(() => {
+    // Initial fetch of unread community notification counts
+    const fetchUnread = async () => {
+      try {
+        const res = await API.get("/communities/unread");
+        if (res.data.success && res.data.communityCounts) {
+          setCommunityUnreadCounts(res.data.communityCounts);
+        }
+      } catch (err) {
+        console.error("Failed to load initial unread notifications:", err);
+      }
+    };
+    fetchUnread();
+
+    const socket = getSocket();
+
+    const handleGlobalNewMsg = (msg) => {
+      const isMe = String(msg.sender?._id || msg.sender) === String(user._id || user.id);
+      const commId = String(msg.community?._id || msg.community);
+
+      if (!isMe) {
+        const commName = msg.community?.name || "Community Circle";
+        const senderName = msg.sender?.name || (msg.sender?.role === "mentor" ? "Your Mentor" : "Member");
+
+        toast.info(msg.content, `New message from ${senderName} in ${commName}`);
+
+        setCommunityUnreadCounts((prev) => ({
+          ...prev,
+          [commId]: (prev[commId] || 0) + 1,
+        }));
+      }
+    };
+
+    const handleNotificationNew = (notif) => {
+      const commId = String(notif.community?._id || notif.community);
+      setCommunityUnreadCounts((prev) => ({
+        ...prev,
+        [commId]: (prev[commId] || 0) + 1,
+      }));
+    };
+
+    const handleNotificationRead = ({ communityId }) => {
+      setCommunityUnreadCounts((prev) => ({
+        ...prev,
+        [String(communityId)]: 0,
+      }));
+    };
+
+    socket.on("community:message:new", handleGlobalNewMsg);
+    socket.on("community:notification:new", handleNotificationNew);
+    socket.on("community:notification:read", handleNotificationRead);
+
+    return () => {
+      socket.off("community:message:new", handleGlobalNewMsg);
+      socket.off("community:notification:new", handleNotificationNew);
+      socket.off("community:notification:read", handleNotificationRead);
+    };
+  }, [user]);
 
   const user = useMemo(
     () => JSON.parse(localStorage.getItem("user") || "{}"),
@@ -261,6 +1066,7 @@ export default function StudentDashboard() {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
+
     if (!token) {
       navigate("/login", { replace: true });
       return;
@@ -357,8 +1163,17 @@ export default function StudentDashboard() {
   const renderPage = () => {
     if (location.pathname === "/student-dashboard")
       return <DashboardOverview />;
-    
+    if (location.pathname.includes("/communities"))
+      return (
+        <StudentCommunitiesPage
+          user={user}
+          toast={toast}
+          communityUnreadCounts={communityUnreadCounts}
+          setCommunityUnreadCounts={setCommunityUnreadCounts}
+        />
+      );
     if (location.pathname.includes("/assignments")) return <AssignmentsPage />;
+
     if (location.pathname.includes("/attendance")) return <AttendancePage />;
     if (location.pathname.includes("/progress")) return <ProgressPage />;
     if (location.pathname.includes("/grades")) return <GradesPage />;
@@ -368,6 +1183,7 @@ export default function StudentDashboard() {
     if (location.pathname.includes("/settings")) return <SettingsPage />;
     return <DashboardOverview />;
   };
+
 
   const DashboardOverview = () => (
     <>
@@ -1864,9 +2680,10 @@ export default function StudentDashboard() {
         onClose={() => setMobileOpen(false)}
         collapsed={collapsed}
         onCollapse={() => setCollapsed((v) => !v)}
-        isAdmitted={true}
+        unreadCommunityCount={totalUnreadCommunities}
       />
       <main className="student-main">
+
         <button
           className="student-mobile-menu"
           onClick={() => setMobileOpen(true)}

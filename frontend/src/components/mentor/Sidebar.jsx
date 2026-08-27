@@ -1,4 +1,5 @@
 import logo from "../../assets/logo.png";
+import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -13,14 +14,58 @@ import {
   Settings,
   LogOut,
   X,
+  MessageSquare,
 } from "lucide-react";
+import API from "../../api/axios";
+import { getSocket } from "../../utils/socket";
 
 function Sidebar({ isOpen = false, onClose }) {
   const location = useLocation();
   const navigate = useNavigate();
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const isStudent = user.role === "student";
+
+  useEffect(() => {
+    const fetchUnread = async () => {
+      try {
+        const res = await API.get("/communities/unread");
+        if (res.data.success && typeof res.data.totalUnread === "number") {
+          setUnreadCount(res.data.totalUnread);
+        }
+      } catch (err) {
+        // silent fail
+      }
+    };
+    fetchUnread();
+
+    const socket = getSocket();
+    const handleNewMsg = (msg) => {
+      const isMe = String(msg.sender?._id || msg.sender) === String(user._id || user.id);
+      if (!isMe && location.pathname !== "/communities") {
+        setUnreadCount((prev) => prev + 1);
+      }
+    };
+    const handleNotifNew = () => {
+      if (location.pathname !== "/communities") {
+        setUnreadCount((prev) => prev + 1);
+      }
+    };
+    const handleNotifRead = () => {
+      fetchUnread();
+    };
+
+    socket.on("community:message:new", handleNewMsg);
+    socket.on("community:notification:new", handleNotifNew);
+    socket.on("community:notification:read", handleNotifRead);
+
+    return () => {
+      socket.off("community:message:new", handleNewMsg);
+      socket.off("community:notification:new", handleNotifNew);
+      socket.off("community:notification:read", handleNotifRead);
+    };
+  }, [location.pathname, user._id, user.id]);
 
   const studentNavItems = [
     { label: "Dashboard", icon: LayoutDashboard, path: "/student-dashboard" },
@@ -37,10 +82,13 @@ function Sidebar({ isOpen = false, onClose }) {
     { label: "Assignments", icon: FileText, path: "/assignments" },
     { label: "Grading", icon: Award, path: "/grading" },
     { label: "Announcements", icon: Megaphone, path: "/announcements" },
+    { label: "Communities", icon: MessageSquare, path: "/communities" },
     { label: "Resources", icon: BookOpen, path: "/resources" },
     { label: "Profile", icon: User, path: "/profile" },
     { label: "Settings", icon: Settings, path: "/settings" },
   ];
+
+
 
   const navItems = isStudent ? studentNavItems : mentorNavItems;
 
