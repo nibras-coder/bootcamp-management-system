@@ -10,13 +10,17 @@ import {
 } from "react-router-dom";
 import "./style.css";
 import API from "./api/axios";
-import { FiMenu, FiX, FiMoon, FiSun } from "react-icons/fi";
+import { FiMenu, FiX } from "react-icons/fi";
+import { Sun, Moon } from "lucide-react";
 import { useTheme } from "./context/ThemeContext.jsx";
+
 import calligraphy from "./assets/calligraphy.jpg";
 
 // Page Imports
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import ForgotPage from "./pages/ForgotPage";
+import ResetPassword from "./pages/ResetPassword";
 import AdminLayout from "./layouts/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import MentorDashboard from "./pages/MentorDashboard";
@@ -26,8 +30,10 @@ import Progress from "./pages/Progress";
 import Assignments from "./pages/Assignments";
 import Grading from "./pages/Grading";
 import Announcements from "./pages/Announcements";
+import Resources from "./pages/Resources";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
+import Communities from "./pages/Communities";
 import BatchesPage from "./pages/admin/BatchesPage";
 import MentorsPage from "./pages/admin/MentorsPage";
 import StudentsPage from "./pages/admin/StudentsPage";
@@ -237,7 +243,8 @@ function Header() {
             </a>
           ))}
         </nav>
-        <div className="nav-actions">
+        <div className="nav-actions flex items-center gap-3">
+          
           <button className="ghost-btn" onClick={() => navigate("/login")}>
             Login
           </button>
@@ -287,7 +294,11 @@ function SocialIcon({ type }) {
     ),
   };
   return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
+    <svg 
+      viewBox="0 0 24 24" 
+      aria-hidden="true" 
+      className={`w-[21px] h-[21px] fill-current ${type === 'tiktok' ? 'drop-shadow-[1px_1px_0_#fe2c55] drop-shadow-[-1px_-1px_0_#25f4ee]' : ''}`}
+    >
       {paths[type]}
     </svg>
   );
@@ -295,7 +306,7 @@ function SocialIcon({ type }) {
 
 function Footer() {
   const socials = [
-    ["telegram", "Telegram", "https://t.me/astumsj"],
+    ["telegram", "Telegram", "https://t.me/ASTUMSJ_GROUP"],
     ["instagram", "Instagram", "https://instagram.com/astumsj"],
     ["facebook", "Facebook", "https://facebook.com/astumsj"],
     ["youtube", "YouTube", "https://youtube.com/@astumsj"],
@@ -313,18 +324,28 @@ function Footer() {
             Muslim Students Jemea.
           </p>
           <div className="socials">
-            {socials.map(([type, label, url]) => (
-              <a
-                className={`social social-${type}`}
-                href={url}
-                target="_blank"
-                rel="noreferrer"
-                aria-label={label}
-                key={type}
-              >
-                <SocialIcon type={type} />
-              </a>
-            ))}
+            {socials.map(([type, label, url]) => {
+              const colorClasses = {
+                telegram: "text-[#229ed9]",
+                instagram: "text-[#c13584]",
+                facebook: "text-[#1877f2]",
+                youtube: "text-[#ff0000]",
+                tiktok: "text-[#111] dark:text-gray-200",
+                x: "text-[#111] dark:text-gray-200",
+              };
+              return (
+                <a
+                  className={`social social-${type} w-11 h-11 p-0 border border-[#cddedb] dark:border-gray-700 rounded-full grid place-items-center bg-white dark:bg-gray-800 shadow-[0_8px_22px_-16px_rgba(19,64,66,0.5)] transition duration-200 hover:-translate-y-[3px] hover:scale-[1.04] hover:bg-[#f7fbfa] dark:hover:bg-gray-700 ${colorClasses[type] || "text-[#286d69]"}`}
+                  href={url}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label={label}
+                  key={type}
+                >
+                  <SocialIcon type={type} />
+                </a>
+              );
+            })}
           </div>
         </div>
         <div>
@@ -344,7 +365,7 @@ function Footer() {
           <h4>Contact</h4>
           <p>hello@astumsj.org</p>
           <p>ASTU, Adama, Ethiopia</p>
-          <p>Telegram: @astumsj</p>
+          <p>Telegram: @ASTUMSJ_GROUP</p>
         </div>
       </div>
       <div className="container footer-bottom">
@@ -397,7 +418,7 @@ function Home() {
         <div className="hero-fade" />
         <div className="container hero-inner">
           <div className="hero-copy">
-            <div className="arabic text-gray-600">بسم الله الرحمن الرحيم</div>
+            <div className="arabic text-gray-600 dark:text-gray-300">بسم الله الرحمن الرحيم</div>
             <div className="arabic-rule">
               <span></span>۞<span></span>
             </div>
@@ -527,17 +548,17 @@ function MentorCard({ m }) {
       .join("");
   };
   return (
-    <article className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm flex flex-col items-center text-center transition-transform hover:-translate-y-1 hover:shadow-md">
+    <article className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-sm flex flex-col items-center text-center transition-transform hover:-translate-y-1 hover:shadow-md">
       <div className="w-16 h-16 bg-teal-100 text-teal-700 rounded-full flex items-center justify-center text-xl font-bold mb-4">
         {getInitials(m.name)}
       </div>
-      <h3 className="text-lg font-bold text-gray-900 mb-1">{m.name}</h3>
+      <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-1">{m.name}</h3>
       <span className="text-sm font-medium text-teal-600 mb-4">{m.role}</span>
       <div className="flex flex-wrap justify-center gap-2">
         {m.expertise.map((skill, index) => (
           <span
             key={index}
-            className="inline-flex px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-600"
+            className="inline-flex px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-600 dark:text-gray-300"
           >
             {skill}
           </span>
@@ -711,14 +732,14 @@ function ContactPage() {
             <h2>Reach us directly</h2>
             <p>hello@astumsj.org</p>
             <p>ASTU Main Campus, Adama, Ethiopia</p>
-            <p>Telegram: @astumsj</p>
+            <p>Telegram: @ASTUMSJ_GROUP</p>
           </div>
           <div className="soft-card">
             <h2>Follow us</h2>
             <div className="socials contact-socials">
               <a
-                className="social social-telegram"
-                href="https://t.me/astumsj"
+                className="w-11 h-11 p-0 border border-[#cddedb] dark:border-gray-700 rounded-full grid place-items-center bg-white dark:bg-gray-800 shadow-[0_8px_22px_-16px_rgba(19,64,66,0.5)] transition duration-200 hover:-translate-y-[3px] hover:scale-[1.04] hover:bg-[#f7fbfa] dark:hover:bg-gray-700 text-[#229ed9]"
+                href="https://t.me/ASTUMSJ_GROUP"
                 target="_blank"
                 rel="noreferrer"
                 aria-label="Telegram"
@@ -726,7 +747,7 @@ function ContactPage() {
                 <SocialIcon type="telegram" />
               </a>
               <a
-                className="social social-instagram"
+                className="w-11 h-11 p-0 border border-[#cddedb] dark:border-gray-700 rounded-full grid place-items-center bg-white dark:bg-gray-800 shadow-[0_8px_22px_-16px_rgba(19,64,66,0.5)] transition duration-200 hover:-translate-y-[3px] hover:scale-[1.04] hover:bg-[#f7fbfa] dark:hover:bg-gray-700 text-[#c13584]"
                 href="https://instagram.com/astumsj"
                 target="_blank"
                 rel="noreferrer"
@@ -735,7 +756,7 @@ function ContactPage() {
                 <SocialIcon type="instagram" />
               </a>
               <a
-                className="social social-facebook"
+                className="w-11 h-11 p-0 border border-[#cddedb] dark:border-gray-700 rounded-full grid place-items-center bg-white dark:bg-gray-800 shadow-[0_8px_22px_-16px_rgba(19,64,66,0.5)] transition duration-200 hover:-translate-y-[3px] hover:scale-[1.04] hover:bg-[#f7fbfa] dark:hover:bg-gray-700 text-[#1877f2]"
                 href="https://facebook.com/astumsj"
                 target="_blank"
                 rel="noreferrer"
@@ -744,7 +765,7 @@ function ContactPage() {
                 <SocialIcon type="facebook" />
               </a>
               <a
-                className="social social-youtube"
+                className="w-11 h-11 p-0 border border-[#cddedb] dark:border-gray-700 rounded-full grid place-items-center bg-white dark:bg-gray-800 shadow-[0_8px_22px_-16px_rgba(19,64,66,0.5)] transition duration-200 hover:-translate-y-[3px] hover:scale-[1.04] hover:bg-[#f7fbfa] dark:hover:bg-gray-700 text-[#ff0000]"
                 href="https://youtube.com/@astumsj"
                 target="_blank"
                 rel="noreferrer"
@@ -753,7 +774,7 @@ function ContactPage() {
                 <SocialIcon type="youtube" />
               </a>
               <a
-                className="social social-tiktok"
+                className="w-11 h-11 p-0 border border-[#cddedb] dark:border-gray-700 rounded-full grid place-items-center bg-white dark:bg-gray-800 shadow-[0_8px_22px_-16px_rgba(19,64,66,0.5)] transition duration-200 hover:-translate-y-[3px] hover:scale-[1.04] hover:bg-[#f7fbfa] dark:hover:bg-gray-700 text-[#111] dark:text-gray-200"
                 href="https://vt.tiktok.com/ZSVak4cxQ/"
                 target="_blank"
                 rel="noreferrer"
@@ -762,7 +783,7 @@ function ContactPage() {
                 <SocialIcon type="tiktok" />
               </a>
               <a
-                className="social social-x"
+                className="w-11 h-11 p-0 border border-[#cddedb] dark:border-gray-700 rounded-full grid place-items-center bg-white dark:bg-gray-800 shadow-[0_8px_22px_-16px_rgba(19,64,66,0.5)] transition duration-200 hover:-translate-y-[3px] hover:scale-[1.04] hover:bg-[#f7fbfa] dark:hover:bg-gray-700 text-[#111] dark:text-gray-200"
                 href="https://x.com/astumsj"
                 target="_blank"
                 rel="noreferrer"
@@ -787,99 +808,11 @@ function Field({ label, children }) {
   );
 }
 
-function AuthShell({ title, subtitle, children }) {
-  const navigate = useNavigate();
-  return (
-    <main className="auth-page">
-      <div className="auth-shell">
-        <div className="auth-main">
-          <h1>{title}</h1>
-          <p className="auth-subtitle">{subtitle}</p>
-          {children}
-        </div>
-        <div className="auth-art">
-         <img
-  src={calligraphy}
-  alt="Islamic calligraphy"
-  className="auth-calligraphy"
-/>
-          <div className="art-overlay"></div>
-          <div className="auth-brand">
-            <Logo size={36} />
-            <span className="auth-home-hint">Back to home</span>
-          </div>
-        </div>
-      </div>
-    </main>
-  );
-}
-
-function ForgotPage() {
-  const [sent, setSent] = useState(false);
-  const [email, setEmail] = useState("");
-  const navigate = useNavigate();
-  return (
-    <AuthShell
-      title={sent ? "Check your inbox" : "Forgot your password?"}
-      subtitle={
-        sent
-          ? "If an account exists for that email, a reset link is on its way."
-          : "Enter the email you registered with and we will send you a reset link."
-      }
-    >
-      {sent ? (
-        <div className="sent-box">
-          <h2>Reset link sent</h2>
-          <p>
-            We sent instructions to <b>{email}</b>. Check your inbox and spam
-            folder.
-          </p>
-          <div className="button-row">
-            <Button href="/login">Back to login</Button>
-            <Button variant="outline" onClick={() => setSent(false)}>
-              Use a different email
-            </Button>
-          </div>
-        </div>
-      ) : (
-        <form
-          className="auth-form"
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (email.trim()) setSent(true);
-          }}
-        >
-          <Field label="Email">
-            <input
-              required
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@gmail.com"
-            />
-          </Field>
-          <Button>Send reset link</Button>
-          <p className="auth-switch">
-            Remembered it?{" "}
-            <a
-              href="/login"
-              onClick={(e) => {
-                e.preventDefault();
-                navigate("/login");
-              }}
-            >
-              Back to login
-            </a>
-          </p>
-        </form>
-      )}
-    </AuthShell>
-  );
-}
+// ForgotPage is imported from pages
 
 function PublicLayout() {
   return (
-    <div className="app">
+    <div className="min-h-screen bg-gray-50 text-gray-900 dark:text-gray-100 dark:bg-gray-900 dark:text-gray-100">
       <Header />
       <Outlet />
       <Footer />
@@ -888,34 +821,11 @@ function PublicLayout() {
 }
 
 
-function GlobalThemeToggle() {
-  const { darkMode, toggleDarkMode } = useTheme();
 
-  return (
-    <button
-      className={`global-theme-toggle ${darkMode ? "is-dark" : ""}`}
-      type="button"
-      onClick={toggleDarkMode}
-      aria-label={
-        darkMode ? "Switch to light mode" : "Switch to dark mode"
-      }
-      title={darkMode ? "Switch to light mode" : "Switch to dark mode"}
-    >
-      <span className="global-theme-icon">
-        {darkMode ? <FiSun size={18} /> : <FiMoon size={18} />}
-      </span>
-
-      <span className="global-theme-label">
-        {darkMode ? "Light" : "Dark"}
-      </span>
-    </button>
-  );
-}
 
 function App() {
   return (
     <BrowserRouter>
-      <GlobalThemeToggle />
       <Routes>
         {/* Public Landing Pages wrapped with Header & Footer */}
         <Route element={<PublicLayout />}>
@@ -930,24 +840,29 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPage />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
 
         {/* Student Dashboard */}
-        <Route path="/student-dashboard/*" element={<StudentDashboard />} />
+        <Route path="/student-dashboard/*" element={<ProtectedRoute allowedRoles={["student"]}><StudentDashboard /></ProtectedRoute>} />
 
-        {/* Dashboard */}
-        <Route path="/mentor-dashboard" element={<MentorDashboard />} />
-        {/* mystudents*/}
-        <Route path="/my-students" element={<MyStudents />} />
-        <Route path="/attendance" element={<Attendance />} />
-        <Route path="/progress" element={<Progress />} />
-        <Route path="/assignments" element={<Assignments />} />
-        <Route path="/grading" element={<Grading />} />
-        <Route path="/announcements" element={<Announcements />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/settings" element={<Settings />} />
+        {/* Mentor Dashboard */}
+        <Route path="/mentor-dashboard/*" element={<ProtectedRoute allowedRoles={["mentor"]}><MentorDashboard /></ProtectedRoute>} />
+        <Route element={<ProtectedRoute allowedRoles={["mentor"]} />}>
+          <Route path="/my-students" element={<MyStudents />} />
+          <Route path="/communities" element={<Communities />} />
+          <Route path="/attendance" element={<Attendance />} />
+          <Route path="/progress" element={<Progress />} />
+          <Route path="/assignments" element={<Assignments />} />
+          <Route path="/grading" element={<Grading />} />
+          <Route path="/announcements" element={<Announcements />} />
+          <Route path="/resources" element={<Resources />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/settings" element={<Settings />} />
+        </Route>
 
+        
         {/* Admin Routes */}
-        <Route path="/admin" element={<AdminLayout />}>
+        <Route path="/admin" element={<ProtectedRoute allowedRoles={["admin"]}><AdminLayout /></ProtectedRoute>}>
           <Route index element={<Navigate to="/admin/dashboard" replace />} />
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="batches" element={<BatchesPage />} />
