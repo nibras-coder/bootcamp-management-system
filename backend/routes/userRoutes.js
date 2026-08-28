@@ -31,7 +31,7 @@ router.route("/")
 
 router.route("/:id")
   .get(protect, getUserById) // Anyone logged in can get a user by ID
-  .put(protect, authorize("admin"), updateUser) // Only admin can update
+  .put(protect, updateUser) // Anyone can update (controller handles authorization)
   .delete(protect, authorize("admin"), deleteUser); // Only admin can delete
 
 module.exports = router;
