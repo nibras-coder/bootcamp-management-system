@@ -84,9 +84,15 @@ app.get("/", (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 
+// Server startup
 connectDB().then(() => {
   server.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+    console.log(`\n✅ Bootcamp Management System API running on port ${PORT}`);
+    console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`🔌 Database: Connected\n`);
   });
+}).catch(err => {
+  console.error("❌ Failed to start server:", err);
+  process.exit(1);
 });
 
