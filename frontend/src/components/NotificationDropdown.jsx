@@ -10,11 +10,16 @@ const NotificationDropdown = () => {
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
-        const response = await API.get('/announcements/all');
+        const userObj = JSON.parse(sessionStorage.getItem("user") || '{}');
+        const role = userObj.role || 'student';
+        const userId = userObj.id || userObj._id;
+        
+        let url = '/student/announcements';
+        if (role === 'admin') url = '/announcements/all';
+        else if (role === 'mentor') url = '/announcements';
+
+        const response = await API.get(url);
         if (response.data.success) {
-          const userObj = JSON.parse(localStorage.getItem('user') || '{}');
-          const userId = userObj.id || userObj._id;
-          
           const unread = response.data.data.filter(a => !a.readBy?.includes(userId));
           setNotifications(unread);
         }
@@ -52,7 +57,8 @@ const NotificationDropdown = () => {
 
   const markAllAsRead = async () => {
     try {
-      await Promise.all(notifications.map(n => markAsRead(n._id)));
+      await Promise.all(notifications.map(n => API.patch(`/announcements/${n._id}/read`)));
+      setNotifications([]);
     } catch (error) {
       console.error('Failed to mark all as read:', error);
     }
@@ -85,9 +91,15 @@ const NotificationDropdown = () => {
           <div className="max-h-96 overflow-y-auto">
             {notifications.length > 0 ? (
               notifications.map((notif) => (
-                <div key={notif._id} onClick={(e) => markAsRead(notif._id, e)} className="p-4 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer group">
-                  <p className="text-sm text-gray-800 dark:text-gray-200 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">{notif.title || notif.text}</p>
+                <div key={notif._id} className="p-4 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors group relative">
+                  <p className="text-sm text-gray-800 dark:text-gray-200 pr-16">{notif.title || notif.text}</p>
                   <p className="text-xs text-gray-500 mt-1">{new Date(notif.publishDate || notif.createdAt || Date.now()).toLocaleDateString()}</p>
+                  <button 
+                    onClick={(e) => markAsRead(notif._id, e)} 
+                    className="absolute right-4 top-4 text-xs font-medium text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-900/30 px-2 py-1 rounded hover:bg-teal-100 dark:hover:bg-teal-900/50 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+                  >
+                    Set as read
+                  </button>
                 </div>
               ))
             ) : (

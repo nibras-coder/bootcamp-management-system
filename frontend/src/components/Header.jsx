@@ -14,7 +14,7 @@ const Header = ({ title, subtitle, userProfile = null }) => {
         const response = await API.get("/announcements/all");
         
         if (response.data.success) {
-          const userObj = JSON.parse(localStorage.getItem("user") || "{}");
+          const userObj = JSON.parse(sessionStorage.getItem("user") || "{}");
           const userId = userObj.id || userObj._id;
           
           // Filter announcements that are not read by this user

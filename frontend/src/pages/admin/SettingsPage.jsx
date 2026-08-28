@@ -24,7 +24,7 @@ const SettingsPage = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const user = JSON.parse(sessionStorage.getItem("user") || "{}");
   const [profile, setProfile] = useState({
     name: user.name || "",
     email: user.email || "",
@@ -45,7 +45,7 @@ const SettingsPage = () => {
             password: "",
           });
           // sync localstorage just in case
-          localStorage.setItem("user", JSON.stringify({ ...user, name: fetchedUser.name, email: fetchedUser.email, phone: fetchedUser.phone }));
+          sessionStorage.setItem("user", JSON.stringify({ ...user, name: fetchedUser.name, email: fetchedUser.email, phone: fetchedUser.phone }));
         }
       } catch (err) {
         console.error("Failed to fetch latest profile data", err);
@@ -74,7 +74,7 @@ const SettingsPage = () => {
       const response = await API.put(`/users/${user.id}`, updateData);
       if (response.data.success) {
         toast.success("Settings updated successfully");
-        localStorage.setItem("user", JSON.stringify({ ...user, name: profile.name, email: profile.email, phone: profile.phone }));
+        sessionStorage.setItem("user", JSON.stringify({ ...user, name: profile.name, email: profile.email, phone: profile.phone }));
       }
     } catch (error) {
       console.error("Failed to save settings:", error);

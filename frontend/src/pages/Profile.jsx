@@ -51,8 +51,8 @@ function Profile() {
       const res = await API.put("/profile", formData);
       if (res.data.success) {
         setProfile(res.data.data);
-        const curUser = JSON.parse(localStorage.getItem("user") || "{}");
-        localStorage.setItem("user", JSON.stringify({ ...curUser, name: res.data.data.name }));
+        const curUser = JSON.parse(sessionStorage.getItem("user") || "{}");
+        sessionStorage.setItem("user", JSON.stringify({ ...curUser, name: res.data.data.name }));
         toast.success("Profile updated successfully!");
         setIsEditing(false);
       }

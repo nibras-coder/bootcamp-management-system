@@ -2,14 +2,30 @@ const User = require("../models/User");
 const Batch = require("../models/Batch");
 const asyncHandler = require("../utils/asyncHandler");
 
+// Get all users
 const getUsers = asyncHandler(async (req, res) => {
   const { role, search } = req.query;
+
   const query = {};
-  if (role) query.role = role;
+
+  if (role) {
+    query.role = role;
+  }
+
   if (search) {
     query.$or = [
-      { name: { $regex: search, $options: "i" } },
-      { email: { $regex: search, $options: "i" } },
+      {
+        name: {
+          $regex: search,
+          $options: "i",
+        },
+      },
+      {
+        email: {
+          $regex: search,
+          $options: "i",
+        },
+      },
     ];
   }
 
@@ -18,18 +34,33 @@ const getUsers = asyncHandler(async (req, res) => {
     .populate("batch", "name track")
     .sort({ createdAt: -1 });
 
-  res.status(200).json({ success: true, count: users.length, data: users });
+  res.status(200).json({
+    success: true,
+    count: users.length,
+    data: users,
+  });
 });
 
+// Get one user by ID
 const getUserById = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id)
     .select("-password")
     .populate("batch", "name track");
 
-  if (!user) return res.status(404).json({ success: false, message: "User not found" });
-  res.status(200).json({ success: true, data: user });
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      message: "User not found",
+    });
+  }
+
+  res.status(200).json({
+    success: true,
+    data: user,
+  });
 });
 
+// Admin creates a user
 const createUser = asyncHandler(async (req, res) => {
   const { name, fullName, email, password, role, batch, mentorRole, expertise, phone, isActive, gender } = req.body;
   const userName = name || fullName;
@@ -37,16 +68,47 @@ const createUser = asyncHandler(async (req, res) => {
   if (!userName || !email || !password || !role) {
     return res.status(400).json({
       success: false,
-      message: "Missing required fields",
+      message: "Name, email, password and role are required",
     });
   }
-  
-  const existing = await User.findOne({ email: email.toLowerCase().trim() });
-  if (existing) return res.status(400).json({ success: false, message: "Email already in use" });
+
+  const allowedRoles = ["student", "mentor", "admin"];
+
+  if (!allowedRoles.includes(role)) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid role",
+    });
+  }
+
+  const normalizedEmail = email.toLowerCase().trim();
+
+  const existing = await User.findOne({
+    email: normalizedEmail,
+  });
+
+  if (existing) {
+    return res.status(400).json({
+      success: false,
+      message: "Email already in use",
+    });
+  }
+
+  // Validate batch if provided
+  if (batch) {
+    const existingBatch = await Batch.findById(batch);
+
+    if (!existingBatch) {
+      return res.status(404).json({
+        success: false,
+        message: "Batch not found",
+      });
+    }
+  }
 
   const user = await User.create({
     name: userName,
-    email: email.toLowerCase().trim(),
+    email: normalizedEmail,
     password,
     role,
     batch: batch || null,
@@ -57,160 +119,196 @@ const createUser = asyncHandler(async (req, res) => {
     gender
   });
 
-  const safeCreatedUser = user.toObject({ transform: (_, value) => {
-    delete value.password;
-    return value;
-  } });
+  const safeUser = await User.findById(user._id)
+    .select("-password")
+    .populate("batch", "name track");
 
   res.status(201).json({
     success: true,
-    message: "User created",
-    data: safeCreatedUser,
-    user: safeCreatedUser,
+    message: "User created successfully",
+    data: safeUser,
   });
 });
 
+// Update one user
 const updateUser = asyncHandler(async (req, res) => {
-  const { name, fullName, email, password, role, batch, mentorRole, expertise, phone, isActive, gender } = req.body;
+  const {
+    name,
+    fullName,
+    email,
+    role,
+    batch,
+  } = req.body;
+
   const user = await User.findById(req.params.id);
-  if (!user) return res.status(404).json({ success: false, message: "User not found" });
 
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      message: "User not found",
+    });
+  }
+
+  // Support both name and fullName
   if (name !== undefined || fullName !== undefined) {
-    user.name = name !== undefined ? name : fullName;
+    user.name = (name || fullName).trim();
   }
 
+  // Update email
   if (email !== undefined) {
-    user.email = email.toLowerCase().trim();
+    const normalizedEmail = email.toLowerCase().trim();
+
+    const existingEmail = await User.findOne({
+      email: normalizedEmail,
+      _id: { $ne: req.params.id },
+    });
+
+    if (existingEmail) {
+      return res.status(400).json({
+        success: false,
+        message: "Email already in use",
+      });
+    }
+
+    user.email = normalizedEmail;
   }
 
-  if (password && password.trim().length >= 6) {
-    user.password = password;
-  }
-
+  // Update role
   if (role !== undefined) {
+    const allowedRoles = ["student", "mentor", "admin"];
+
+    if (!allowedRoles.includes(role)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid role",
+      });
+    }
+
     user.role = role;
   }
 
+  // Update batch
   if (batch !== undefined) {
-    user.batch = batch || null;
-  }
-  
-  if (mentorRole !== undefined) user.mentorRole = mentorRole;
-  if (expertise !== undefined) user.expertise = expertise;
-  if (phone !== undefined) user.phone = phone;
-  if (isActive !== undefined) user.isActive = isActive;
-  if (gender !== undefined) user.gender = gender;
+    if (batch) {
+      const existingBatch = await Batch.findById(batch);
 
-  await user.save();
-
-  const safeUpdatedUser = user.toObject({ transform: (_, value) => {
-    delete value.password;
-    return value;
-  } });
-
-  res.status(200).json({
-    success: true,
-    message: "User updated",
-    data: safeUpdatedUser,
-    user: safeUpdatedUser,
-  });
-});
-
-const deleteUser = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.params.id);
-  if (!user) return res.status(404).json({ success: false, message: "User not found" });
-  await user.deleteOne();
-  res.status(200).json({ success: true, message: "User deleted" });
-});
-
-const getStudents = async (req, res) => {
-  try {
-    const filter = { role: "student" };
-    if (req.query.gender) {
-      filter.gender = req.query.gender;
-    }
-    if (req.query.batch) {
-      filter.batch = req.query.batch;
-    }
-
-    const students = await User.find(filter)
-      .select("-password")
-      .populate("batch", "name track")
-      .populate("mentor", "name email");
-    res.status(200).json({ success: true, count: students.length, data: students });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Failed to get students", error: error.message });
-  }
-};
-const warnStudent = async (req, res) => {
-  try {
-    const { message } = req.body;
-    if (!message) {
-      return res.status(400).json({ success: false, message: "Warning message is required" });
-    }
-
-    const student = await User.findOneAndUpdate(
-      { _id: req.params.id, role: "student" },
-      { $push: { warnings: { message } } },
-      { new: true }
-    ).select("-password");
-
-    if (!student) {
-      return res.status(404).json({ success: false, message: "Student not found" });
-    }
-
-    res.status(200).json({ success: true, message: "Warning added successfully", data: student });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Failed to warn student", error: error.message });
-  }
-};
-
-const assignStudentToMentor = async (req, res) => {
-  try {
-    const { studentId } = req.params;
-    const { mentorId } = req.body;
-
-    const student = await User.findOne({ _id: studentId, role: "student" });
-    if (!student) {
-      return res.status(404).json({ success: false, message: "Student not found" });
-    }
-
-    if (mentorId) {
-      const mentor = await User.findOne({ _id: mentorId, role: "mentor" });
-      if (!mentor) {
-        return res.status(404).json({ success: false, message: "Mentor not found" });
+      if (!existingBatch) {
+        return res.status(404).json({
+          success: false,
+          message: "Batch not found",
+        });
       }
     }
 
-    student.mentor = mentorId || null;
-    await student.save();
+    user.batch = batch || null;
+  }
 
-    const updatedStudent = await User.findById(studentId)
-      .select("-password")
-      .populate("batch", "name track")
-      .populate("mentor", "name email");
+  await user.save();
 
-    res.status(200).json({
-      success: true,
-      message: mentorId ? "Student assigned to mentor successfully" : "Student unassigned from mentor",
-      data: updatedStudent,
+  const safeUser = await User.findById(user._id)
+    .select("-password")
+    .populate("batch", "name track");
+
+  res.status(200).json({
+    success: true,
+    message: "User updated successfully",
+    data: safeUser,
+  });
+});
+
+// Delete one user
+const deleteUser = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.params.id);
+
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      message: "User not found",
     });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Failed to assign student to mentor", error: error.message });
   }
-};
-// Get students assigned to the logged-in mentor
-const getMentorStudents = async (req, res) => {
-  try {
-    const batches = await Batch.find({ mentors: req.user.id }).select("_id name track");
-    const students = await User.find({ role: "student", batch: { $in: batches.map((b) => b._id) } })
-      .select("-password")
-      .populate("batch", "name track");
-    res.status(200).json({ success: true, count: students.length, data: students });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Failed to get mentor students", error: error.message });
+
+  await user.deleteOne();
+
+  res.status(200).json({
+    success: true,
+    message: "User deleted successfully",
+  });
+});
+
+// Get all students
+const getStudents = asyncHandler(async (req, res) => {
+  const students = await User.find({
+    role: "student",
+  })
+    .select("-password")
+    .populate("batch", "name track")
+    .sort({ createdAt: -1 });
+
+  res.status(200).json({
+    success: true,
+    count: students.length,
+    data: students,
+  });
+});
+
+// Get students assigned to logged-in mentor
+const getMentorStudents = asyncHandler(async (req, res) => {
+  const mentorId = req.user.id;
+
+  const batches = await Batch.find({
+    mentors: mentorId,
+  }).select("_id name track");
+
+  const batchIds = batches.map((batch) => batch._id);
+
+  const students = await User.find({
+    role: "student",
+    batch: { $in: batchIds },
+  })
+    .select("-password")
+    .populate("batch", "name track")
+    .sort({ createdAt: -1 });
+
+  res.status(200).json({
+    success: true,
+    count: students.length,
+    data: students,
+  });
+});
+
+// Warn student
+const warnStudent = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { reason } = req.body;
+  
+  const student = await User.findById(id);
+  if (!student) {
+    return res.status(404).json({ success: false, message: "Student not found" });
   }
-};
+  
+  res.status(200).json({ success: true, message: "Warning sent successfully" });
+});
+
+// Assign mentor to student
+const assignStudentToMentor = asyncHandler(async (req, res) => {
+  const { studentId } = req.params;
+  const { mentorId } = req.body;
+  
+  const student = await User.findById(studentId);
+  if (!student) {
+    return res.status(404).json({ success: false, message: "Student not found" });
+  }
+  
+  if (mentorId) {
+    student.mentor = mentorId;
+  } else {
+    student.mentor = undefined; // Unassign
+  }
+  
+  await student.save();
+  
+  res.status(200).json({ success: true, message: "Mentor assigned successfully" });
+});
 
 module.exports = {
   getUsers,

@@ -1,0 +1,25 @@
+{
+  "name": "ASTU MSJ Bootcamp",
+  "short_name": "MSJ Bootcamp",
+  "description": "A centralized platform to manage bootcamp activities, track your progress and achieve success together — run by Adama Science and Technology University Muslim Students Jemea.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#0b746d",
+  "background_color": "#ffffff",
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -17,11 +17,15 @@ const resourceRoutes = require("./routes/resourceRoutes");
 const studentRoutes = require("./routes/studentRoutes");
 const profileRoutes = require("./routes/profileRoutes");
 const settingsRoutes = require("./routes/settingsRoutes");
+const communityRoutes = require("./routes/communityRoutes");
+const http = require("http");
+const { initSocket } = require("./socket");
 const applicationRoutes = require("./routes/applicationRoutes");
 
 dotenv.config();
 
 const app = express();
+const server = http.createServer(app);
 
 const path = require("path");
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
@@ -36,10 +40,13 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
+// Initialize Socket.IO
+initSocket(server, corsOptions);
+
 app.use("/api/auth", authRoutes);
 app.use("/api/mentor", mentorRoutes);
-app.use("/api/attendance",attendanceRoutes);
-app.use( "/api/progress", progressRoutes);
+app.use("/api/attendance", attendanceRoutes);
+app.use("/api/progress", progressRoutes);
 app.use("/api/assignments", assignmentRoutes);
 app.use("/api/submissions",submissionRoutes);
 app.use("/api/announcements",announcementRoutes);
@@ -61,7 +68,8 @@ app.get("/", (req, res) => {
 const PORT = process.env.PORT || 5000;
 
 connectDB().then(() => {
-  app.listen(PORT, () => {
+  server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
   });
 });
+

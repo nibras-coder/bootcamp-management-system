@@ -330,13 +330,28 @@ const ApplyPage = () => {
                                       ? "number"
                                       : field.type === "phone"
                                         ? "tel"
-                                        : "text"
+                                        : field.type === "file"
+                                          ? "file"
+                                          : "text"
                               }
                               required={field.required}
-                              value={formData[field.name] || ""}
-                              onChange={(e) =>
-                                handleFieldChange(field.name, e.target.value)
-                              }
+                              value={field.type !== "file" ? formData[field.name] || "" : undefined}
+                              onChange={(e) => {
+                                if (field.type === "file") {
+                                  const file = e.target.files[0];
+                                  if (file) {
+                                    const reader = new FileReader();
+                                    reader.onloadend = () => {
+                                      handleFieldChange(field.name, reader.result);
+                                    };
+                                    reader.readAsDataURL(file);
+                                  } else {
+                                    handleFieldChange(field.name, "");
+                                  }
+                                } else {
+                                  handleFieldChange(field.name, e.target.value);
+                                }
+                              }}
                               pattern={
                                 field.type === "phone"
                                   ? "^\\+?[0-9\\-\\s()]{7,20}$"
@@ -350,6 +365,17 @@ const ApplyPage = () => {
                                   : field.type === "url"
                                     ? "Please enter a valid URL starting with http:// or https://"
                                     : undefined
+                              }
+                              placeholder={
+                                field.type === "phone"
+                                  ? "+1234567890"
+                                  : field.type === "url"
+                                    ? "https://your-link.com"
+                                    : field.type === "email"
+                                      ? "you@example.com"
+                                      : field.type === "number"
+                                        ? "Enter a number"
+                                        : `Enter your ${field.name.toLowerCase()}`
                               }
                               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500"
                             />

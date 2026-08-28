@@ -75,6 +75,18 @@ const ApplicationReviewModal = ({ isOpen, onClose, application, batch, onReviewe
                          <a href={submission.data[field.name]} target="_blank" rel="noreferrer" className="text-teal-600 dark:text-teal-400 hover:underline text-sm font-medium break-all flex items-center">
                            {submission.data[field.name]}
                          </a>
+                       ) : field.type === 'file' ? (
+                         <div className="mt-2">
+                           {submission.data[field.name] && submission.data[field.name].startsWith('data:image') ? (
+                             <img src={submission.data[field.name]} alt="Submission file" className="max-w-full h-auto max-h-64 object-contain rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm" />
+                           ) : submission.data[field.name] ? (
+                             <a href={submission.data[field.name]} download={`submission_${field.name}`} className="inline-flex items-center px-4 py-2 bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400 rounded-lg hover:bg-teal-100 dark:hover:bg-teal-900/50 transition-colors text-sm font-bold">
+                               Download File
+                             </a>
+                           ) : (
+                             <p className="text-sm text-gray-500">—</p>
+                           )}
+                         </div>
                        ) : (
                          <p className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap font-medium">{submission.data[field.name] || "—"}</p>
                        )}
