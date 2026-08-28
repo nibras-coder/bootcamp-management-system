@@ -203,7 +203,10 @@ const submitPhase = async (req, res) => {
 const getBatchApplications = async (req, res) => {
   try {
     const { batchId } = req.params;
-    const applications = await Application.find({ batch: batchId }).populate('student', 'name email profilePhoto');
+    const applications = await Application.find({ batch: batchId })
+      .populate('student', 'name email profilePhoto')
+      .populate('batch', 'name track')
+      .sort({ createdAt: -1 });
     res.status(200).json({ success: true, data: applications });
   } catch (error) {
     console.error("Get batch applications error:", error);

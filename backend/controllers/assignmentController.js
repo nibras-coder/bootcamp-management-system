@@ -149,6 +149,9 @@ const getAssignments = async (req, res) => {
           { batch: { $in: batchIds } },
         ],
       };
+    } else if (req.user.role === "admin") {
+      // Admin sees all assignments
+      query = {};
     }
 
     const assignments = await Assignment.find(query)

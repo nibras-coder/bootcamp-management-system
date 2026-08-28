@@ -23,6 +23,12 @@ const {
   getPublicBatches,
 } = require("../controllers/batchController");
 
+// Public route - Get active batches for display (must be FIRST before /:id)
+router.get(
+  "/public",
+  getPublicBatches
+);
+
 // Admin
 
 // Delete batch
@@ -63,11 +69,6 @@ router.put(
   protect,
   authorize("admin"),
   toggleCloseRegistration
-);
-// Public route - Get active batches for display (must be before /:id)
-router.get(
-  "/public",
-  getPublicBatches
 );
 
 // Authenticated users
