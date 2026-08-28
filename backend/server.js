@@ -4,6 +4,20 @@ const dotenv = require("dotenv");
 const mongoose = require("mongoose");
 
 const connectDB = require("./config/db");
+
+// Preload all Mongoose models so cross-model populate always succeeds
+require("./models/User");
+require("./models/Batch");
+require("./models/Application");
+require("./models/attendance");
+require("./models/progress");
+require("./models/assignment");
+require("./models/submission");
+require("./models/announcement");
+require("./models/Resource");
+require("./models/Community");
+require("./models/CommunityMessage");
+require("./models/Notification");
 const authRoutes = require("./routes/authRoutes");
 const mentorRoutes = require("./routes/mentorRoutes");
 const attendanceRoutes = require( "./routes/attendanceRoutes");
@@ -21,6 +35,7 @@ const communityRoutes = require("./routes/communityRoutes");
 const http = require("http");
 const { initSocket } = require("./socket");
 const applicationRoutes = require("./routes/applicationRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
 
 dotenv.config();
 
@@ -57,7 +72,9 @@ app.use("/api/resources", resourceRoutes);
 app.use("/api/student", studentRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/settings", settingsRoutes);
+app.use("/api/communities", communityRoutes);
 app.use("/api/applications", applicationRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 app.get("/", (req, res) => {
   res.json({

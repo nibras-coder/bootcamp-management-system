@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate, Navigate } from "react-router-dom";
 import {
   Bell,
@@ -41,15 +41,21 @@ import {
   MoreVertical,
   ArrowDown,
   Trash2,
+  Layers,
 } from "lucide-react";
 import API from "../api/axios";
 import { useToast } from "../context/ToastContext";
 import NotificationDropdown from "../components/NotificationDropdown";
 import { getSocket } from "../utils/socket";
+import ApplyPage from "./ApplyPage";
 
 const navItems = [
-  { path: "/", label: "Back to Home", icon: Home },
   { path: "/student-dashboard", label: "Dashboard", icon: LayoutDashboard },
+  {
+    path: "/student-dashboard/applications",
+    label: "My Applications",
+    icon: Sparkles,
+  },
   {
     path: "/student-dashboard/communities",
     label: "My Communities",
@@ -71,7 +77,6 @@ const navItems = [
     icon: FileText,
   },
   { path: "/student-dashboard/grades", label: "Grades", icon: GraduationCap },
-  { path: "/apply", label: "Admissions", icon: Sparkles },
   {
     path: "/student-dashboard/announcements",
     label: "Announcements",
@@ -93,7 +98,7 @@ const formatDate = (date) =>
 
 const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-function StudentSidebar({ mobileOpen, onClose, collapsed, onCollapse, unreadCommunityCount = 0 }) {
+function StudentSidebar({ mobileOpen, onClose, collapsed, onCollapse, unreadCommunityCount = 0, isAdmitted = true }) {
   const navigate = useNavigate();
   const location = useLocation();
   const user = JSON.parse(sessionStorage.getItem("user") || "{}");
@@ -105,9 +110,10 @@ function StudentSidebar({ mobileOpen, onClose, collapsed, onCollapse, unreadComm
   };
 
   const visibleNavItems = navItems.filter((item) => {
-    if (isAdmitted) return true; // Show all if admitted
-    // If not admitted, only show Dashboard, Admissions, Profile, Settings
-    return ["/", "/student-dashboard", "/apply", "/student-dashboard/profile", "/student-dashboard/settings"].includes(item.path);
+    const admitted = isAdmitted ?? !!(user?.batch);
+    if (admitted) return true; // Show all if admitted
+    // If not admitted, show Dashboard, My Applications, Profile, Settings
+    return ["/student-dashboard", "/student-dashboard/applications", "/student-dashboard/profile", "/student-dashboard/settings"].includes(item.path);
   });
 
   return (
@@ -144,8 +150,8 @@ function StudentSidebar({ mobileOpen, onClose, collapsed, onCollapse, unreadComm
         <nav className="student-nav">
           {visibleNavItems.map(({ path, label, icon: Icon }) => {
             const active =
-              path === "/student-dashboard" || path === "/"
-                ? location.pathname === path
+              path === "/student-dashboard"
+                ? location.pathname === "/student-dashboard" || location.pathname === "/student-dashboard/"
                 : location.pathname.startsWith(path);
             return (
               <button
@@ -168,6 +174,19 @@ function StudentSidebar({ mobileOpen, onClose, collapsed, onCollapse, unreadComm
               </button>
             );
           })}
+
+          <button
+            type="button"
+            className="student-nav-item"
+            title={collapsed ? "Download App" : undefined}
+            onClick={() => {
+              window.dispatchEvent(new CustomEvent("open-pwa-install"));
+              onClose();
+            }}
+          >
+            <Download size={19} />
+            {!collapsed && <span>Download App</span>}
+          </button>
         </nav>
 
 
@@ -1153,8 +1172,12 @@ export default function StudentDashboard() {
   });
 
   const renderPage = () => {
-    if (location.pathname === "/student-dashboard")
+    if (location.pathname === "/student-dashboard" || location.pathname === "/student-dashboard/")
       return <DashboardOverview />;
+    if (location.pathname.includes("/application") || location.pathname.includes("/apply"))
+      return <ApplyPage />;
+    if (location.pathname.includes("/notifications"))
+      return <StudentNotificationsPage />;
     if (location.pathname.includes("/communities"))
       return (
         <StudentCommunitiesPage
@@ -2659,7 +2682,18 @@ export default function StudentDashboard() {
     );
   }
 
-  const DashboardContent = () => (
+  const isAdmitted = !!(data?.student?.batch || user?.batch);
+
+  if (loading) {
+    return (
+      <div className="student-loading-screen">
+        <Loader2 className="animate-spin text-teal-600 mb-4" size={48} />
+        <h2>Loading your dashboard...</h2>
+      </div>
+    );
+  }
+
+  return (
     <div
       className={`student-app min-h-screen bg-gray-50 text-gray-900 dark:text-gray-100 dark:bg-gray-900 dark:text-gray-100 ${collapsed ? "sidebar-collapsed" : ""}`}
     >
@@ -2669,9 +2703,9 @@ export default function StudentDashboard() {
         collapsed={collapsed}
         onCollapse={() => setCollapsed((v) => !v)}
         unreadCommunityCount={totalUnreadCommunities}
+        isAdmitted={isAdmitted}
       />
       <main className="student-main">
-
         <button
           className="student-mobile-menu"
           onClick={() => setMobileOpen(true)}
@@ -2768,17 +2802,4 @@ export default function StudentDashboard() {
       )}
     </div>
   );
-
-  const isAdmitted = !!(data?.student?.batch || user?.batch);
-  
-  if (loading) {
-    return (
-      <div className="student-loading-screen">
-        <Loader2 className="animate-spin text-teal-600 mb-4" size={48} />
-        <h2>Loading your dashboard...</h2>
-      </div>
-    );
-  }
-
-  return isAdmitted ? <DashboardContent /> : <Navigate to="/apply" replace />;
 }

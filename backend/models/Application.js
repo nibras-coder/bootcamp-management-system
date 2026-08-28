@@ -6,11 +6,13 @@ const applicationSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
+      index: true,
     },
     batch: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Batch",
       required: true,
+      index: true,
     },
     track: {
       type: String, // Copied from the batch for easy filtering
@@ -57,5 +59,8 @@ const applicationSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+// Compound index for the common "find by student + batch" query
+applicationSchema.index({ student: 1, batch: 1 });
 
 module.exports = mongoose.model("Application", applicationSchema);

@@ -2,6 +2,7 @@ const Assignment = require("../models/assignment");
 const Batch = require("../models/Batch");
 const User = require("../models/User");
 const Submission = require("../models/submission");
+const { notifyNewAssignment } = require("./notificationController");
 
 // Create assignment
 
@@ -57,6 +58,14 @@ const createAssignment = async (req, res) => {
       maxScore: maxScore !== undefined ? maxScore : 100,
       link: link || "",
     });
+
+    // Notify students and mentors about the new assignment
+    try {
+      await notifyNewAssignment(assignment._id);
+    } catch (notifyError) {
+      console.error("Failed to send assignment notification:", notifyError);
+      // Don't fail the request if notification fails
+    }
 
     const populatedAssignment =
       await Assignment.findById(assignment._id)

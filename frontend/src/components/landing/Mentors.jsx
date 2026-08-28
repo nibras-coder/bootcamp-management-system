@@ -1,51 +1,7 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { FiLinkedin, FiGithub, FiArrowRight } from "react-icons/fi";
-import { Link } from "react-router-dom";
-
-const mentors = [
-  {
-    id: 1,
-    name: "Ahmed Yusuf",
-    role: "Full-Stack Mentor",
-    bio: "Passionate about building scalable web applications and helping students master modern frontend frameworks.",
-    expertise: ["React", "Node.js", "MongoDB"],
-  },
-  {
-    id: 2,
-    name: "Sara Ali",
-    role: "UI/UX Mentor",
-    bio: "Design thinker focused on creating accessible and beautiful user experiences with Figma and user research.",
-    expertise: ["Figma", "UI/UX", "Prototyping"],
-  },
-  {
-    id: 3,
-    name: "Hamza Kedir",
-    role: "Mobile Dev Mentor",
-    bio: "Flutter enthusiast helping students build practical and reliable cross-platform mobile applications.",
-    expertise: ["Flutter", "Dart", "Firebase"],
-  },
-  {
-    id: 4,
-    name: "Fatima Nur",
-    role: "Data Science Mentor",
-    bio: "Data lover and Python advocate helping students understand data analysis and machine learning.",
-    expertise: ["Python", "Pandas", "Machine Learning"],
-  },
-  {
-    id: 5,
-    name: "Omar Kedir",
-    role: "Backend Mentor",
-    bio: "Database architecture specialist helping students build fast, secure and reliable APIs.",
-    expertise: ["Django", "Python", "PostgreSQL"],
-  },
-  {
-    id: 6,
-    name: "Yasmin Ali",
-    role: "CP Mentor",
-    bio: "Competitive programmer and algorithms enthusiast preparing students for challenging programming problems.",
-    expertise: ["C++", "Algorithms", "Data Structures"],
-  },
-];
+import { Link, useNavigate } from "react-router-dom";
+import API from "../../api/axios";
 
 function MentorAvatar({ name }) {
   const initials = name
@@ -76,11 +32,11 @@ function MentorCard({ mentor }) {
 
       <div className="relative z-10 flex flex-col h-full w-full">
         <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">{mentor.name}</h3>
-        <p className="text-sm font-medium text-teal-600 dark:text-teal-400 mb-4">{mentor.role}</p>
-        <p className="text-sm text-gray-600 dark:text-gray-300 mb-6 flex-grow">{mentor.bio}</p>
+        <p className="text-sm font-medium text-teal-600 dark:text-teal-400 mb-4">{mentor.mentorRole || mentor.role || "Mentor"}</p>
+        <p className="text-sm text-gray-600 dark:text-gray-300 mb-6 flex-grow">{mentor.bio || "Dedicated mentor helping students grow."}</p>
 
         <div className="flex flex-wrap justify-center gap-2 mb-6">
-          {mentor.expertise.map((skill) => (
+          {(mentor.expertise || []).map((skill) => (
             <span key={skill} className="inline-flex px-3 py-1 rounded-full text-xs font-medium bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 border border-gray-100 dark:border-gray-600">
               {skill}
             </span>
@@ -109,7 +65,33 @@ function MentorCard({ mentor }) {
 }
 
 function Mentors({ isHighlight = false }) {
-  const displayedMentors = isHighlight ? mentors.slice(0, 4) : mentors;
+  const [mentors, setMentors] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchMentors = async () => {
+      try {
+        const response = await API.get("/users/public/mentors");
+        if (response.data.success) {
+          setMentors(response.data.data || []);
+        }
+      } catch (error) {
+        console.error("Failed to fetch mentors:", error);
+        setMentors([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchMentors();
+  }, []);
+
+  // Show top 4 mentors in highlight mode
+  const displayedMentors = mentors.slice(0, 4);
+
+  const handleViewAll = () => {
+    navigate("/mentors");
+  };
 
   return (
     <section id="mentors" className="py-20 bg-gray-50/50 dark:bg-gray-900">
@@ -129,17 +111,26 @@ function Mentors({ isHighlight = false }) {
         )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-          {displayedMentors.map((mentor) => (
-            <MentorCard key={mentor.id} mentor={mentor} />
-          ))}
+          {loading ? (
+            <p className="text-gray-500 text-center col-span-full">Loading mentors...</p>
+          ) : displayedMentors.length > 0 ? (
+            displayedMentors.map((mentor) => (
+              <MentorCard key={mentor._id} mentor={mentor} />
+            ))
+          ) : (
+            <p className="text-gray-500 text-center col-span-full">No mentors available</p>
+          )}
         </div>
 
-        {isHighlight && (
+        {isHighlight && mentors.length > 0 && (
           <div className="mt-16 flex justify-center">
-            <Link to="/mentors" className="inline-flex items-center gap-2 px-6 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-teal-700 dark:text-teal-400 font-medium rounded-lg hover:border-teal-200 dark:hover:border-teal-600 hover:bg-teal-50 dark:hover:bg-gray-700 transition-colors shadow-sm">
-              <span>Meet all mentors</span>
+            <button
+              onClick={handleViewAll}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-teal-700 dark:text-teal-400 font-medium rounded-lg hover:border-teal-200 dark:hover:border-teal-600 hover:bg-teal-50 dark:hover:bg-gray-700 transition-colors shadow-sm"
+            >
+              <span>View All Mentors</span>
               <FiArrowRight />
-            </Link>
+            </button>
           </div>
         )}
       </div>

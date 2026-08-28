@@ -12,6 +12,7 @@ import {
   FiBarChart2,
   FiSettings,
   FiBook,
+  FiDownload,
 } from "react-icons/fi";
 import logo from "../assets/logo.png";
 
@@ -77,6 +78,17 @@ const Sidebar = () => {
             </Link>
           );
         })}
+
+        <button
+          type="button"
+          onClick={() => {
+            window.dispatchEvent(new CustomEvent("open-pwa-install"));
+          }}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-teal-100 dark:text-gray-200 bg-teal-800/40 hover:bg-teal-800/80 dark:hover:bg-gray-800/80 transition-colors cursor-pointer border border-teal-700/40 dark:border-gray-700"
+        >
+          <FiDownload size={18} className="text-teal-300 dark:text-teal-400" />
+          <span>Download App</span>
+        </button>
       </nav>
 
       {/* Bottom User Card with Logout Below Name */}

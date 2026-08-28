@@ -8,14 +8,24 @@ if (!baseURL.endsWith("/api")) {
 
 const API = axios.create({
   baseURL,
-  headers: { "Content-Type": "application/json" },
-  timeout: 15000,
+  timeout: 30000,
   withCredentials: true,
 });
 
 API.interceptors.request.use((config) => {
   const token = sessionStorage.getItem("token");
-  if (token) config.headers.Authorization = `Bearer ${token}`;
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  if (config.data instanceof FormData) {
+    if (typeof config.headers?.delete === "function") {
+      config.headers.delete("Content-Type");
+      config.headers.delete("content-type");
+    } else if (config.headers) {
+      delete config.headers["Content-Type"];
+      delete config.headers["content-type"];
+    }
+  }
   return config;
 });
 

@@ -47,17 +47,25 @@ const AnnouncementsPage = () => {
 
   const handleAdd = async (e) => {
     e.preventDefault();
+    
+    // Validate title is not empty
+    if (!newAnnouncement.title.trim()) {
+      toast.warning("Please enter a title for the announcement");
+      return;
+    }
+
+    // Validate content is not empty
+    if (!newAnnouncement.content.trim()) {
+      toast.warning("Please enter content for the announcement");
+      return;
+    }
+
+    const payload = {
+      ...newAnnouncement,
+      batch: selectedBatch === "all" ? null : selectedBatch,
+    };
+
     try {
-      if (!selectedBatch) {
-        toast.warning("Please select a batch or 'All Tracks'");
-        return;
-      }
-
-      const payload = {
-        ...newAnnouncement,
-        batch: selectedBatch === "all" ? null : selectedBatch,
-      };
-
       const response = await API.post("/announcements", payload);
       if (response.data.success) {
         setAnnouncements([response.data.data, ...announcements]);
@@ -77,7 +85,12 @@ const AnnouncementsPage = () => {
     try {
       const response = await API.put(
         `/announcements/${editingAnnouncement._id}`,
-        editingAnnouncement,
+        {
+          title: editingAnnouncement.title,
+          content: editingAnnouncement.content,
+          targetAudience: editingAnnouncement.targetAudience,
+          batch: editingAnnouncement.batch || null,
+        },
       );
       if (response.data.success) {
         setAnnouncements(
@@ -162,7 +175,7 @@ const AnnouncementsPage = () => {
             <div className="flex justify-between items-start mb-2 pr-8">
               <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">{ann.title}</h3>
               <span className="inline-flex px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-600 dark:text-gray-300">
-                To: {ann.targetAudience || "all"}
+                To: {ann.batch ? (ann.batch.name || ann.batch.track) : "All Tracks"}
               </span>
             </div>
             <p className="text-gray-600 dark:text-gray-300 mb-4">{ann.content}</p>
@@ -221,7 +234,6 @@ const AnnouncementsPage = () => {
                   Target Track
                 </label>
                 <select
-                  required
                   value={selectedBatch}
                   onChange={(e) => setSelectedBatch(e.target.value)}
                   className="w-full px-3 py-2 border rounded-lg focus:ring-teal-500 mb-4"
@@ -343,24 +355,44 @@ const AnnouncementsPage = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Target Audience
+                  Target Track
                 </label>
                 <select
-                  required
-                  value={editingAnnouncement.target}
+                  value={editingAnnouncement.batch?._id || editingAnnouncement.batch || ""}
                   onChange={(e) =>
                     setEditingAnnouncement({
                       ...editingAnnouncement,
-                      target: e.target.value,
+                      batch: e.target.value ? e.target.value : null,
                     })
                   }
                   className="w-full px-3 py-2 border rounded-lg focus:ring-teal-500"
                 >
-                  <option value="All Tracks">All Tracks</option>
-                  <option value="Web Dev Bootcamp">Web Dev Bootcamp</option>
-                  <option value="DSA & CP">
-                    DSA & Competitive Programming
-                  </option>
+                  <option value="">All Tracks</option>
+                  {batches.map((b) => (
+                    <option key={b._id} value={b._id}>
+                      {b.name || b.track}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Target Audience
+                </label>
+                <select
+                  required
+                  value={editingAnnouncement.targetAudience || editingAnnouncement.target || "all"}
+                  onChange={(e) =>
+                    setEditingAnnouncement({
+                      ...editingAnnouncement,
+                      targetAudience: e.target.value,
+                    })
+                  }
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-teal-500"
+                >
+                  <option value="all">All</option>
+                  <option value="students">Students</option>
+                  <option value="mentors">Mentors</option>
                 </select>
               </div>
               <div>

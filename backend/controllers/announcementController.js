@@ -1,6 +1,7 @@
 const Announcement = require("../models/announcement");
 const Batch = require("../models/Batch");
 const User = require("../models/User");
+const { notifyNewAnnouncement } = require("./notificationController");
 
 // Create announcement
 
@@ -56,6 +57,14 @@ const createAnnouncement = async (req, res) => {
         publishDate:
           publishDate || new Date(),
       });
+
+    // Notify students and mentors about the new announcement
+    try {
+      await notifyNewAnnouncement(announcement._id);
+    } catch (notifyError) {
+      console.error("Failed to send announcement notification:", notifyError);
+      // Don't fail the request if notification fails
+    }
 
     const populatedAnnouncement =
       await Announcement.findById(
@@ -287,6 +296,7 @@ const updateAnnouncement = async (
       content,
       targetAudience,
       publishDate,
+      batch,
     } = req.body;
 
     if (title !== undefined) {
@@ -300,6 +310,10 @@ const updateAnnouncement = async (
     if (targetAudience !== undefined) {
       announcement.targetAudience =
         targetAudience;
+    }
+
+    if (batch !== undefined) {
+      announcement.batch = batch;
     }
 
     if (publishDate !== undefined) {
@@ -408,7 +422,12 @@ const markAnnouncementRead = async (req, res) => {
       });
     }
 
-    if (!announcement.readBy.includes(userId)) {
+    if (!announcement.readBy) {
+      announcement.readBy = [];
+    }
+
+    const alreadyRead = announcement.readBy.some((id) => String(id) === String(userId));
+    if (!alreadyRead) {
       announcement.readBy.push(userId);
       await announcement.save();
     }

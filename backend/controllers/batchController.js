@@ -1,5 +1,6 @@
 const Batch = require("../models/Batch");
 const User = require("../models/User");
+const Notification = require("../models/Notification");
 
 // Create batch
 
@@ -335,7 +336,7 @@ const deleteBatch = async (req, res) => {
 const updateBatch = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, track, startDate, endDate, instructor, mentors, phases } = req.body;
+    const { name, track, startDate, endDate, instructor, mentors, phases, closeRegistration } = req.body;
 
     const batch = await Batch.findById(id);
     if (!batch) {
@@ -349,6 +350,7 @@ const updateBatch = async (req, res) => {
     if (instructor !== undefined) batch.instructor = instructor;
     if (mentors) batch.mentors = mentors;
     if (phases) batch.phases = phases;
+    if (closeRegistration !== undefined) batch.closeRegistration = closeRegistration;
 
     await batch.save();
 
@@ -361,6 +363,87 @@ const updateBatch = async (req, res) => {
   }
 };
 
+const toggleCloseRegistration = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { closeRegistration } = req.body;
+
+    const batch = await Batch.findByIdAndUpdate(
+      id,
+      { closeRegistration },
+      { new: true, runValidators: true }
+    ).populate("mentors", "name email role");
+
+    if (!batch) {
+      return res.status(404).json({ success: false, message: "Batch not found" });
+    }
+
+    // Notify students about registration status change
+    if (closeRegistration) {
+      try {
+        const notifications = [];
+        for (const studentId of batch.students) {
+          const notification = await Notification.create({
+            recipient: studentId,
+            sender: req.user.id,
+            batch: id,
+            type: "REGISTRATION_CLOSED",
+            message: `Registration for ${batch.name} has been closed by admin.`,
+            metadata: { batchName: batch.name },
+          });
+          notifications.push(notification);
+        }
+      } catch (notifyError) {
+        console.error("Failed to send registration closed notifications:", notifyError);
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      message: closeRegistration ? "Registration closed successfully" : "Registration reopened successfully",
+      data: batch,
+    });
+  } catch (error) {
+    console.error("Toggle close registration error:", error);
+    res.status(500).json({ success: false, message: "Failed to update registration status", error: error.message });
+  }
+};
+
+const getPublicBatches = async (req, res) => {
+  try {
+    const batches = await Batch.find({ isActive: true })
+      .limit(10)
+      .sort({ createdAt: -1 })
+      .populate("mentors", "name email role");
+
+    const mongoose = require("mongoose");
+
+    const populatedBatches = await Promise.all(batches.map(async (batch) => {
+      let batchObj = batch.toObject();
+      if (batchObj.instructor && mongoose.Types.ObjectId.isValid(batchObj.instructor)) {
+        const user = await User.findById(batchObj.instructor).select("name");
+        if (user) {
+          batchObj.instructor = user;
+        }
+      }
+      return batchObj;
+    }));
+
+    res.status(200).json({
+      success: true,
+      count: populatedBatches.length,
+      data: populatedBatches,
+    });
+  } catch (error) {
+    console.error("Get public batches error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to get tracks",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   createBatch,
   getBatches,
@@ -370,4 +453,6 @@ module.exports = {
   getBatchStudents,
   deleteBatch,
   updateBatch,
+  toggleCloseRegistration,
+  getPublicBatches,
 };

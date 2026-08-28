@@ -16,14 +16,13 @@ const announcementSchema = new mongoose.Schema(
 
     targetAudience: {
       type: String,
-      enum: ["students", "all"],
+      enum: ["students", "mentors", "all"],
       default: "students",
     },
 
     batch: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Batch",
-      required: true,
     },
 
     author: {

@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const Batch = require("../models/Batch");
 const Attendance = require("../models/attendance");
 const Progress = require("../models/progress");
 const Assignment = require("../models/assignment");

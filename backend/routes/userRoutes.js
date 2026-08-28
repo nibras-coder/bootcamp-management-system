@@ -11,9 +11,13 @@ const {
   getMentorStudents,
   warnStudent,
   assignStudentToMentor,
+  getPublicMentors,
 } = require("../controllers/userController");
 
 const { protect, authorize } = require("../middleware/authMiddleware");
+
+// Public route - Get active mentors (must be before protected routes)
+router.get("/public/mentors", getPublicMentors);
 
 router.get("/students", protect, authorize("admin"), getStudents);
 router.post("/students/:id/warn", protect, authorize("admin"), warnStudent);

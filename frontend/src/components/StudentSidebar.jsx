@@ -42,6 +42,19 @@ export default function StudentSidebar({ sidebarOpen, setSidebarOpen, name, hand
           </Link>
 
           <Link
+            to="/student-dashboard/applications"
+            onClick={() => setSidebarOpen(false)}
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+              location.pathname.includes("/applications") || location.pathname.includes("/apply")
+                ? "bg-teal-800 text-white border-l-4 border-white"
+                : "text-teal-100 hover:bg-teal-800/50 hover:text-white"
+            }`}
+          >
+            <FiFileText size={18} className={location.pathname.includes("applications") || location.pathname.includes("apply") ? "text-white" : "text-teal-300"} />
+            My Applications
+          </Link>
+
+          <Link
             to="/attendance"
             onClick={() => setSidebarOpen(false)}
             className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
