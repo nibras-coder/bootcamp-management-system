@@ -165,6 +165,22 @@ const updateUser = asyncHandler(async (req, res) => {
     });
   }
 
+  // Check authorization: user can update themselves, admin can update anyone
+  if (req.user.id !== req.params.id && req.user.role !== "admin") {
+    return res.status(403).json({
+      success: false,
+      message: "You do not have permission to update this user",
+    });
+  }
+
+  // Only admin can change role and batch
+  if ((role !== undefined || batch !== undefined) && req.user.role !== "admin") {
+    return res.status(403).json({
+      success: false,
+      message: "Only admins can change role or batch",
+    });
+  }
+
   // Support both name and fullName
   if (name !== undefined || fullName !== undefined) {
     user.name = (name || fullName).trim();
@@ -189,7 +205,7 @@ const updateUser = asyncHandler(async (req, res) => {
     user.email = normalizedEmail;
   }
 
-  // Update role
+  // Update role (admin only)
   if (role !== undefined) {
     const allowedRoles = ["student", "mentor", "admin"];
 
@@ -203,7 +219,7 @@ const updateUser = asyncHandler(async (req, res) => {
     user.role = role;
   }
 
-  // Update batch
+  // Update batch (admin only)
   if (batch !== undefined) {
     if (batch) {
       const existingBatch = await Batch.findById(batch);

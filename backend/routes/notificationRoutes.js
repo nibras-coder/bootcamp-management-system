@@ -52,18 +52,11 @@ router.put(
   markAllAsRead
 );
 
-// Student, Admin, Mentor routes - Delete notification
+// Student, Admin, Mentor routes - Delete notification (specific)
 router.delete(
   "/:id",
   protect,
   deleteNotification
-);
-
-// Student, Admin, Mentor routes - Delete all notifications
-router.delete(
-  "/",
-  protect,
-  deleteAllNotifications
 );
 
 // Admin routes - Create notification
@@ -72,6 +65,13 @@ router.post(
   protect,
   authorize("admin"),
   createNotification
+);
+
+// Student, Admin, Mentor routes - Delete all notifications (general - must come after specific routes)
+router.delete(
+  "/",
+  protect,
+  deleteAllNotifications
 );
 
 // Admin routes - Notify students about registration closed
