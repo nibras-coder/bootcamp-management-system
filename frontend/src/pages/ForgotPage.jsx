@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import loginBg from "../assets/login-bg.jpg";
 import calligraphy from "../assets/calligraphy.jpg";
+import API from "../api/axios";
 
 function ForgotPage() {
   const [sent, setSent] = useState(false);
@@ -76,9 +77,17 @@ function ForgotPage() {
           ) : (
             <form 
               className="mt-8 space-y-6" 
-              onSubmit={(e) => {
+              onSubmit={async (e) => {
                 e.preventDefault();
-                if (email.trim()) setSent(true);
+                if (email.trim()) {
+                  try {
+                    await API.post("/auth/forgot-password", { email });
+                    setSent(true);
+                  } catch (err) {
+                    console.error("Forgot password error", err);
+                    setSent(true); // Don't leak whether email exists or not
+                  }
+                }
               }}
             >
               <div>

@@ -22,8 +22,8 @@ function Login() {
     setLoading(true);
     try {
       const { data } = await API.post("/auth/login", formData);
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
+      sessionStorage.setItem("token", data.token);
+      sessionStorage.setItem("user", JSON.stringify(data.user));
 
       const role = data.user.role;
       if (role === "admin") navigate("/admin/dashboard");

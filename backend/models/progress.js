@@ -11,7 +11,7 @@ const progressSchema = new mongoose.Schema(
     batch: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Batch",
-      default: null,
+      required: true,
     },
 
     topic: {
@@ -27,14 +27,13 @@ const progressSchema = new mongoose.Schema(
         "In Progress",
         "Completed",
         "Needs Improvement",
-        "Need Help",
       ],
       default: "Not Started",
     },
 
     week: {
       type: Number,
-      default: 1,
+      required: true,
       min: 1,
     },
 
@@ -65,4 +64,7 @@ progressSchema.index(
   }
 );
 
-module.exports = mongoose.model("Progress", progressSchema);
+module.exports = mongoose.model(
+  "Progress",
+  progressSchema
+);

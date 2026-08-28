@@ -13,6 +13,7 @@ import {
   ExternalLink,
   FileText,
   GraduationCap,
+  Home,
   LayoutDashboard,
   Loader2,
   LogOut,
@@ -43,10 +44,11 @@ import {
 } from "lucide-react";
 import API from "../api/axios";
 import { useToast } from "../context/ToastContext";
+import NotificationDropdown from "../components/NotificationDropdown";
 import { getSocket } from "../utils/socket";
 
-
 const navItems = [
+  { path: "/", label: "Back to Home", icon: Home },
   { path: "/student-dashboard", label: "Dashboard", icon: LayoutDashboard },
   {
     path: "/student-dashboard/communities",
@@ -94,18 +96,18 @@ const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 function StudentSidebar({ mobileOpen, onClose, collapsed, onCollapse, unreadCommunityCount = 0 }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const user = JSON.parse(sessionStorage.getItem("user") || "{}");
 
   const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("user");
     navigate("/login", { replace: true });
   };
 
   const visibleNavItems = navItems.filter((item) => {
     if (isAdmitted) return true; // Show all if admitted
     // If not admitted, only show Dashboard, Admissions, Profile, Settings
-    return ["/student-dashboard", "/apply", "/student-dashboard/profile", "/student-dashboard/settings"].includes(item.path);
+    return ["/", "/student-dashboard", "/apply", "/student-dashboard/profile", "/student-dashboard/settings"].includes(item.path);
   });
 
   return (
@@ -142,7 +144,7 @@ function StudentSidebar({ mobileOpen, onClose, collapsed, onCollapse, unreadComm
         <nav className="student-nav">
           {visibleNavItems.map(({ path, label, icon: Icon }) => {
             const active =
-              path === "/student-dashboard"
+              path === "/student-dashboard" || path === "/"
                 ? location.pathname === path
                 : location.pathname.startsWith(path);
             return (
@@ -971,7 +973,7 @@ export default function StudentDashboard() {
   const [communityUnreadCounts, setCommunityUnreadCounts] = useState({});
 
   const user = useMemo(
-    () => JSON.parse(localStorage.getItem("user") || "{}"),
+    () => JSON.parse(sessionStorage.getItem("user") || "{}"),
     [],
   );
 
@@ -980,8 +982,8 @@ export default function StudentDashboard() {
   }, [communityUnreadCounts]);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("user");
     navigate("/login", { replace: true });
   };
 
@@ -1044,16 +1046,7 @@ export default function StudentDashboard() {
     };
   }, [user]);
 
-  const user = useMemo(
-    () => JSON.parse(localStorage.getItem("user") || "{}"),
-    [],
-  );
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    navigate("/login", { replace: true });
-  };
 
   useEffect(() => {
     document.body.classList.add("student-app-body");
@@ -1065,7 +1058,7 @@ export default function StudentDashboard() {
   }, [collapsed]);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
 
     if (!token) {
       navigate("/login", { replace: true });
@@ -1080,8 +1073,7 @@ export default function StudentDashboard() {
         const payload = response.data?.data || response.data;
         setData(payload);
         if (payload.student) {
-          localStorage.setItem(
-            "user",
+          sessionStorage.setItem("user",
             JSON.stringify({
               ...user,
               id: payload.student._id || payload.student.id,
@@ -1093,8 +1085,8 @@ export default function StudentDashboard() {
         }
       } catch (err) {
         if (err.response?.status === 401 || err.response?.status === 403) {
-          localStorage.removeItem("token");
-          localStorage.removeItem("user");
+          sessionStorage.removeItem("token");
+          sessionStorage.removeItem("user");
           navigate("/login", { replace: true });
           return;
         }
@@ -1196,10 +1188,7 @@ export default function StudentDashboard() {
           </p>
         </div>
         <div className="student-heading-actions">
-          <button className="student-notification" title="Notifications">
-            <Bell size={21} />
-            <span>{announcements.length}</span>
-          </button>
+          <NotificationDropdown />
         </div>
       </div>
 
@@ -2351,9 +2340,8 @@ export default function StudentDashboard() {
         const res = await API.put("/profile", formData);
         if (res.data.success) {
           setProfile(res.data.data);
-          const curUser = JSON.parse(localStorage.getItem("user") || "{}");
-          localStorage.setItem(
-            "user",
+          const curUser = JSON.parse(sessionStorage.getItem("user") || "{}");
+          sessionStorage.setItem("user",
             JSON.stringify({ ...curUser, name: res.data.data.name }),
           );
           toast.success("Profile updated successfully!");

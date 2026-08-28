@@ -114,13 +114,13 @@ export default function PWAInstallButton() {
     <>
       {/* ── Fixed Install Button ── */}
       <button
-        className="pwa-install-btn"
         onClick={handleInstallClick}
         aria-label="Install app"
         id="pwa-install-button"
+        className="fixed bottom-8 left-8 z-50 flex items-center gap-3 px-6 py-3.5 bg-teal-600/90 hover:bg-teal-700/90 dark:bg-teal-500/90 dark:hover:bg-teal-600/90 backdrop-blur-md text-white font-semibold rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-[0_8px_30px_rgb(13,148,136,0.3)] transition-all duration-300 hover:-translate-y-1 group border border-teal-500/30"
       >
-        <span className="pwa-install-btn__icon">📱</span>
-        <span className="pwa-install-btn__text">Download App</span>
+        <span className="text-xl group-hover:scale-110 transition-transform duration-300">📱</span>
+        <span>Download App</span>
       </button>
 
       {/* ── Confirmation Dialog ── */}

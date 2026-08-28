@@ -74,7 +74,7 @@ router.delete(
 router.patch(
   "/:id/read",
   protect,
-  authorize("admin", "mentor"),
+  authorize("admin", "mentor", "student"),
   markAnnouncementRead
 );
 

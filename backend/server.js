@@ -52,6 +52,7 @@ app.use("/api/submissions",submissionRoutes);
 app.use("/api/announcements",announcementRoutes);
 app.use("/api/users",userRoutes);
 app.use("/api/batches", batchRoutes);
+app.use("/api/tracks", batchRoutes);
 app.use("/api/resources", resourceRoutes);
 app.use("/api/student", studentRoutes);
 app.use("/api/profile", profileRoutes);

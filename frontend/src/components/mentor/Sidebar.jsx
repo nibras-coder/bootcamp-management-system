@@ -24,7 +24,7 @@ function Sidebar({ isOpen = false, onClose }) {
   const navigate = useNavigate();
   const [unreadCount, setUnreadCount] = useState(0);
 
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const user = JSON.parse(sessionStorage.getItem("user") || "{}");
   const isStudent = user.role === "student";
 
   useEffect(() => {
@@ -93,8 +93,8 @@ function Sidebar({ isOpen = false, onClose }) {
   const navItems = isStudent ? studentNavItems : mentorNavItems;
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("user");
     navigate("/login", { replace: true });
   };
 

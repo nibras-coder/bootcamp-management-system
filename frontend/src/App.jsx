@@ -15,6 +15,7 @@ import { Sun, Moon } from "lucide-react";
 import { useTheme } from "./context/ThemeContext.jsx";
 
 import calligraphy from "./assets/calligraphy.jpg";
+import PWAInstallButton from "./components/PWAInstallButton";
 
 // Page Imports
 import Login from "./pages/Login";
@@ -47,7 +48,6 @@ import ReportsPage from "./pages/admin/ReportsPage";
 import SettingsPage from "./pages/admin/SettingsPage";
 import ResourcesPage from "./pages/admin/ResourcesPage";
 import ProtectedRoute from "./components/ProtectedRoute";
-import PWAInstallButton from "./components/PWAInstallButton";
 import StudentDashboard from "./pages/StudentDashboard";
 import MentorsSection from "./components/landing/Mentors";
 
@@ -799,6 +799,7 @@ function ContactPage() {
           </div>
         </div>
       </div>
+      <PWAInstallButton />
     </PageShell>
   );
 }
@@ -830,7 +831,6 @@ function PublicLayout() {
 function App() {
   return (
     <>
-    <PWAInstallButton />
     <BrowserRouter>
       <Routes>
         {/* Public Landing Pages wrapped with Header & Footer */}

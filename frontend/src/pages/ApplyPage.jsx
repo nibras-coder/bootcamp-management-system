@@ -122,7 +122,13 @@ const ApplyPage = () => {
 
   // Helper for Back to Dashboard button
   const BackToDashboard = ({ showGoBack }) => (
-    <div className="mb-4 flex items-center gap-6">
+    <div className="mb-4 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
+      <button 
+        onClick={() => navigate("/")}
+        className="flex items-center text-sm font-medium text-teal-600 hover:text-teal-800 transition-colors"
+      >
+        <ChevronRight className="w-4 h-4 mr-1 rotate-180" /> Back to Home
+      </button>
       <button 
         onClick={() => navigate("/student-dashboard")}
         className="flex items-center text-sm font-medium text-teal-600 hover:text-teal-800 transition-colors"
@@ -167,6 +173,34 @@ const ApplyPage = () => {
     const isPendingReview =
       existingSubmission && existingSubmission.status === "PENDING_REVIEW";
     const isRejected = application.status === "REJECTED";
+
+    if (isPendingReview || application.status === "PENDING") {
+      return (
+        <div className="min-h-screen bg-gray-50 py-12 px-4 flex flex-col items-center justify-center">
+          <div className="max-w-md w-full text-center bg-white p-8 rounded-2xl shadow-sm border border-gray-200">
+            <Clock className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Application Pending</h2>
+            <p className="text-gray-600 mb-8">
+              Your application is currently pending. Please wait for Admin approval.
+            </p>
+            <div className="flex flex-col gap-4">
+              <button 
+                onClick={() => navigate("/")}
+                className="w-full flex items-center justify-center py-2 px-4 border border-teal-600 rounded-xl text-teal-600 hover:bg-teal-50 transition-colors font-medium"
+              >
+                <ChevronRight className="w-4 h-4 mr-1 rotate-180" /> Back to Home
+              </button>
+              <button 
+                onClick={() => navigate("/student-dashboard")}
+                className="w-full flex items-center justify-center py-2 px-4 border border-teal-600 rounded-xl text-teal-600 hover:bg-teal-50 transition-colors font-medium"
+              >
+                <ChevronRight className="w-4 h-4 mr-1 rotate-180" /> Back to Dashboard
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
 
     return (
       <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -224,11 +258,6 @@ const ApplyPage = () => {
                         </p>
                       )}
                     </div>
-                    {isCurrent && isPendingReview && (
-                      <span className="text-xs font-bold text-yellow-600 bg-yellow-100 px-2 py-1 rounded">
-                        PENDING REVIEW
-                      </span>
-                    )}
                   </div>
                 );
               })}
@@ -249,18 +278,6 @@ const ApplyPage = () => {
               </div>
 
               <div className="p-6">
-                {isPendingReview ? (
-                  <div className="text-center py-8">
-                    <Clock className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
-                    <h3 className="text-lg font-bold text-gray-900 mb-2">
-                      Under Review
-                    </h3>
-                    <p className="text-gray-600">
-                      You have successfully submitted your information for this
-                      phase. The admission team is currently reviewing it.
-                    </p>
-                  </div>
-                ) : (
                   <form
                     onSubmit={(e) => handleSubmitPhase(e, currentPhaseConfig)}
                     className="space-y-6"
@@ -311,12 +328,54 @@ const ApplyPage = () => {
                                     ? "email"
                                     : field.type === "number"
                                       ? "number"
-                                      : "text"
+                                      : field.type === "phone"
+                                        ? "tel"
+                                        : field.type === "file"
+                                          ? "file"
+                                          : "text"
                               }
                               required={field.required}
-                              value={formData[field.name] || ""}
-                              onChange={(e) =>
-                                handleFieldChange(field.name, e.target.value)
+                              value={field.type !== "file" ? formData[field.name] || "" : undefined}
+                              onChange={(e) => {
+                                if (field.type === "file") {
+                                  const file = e.target.files[0];
+                                  if (file) {
+                                    const reader = new FileReader();
+                                    reader.onloadend = () => {
+                                      handleFieldChange(field.name, reader.result);
+                                    };
+                                    reader.readAsDataURL(file);
+                                  } else {
+                                    handleFieldChange(field.name, "");
+                                  }
+                                } else {
+                                  handleFieldChange(field.name, e.target.value);
+                                }
+                              }}
+                              pattern={
+                                field.type === "phone"
+                                  ? "^\\+?[0-9\\-\\s()]{7,20}$"
+                                  : field.type === "url"
+                                    ? "https?://.+"
+                                    : undefined
+                              }
+                              title={
+                                field.type === "phone"
+                                  ? "Please enter a valid phone number (7-20 digits, +, -, or spaces allowed)"
+                                  : field.type === "url"
+                                    ? "Please enter a valid URL starting with http:// or https://"
+                                    : undefined
+                              }
+                              placeholder={
+                                field.type === "phone"
+                                  ? "+1234567890"
+                                  : field.type === "url"
+                                    ? "https://your-link.com"
+                                    : field.type === "email"
+                                      ? "you@example.com"
+                                      : field.type === "number"
+                                        ? "Enter a number"
+                                        : `Enter your ${field.name.toLowerCase()}`
                               }
                               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500"
                             />
@@ -333,7 +392,6 @@ const ApplyPage = () => {
                       {submitting ? "Submitting..." : "Submit Phase"}
                     </button>
                   </form>
-                )}
               </div>
             </div>
           )}

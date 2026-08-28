@@ -33,7 +33,7 @@ import { getSocket } from "../utils/socket";
 function Communities() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { toast, confirm } = useToast();
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const user = JSON.parse(sessionStorage.getItem("user") || "{}");
 
   // State
   const [communities, setCommunities] = useState([]);

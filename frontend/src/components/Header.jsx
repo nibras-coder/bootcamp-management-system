@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Bell, Calendar, User } from 'lucide-react';
+import { Calendar, User } from 'lucide-react';
 import API from '../api/axios';
-
+import NotificationDropdown from './NotificationDropdown';
 
 const Header = ({ title, subtitle, userProfile = null }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -14,7 +14,7 @@ const Header = ({ title, subtitle, userProfile = null }) => {
         const response = await API.get("/announcements/all");
         
         if (response.data.success) {
-          const userObj = JSON.parse(localStorage.getItem("user") || "{}");
+          const userObj = JSON.parse(sessionStorage.getItem("user") || "{}");
           const userId = userObj.id || userObj._id;
           
           // Filter announcements that are not read by this user
@@ -88,42 +88,7 @@ const Header = ({ title, subtitle, userProfile = null }) => {
           <span>{dateString}</span>
         </div>
         
-        <div className="relative" ref={dropdownRef}>
-          <button 
-            onClick={handleNotificationClick}
-            className="relative p-2 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500"
-          >
-            <Bell size={20} />
-            {unreadCount > 0 && (
-              <span className="absolute top-0 right-0 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full border-2 border-white flex items-center justify-center transform translate-x-1 -translate-y-1">
-                {unreadCount}
-              </span>
-            )}
-          </button>
-
-          {/* Notification Dropdown */}
-          {isDropdownOpen && (
-            <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-900 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)] border border-gray-100 dark:border-gray-800 overflow-hidden z-50">
-              <div className="p-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50/50 dark:bg-gray-800/30">
-                <h3 className="font-semibold text-gray-800 dark:text-gray-200">Notifications</h3>
-                <span onClick={markAllAsRead} className="text-xs text-teal-600 font-medium cursor-pointer hover:underline">Mark all as read</span>
-              </div>
-              <div className="max-h-96 overflow-y-auto">
-                {notifications.length > 0 ? notifications.map((notif) => (
-                  <div key={notif._id} onClick={(e) => markAsRead(notif._id, e)} className="p-4 border-b border-gray-50 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors cursor-pointer group">
-                    <p className="text-sm text-gray-800 dark:text-gray-200 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">{notif.title || notif.text}</p>
-                    <p className="text-xs text-gray-500 mt-1">{new Date(notif.publishDate).toLocaleDateString()}</p>
-                  </div>
-                )) : (
-                  <div className="p-4 text-center text-sm text-gray-500">No new notifications</div>
-                )}
-              </div>
-              <div className="p-3 text-center border-t border-gray-100 dark:border-gray-800 bg-gray-50/30 dark:bg-gray-900">
-                <button className="text-sm font-medium text-teal-600 dark:text-teal-500 hover:text-teal-700 dark:hover:text-teal-400 transition-colors">View All Announcements</button>
-              </div>
-            </div>
-          )}
-        </div>
+        <NotificationDropdown />
         
         {/* Header Avatar Fallback */}
         <div className="ml-2">

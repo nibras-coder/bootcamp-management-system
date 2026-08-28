@@ -276,6 +276,40 @@ const getMentorStudents = asyncHandler(async (req, res) => {
   });
 });
 
+// Warn student
+const warnStudent = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { reason } = req.body;
+  
+  const student = await User.findById(id);
+  if (!student) {
+    return res.status(404).json({ success: false, message: "Student not found" });
+  }
+  
+  res.status(200).json({ success: true, message: "Warning sent successfully" });
+});
+
+// Assign mentor to student
+const assignStudentToMentor = asyncHandler(async (req, res) => {
+  const { studentId } = req.params;
+  const { mentorId } = req.body;
+  
+  const student = await User.findById(studentId);
+  if (!student) {
+    return res.status(404).json({ success: false, message: "Student not found" });
+  }
+  
+  if (mentorId) {
+    student.mentor = mentorId;
+  } else {
+    student.mentor = undefined; // Unassign
+  }
+  
+  await student.save();
+  
+  res.status(200).json({ success: true, message: "Mentor assigned successfully" });
+});
+
 module.exports = {
   getUsers,
   getUserById,

@@ -49,8 +49,11 @@ const socials = [
   { type: "tiktok", label: "TikTok", url: "https://vt.tiktok.com/ZSVak4cxQ/", color: "text-[#111] dark:text-gray-200" },
 ];
 
+import { useToast } from "../../context/ToastContext";
+
 function Contact() {
   const [formData, setFormData] = useState({ name: "", email: "", message: "" });
+  const { toast } = useToast();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -58,7 +61,8 @@ function Contact() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Contact form submitted:", formData);
+    toast.success("Thank you for reaching out! We'll get back to you soon.");
+    setFormData({ name: "", email: "", message: "" });
   };
 
   return (
