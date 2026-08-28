@@ -19,6 +19,8 @@ const {
   getBatchStudents,
   deleteBatch,
   updateBatch,
+  toggleCloseRegistration,
+  getPublicBatches,
 } = require("../controllers/batchController");
 
 // Admin
@@ -54,7 +56,21 @@ router.put(
   authorize("admin"),
   updateBatch
 );
-// Authenticated uers
+
+// Toggle close registration
+router.put(
+  "/:id/toggle-registration",
+  protect,
+  authorize("admin"),
+  toggleCloseRegistration
+);
+// Public route - Get active batches for display (must be before /:id)
+router.get(
+  "/public",
+  getPublicBatches
+);
+
+// Authenticated users
 
 // Get all batches
 router.get(

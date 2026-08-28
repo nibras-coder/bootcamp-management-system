@@ -66,6 +66,11 @@ const batchSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+
+    closeRegistration: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

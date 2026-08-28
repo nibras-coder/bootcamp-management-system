@@ -1,6 +1,7 @@
 const Resource = require("../models/Resource");
 const Batch = require("../models/Batch");
 const User = require("../models/User");
+const { notifyNewResource } = require("./notificationController");
 
 // Get resources (filtered by role)
 const getResources = async (req, res) => {
@@ -85,6 +86,14 @@ const createResource = async (req, res) => {
       batch: batch || null,
       uploadedBy: req.user.id,
     });
+
+    // Notify students and mentors about the new resource
+    try {
+      await notifyNewResource(resource._id);
+    } catch (notifyError) {
+      console.error("Failed to send resource notification:", notifyError);
+      // Don't fail the request if notification fails
+    }
 
     const populatedResource = await Resource.findById(resource._id)
       .populate("uploadedBy", "name email role")

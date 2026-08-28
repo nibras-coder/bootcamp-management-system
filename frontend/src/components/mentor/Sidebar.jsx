@@ -15,6 +15,7 @@ import {
   LogOut,
   X,
   MessageSquare,
+  Download,
 } from "lucide-react";
 import API from "../../api/axios";
 import { getSocket } from "../../utils/socket";
@@ -163,6 +164,18 @@ function Sidebar({ isOpen = false, onClose }) {
               </Link>
             );
           })}
+
+          <button
+            type="button"
+            onClick={() => {
+              window.dispatchEvent(new CustomEvent("open-pwa-install"));
+              if (onClose) onClose();
+            }}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-teal-700 dark:text-teal-300 bg-teal-50/70 dark:bg-teal-950/40 hover:bg-teal-100 dark:hover:bg-teal-900/50 transition-colors cursor-pointer border border-teal-200/60 dark:border-teal-800/60"
+          >
+            <Download size={18} className="text-teal-600 dark:text-teal-400" />
+            <span>Download App</span>
+          </button>
         </nav>
 
         {/* Bottom User Card with Logout Below Name */}

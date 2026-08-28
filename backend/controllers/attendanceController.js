@@ -94,10 +94,15 @@ const markAttendance = async (req, res) => {
       // Use student's actual batch if none provided
       const actualBatch = batchId || studentUser.batch;
 
-      // Check duplicate attendance
+      // Check duplicate/existing attendance for that day
+      const startOfDay = new Date(date);
+      startOfDay.setUTCHours(0, 0, 0, 0);
+      const endOfDay = new Date(date);
+      endOfDay.setUTCHours(23, 59, 59, 999);
+
       const existingAttendance = await Attendance.findOne({
         student,
-        date: new Date(date),
+        date: { $gte: startOfDay, $lte: endOfDay },
       });
 
       if (existingAttendance) {

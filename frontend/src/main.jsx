@@ -18,6 +18,13 @@ createRoot(document.getElementById("root")).render(
   </StrictMode>
 );
 
+// Capture PWA Install prompt early so it is never missed
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  window.deferredPWAInstallPrompt = e;
+  window.dispatchEvent(new Event("pwa-prompt-available"));
+});
+
 // Register Service Worker for PWA support
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {

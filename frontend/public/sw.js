@@ -62,9 +62,12 @@ self.addEventListener('fetch', (event) => {
           }
           return response;
         })
-        .catch(() => {
-          // Fallback to cache if network fails
-          return caches.match(request);
+        .catch(async () => {
+          const cached = await caches.match(request);
+          return cached || new Response(JSON.stringify({ message: "Network unavailable" }), {
+            status: 503,
+            headers: { "Content-Type": "application/json" },
+          });
         })
     );
     return;
@@ -102,10 +105,10 @@ self.addEventListener('fetch', (event) => {
           });
           return response;
         })
-        .catch(() => {
-          return caches.match(request).then((cached) => {
-            return cached || caches.match('/');
-          });
+        .catch(async () => {
+          const cached = await caches.match(request);
+          const fallback = cached || (await caches.match('/'));
+          return fallback || new Response('Offline', { status: 503, headers: { 'Content-Type': 'text/plain' } });
         })
     );
     return;
@@ -113,6 +116,9 @@ self.addEventListener('fetch', (event) => {
 
   // ── Default: network with cache fallback ──
   event.respondWith(
-    fetch(request).catch(() => caches.match(request))
+    fetch(request).catch(async () => {
+      const cached = await caches.match(request);
+      return cached || new Response('Network error', { status: 503, headers: { 'Content-Type': 'text/plain' } });
+    })
   );
 });

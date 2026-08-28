@@ -49,7 +49,10 @@ import SettingsPage from "./pages/admin/SettingsPage";
 import ResourcesPage from "./pages/admin/ResourcesPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import StudentDashboard from "./pages/StudentDashboard";
+import StudentNotificationsPage from "./pages/StudentNotificationsPage";
+import MentorNotificationsPage from "./pages/MentorNotificationsPage";
 import MentorsSection from "./components/landing/Mentors";
+import TermsPage from "./pages/TermsPage";
 
 const tracks = [
   {
@@ -358,6 +361,7 @@ function Footer() {
           <a href="/mentors">Mentors</a>
           <a href="/about">About us</a>
           <a href="/contact">Contact</a>
+          <a href="/terms">Terms & Conditions</a>
         </div>
         <div>
           <h4>Account</h4>
@@ -411,6 +415,56 @@ function Button({ children, variant = "primary", onClick, href }) {
 
 function Home() {
   const [faqOpen, setFaqOpen] = useState(null);
+  const [tracks, setTracks] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Fetch real tracks from backend
+    const fetchTracks = async () => {
+      try {
+        const response = await API.get("/batches/public");
+        if (response.data.success) {
+          setTracks(response.data.data || []);
+        }
+      } catch (error) {
+        console.error("Failed to fetch tracks:", error);
+        // Fallback to default tracks if API fails
+        setTracks([
+          {
+            name: "Web Development",
+            track: "Web Dev",
+            startDate: new Date(),
+            isActive: true,
+          },
+          {
+            name: "Mobile Development",
+            track: "Mobile",
+            startDate: new Date(),
+            isActive: true,
+          },
+          {
+            name: "UI/UX Design",
+            track: "Design",
+            startDate: new Date(),
+            isActive: true,
+          },
+          {
+            name: "Data Science",
+            track: "Data",
+            startDate: new Date(),
+            isActive: true,
+          },
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTracks();
+  }, []);
+
+  // Get top 4 tracks
+  const topTracks = tracks.slice(0, 4);
+
   return (
     <>
       <section className="hero">
@@ -438,7 +492,7 @@ function Home() {
             </p>
             <div className="hero-buttons">
               <Button href="/register">Join the next cohort</Button>
-              <Button href="/tracks" variant="outline">
+              <Button href="#tracks" variant="outline">
                 Explore tracks
               </Button>
             </div>
@@ -449,7 +503,7 @@ function Home() {
       <section className="stats">
         <div className="container stats-grid">
           {[
-            ["4", "Learning tracks"],
+            [tracks.length > 0 ? tracks.length : "4", "Learning tracks"],
             ["3 weeks", "Per cohort"],
             ["6+", "Active mentors"],
             ["Free", "For MSJ members"],
@@ -463,18 +517,31 @@ function Home() {
       </section>
 
       <section id="tracks" className="section container">
-        <SectionTitle
-          title="Our tracks"
-          text="Choose one path and go deep. Every track is mentor-led and project-based."
-        />
+        <div className="section-title">
+          <h2>Our tracks</h2>
+          <p>Choose one path and go deep. Every track is mentor-led and project-based.</p>
+        </div>
         <div className="track-grid">
-          {tracks.map((t) => (
-            <article className="card track-card" key={t.slug}>
-              <div className="icon">{t.icon}</div>
-              <h3>{t.name}</h3>
-              <p>{t.desc}</p>
-            </article>
-          ))}
+          {loading ? (
+            <p className="text-gray-500">Loading tracks...</p>
+          ) : topTracks.length > 0 ? (
+            topTracks.map((t) => (
+              <article className="card track-card" key={t._id || t.name}>
+                <div className="icon">
+                  {t.track?.charAt(0).toUpperCase() || t.name?.charAt(0).toUpperCase()}
+                </div>
+                <h3>{t.track || t.name}</h3>
+                <p>{t.name || "Learning track"}</p>
+              </article>
+            ))
+          ) : (
+            <p className="text-gray-500">No active tracks available</p>
+          )}
+        </div>
+        <div className="text-center mt-6">
+          <Button href="/tracks" variant="outline">
+            View All Tracks
+          </Button>
         </div>
       </section>
 
@@ -585,25 +652,53 @@ function PageShell({ title, intro, children }) {
 }
 
 function TracksPage() {
+  const [tracks, setTracks] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTracks = async () => {
+      try {
+        const response = await API.get("/batches/public");
+        if (response.data.success) {
+          setTracks(response.data.data || []);
+        }
+      } catch (error) {
+        console.error("Failed to fetch tracks:", error);
+        setTracks([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTracks();
+  }, []);
+
   return (
     <PageShell
       title="Learning tracks"
       intro="Pick one track per cohort and go deep. Each track runs three weeks of sessions plus a capstone project reviewed by your mentor."
     >
       <div className="large-grid">
-        {tracks.map((t) => (
-          <article className="card large-card" key={t.slug}>
-            <div className="icon">{t.icon}</div>
-            <h2>{t.name}</h2>
-            <p>{t.details}</p>
-            <div className="pills">
-              <span>{t.weeks} weeks</span>
-              <span>{t.level}</span>
-              <span>Capstone project</span>
-            </div>
-            <Button href="/register">Register for this track</Button>
-          </article>
-        ))}
+        {loading ? (
+          <p className="text-gray-500">Loading tracks...</p>
+        ) : tracks.length > 0 ? (
+          tracks.map((t) => (
+            <article className="card large-card" key={t._id || t.name}>
+              <div className="icon">
+                {t.track?.charAt(0).toUpperCase() || t.name?.charAt(0).toUpperCase()}
+              </div>
+              <h2>{t.track || t.name}</h2>
+              <p>{t.name || "Learning track"}</p>
+              <div className="pills">
+                <span>3 weeks</span>
+                <span>Beginner friendly</span>
+                <span>Capstone project</span>
+              </div>
+              <Button href="/register">Register for this track</Button>
+            </article>
+          ))
+        ) : (
+          <p className="text-gray-500">No active tracks available</p>
+        )}
       </div>
     </PageShell>
   );
@@ -799,7 +894,6 @@ function ContactPage() {
           </div>
         </div>
       </div>
-      <PWAInstallButton />
     </PageShell>
   );
 }
@@ -832,6 +926,7 @@ function App() {
   return (
     <>
     <BrowserRouter>
+      <PWAInstallButton />
       <Routes>
         {/* Public Landing Pages wrapped with Header & Footer */}
         <Route element={<PublicLayout />}>
@@ -840,6 +935,7 @@ function App() {
           <Route path="/mentors" element={<PublicMentorsPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
+          <Route path="/terms" element={<TermsPage />} />
         </Route>
 
         {/* Auth Routes (No Header/Footer, utilizing your Custom CSS) */}
@@ -848,8 +944,11 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPage />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
 
-        {/* Student Dashboard */}
+        {/* Student Dashboard & Admissions */}
         <Route path="/student-dashboard/*" element={<ProtectedRoute allowedRoles={["student"]}><StudentDashboard /></ProtectedRoute>} />
+        <Route path="/notifications" element={<ProtectedRoute allowedRoles={["student"]}><StudentNotificationsPage /></ProtectedRoute>} />
+        <Route path="/apply" element={<ProtectedRoute allowedRoles={["student"]}><ApplyPage defaultView="tracks" /></ProtectedRoute>} />
+        <Route path="/applications" element={<ProtectedRoute allowedRoles={["student"]}><ApplyPage defaultView="my-applications" /></ProtectedRoute>} />
 
         {/* Mentor Dashboard */}
         <Route path="/mentor-dashboard/*" element={<ProtectedRoute allowedRoles={["mentor"]}><MentorDashboard /></ProtectedRoute>} />
@@ -864,6 +963,7 @@ function App() {
           <Route path="/resources" element={<Resources />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/notifications" element={<MentorNotificationsPage />} />
         </Route>
 
         

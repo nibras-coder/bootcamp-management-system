@@ -41,6 +41,22 @@ const getUsers = asyncHandler(async (req, res) => {
   });
 });
 
+// Get public mentors (no auth required)
+const getPublicMentors = asyncHandler(async (req, res) => {
+  const mentors = await User.find({ 
+    role: "mentor",
+    isActive: true 
+  })
+    .select("name email mentorRole expertise gender phone")
+    .sort({ createdAt: -1 });
+
+  res.status(200).json({
+    success: true,
+    count: mentors.length,
+    data: mentors,
+  });
+});
+
 // Get one user by ID
 const getUserById = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id)
@@ -320,4 +336,5 @@ module.exports = {
   getMentorStudents,
   warnStudent,
   assignStudentToMentor,
+  getPublicMentors,
 };

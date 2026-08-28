@@ -14,6 +14,8 @@ const ApplicationsPage = () => {
   
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [selectedApp, setSelectedApp] = useState(null);
+  const [existingTrackInfo, setExistingTrackInfo] = useState(null);
+  const [checkingOtherTrack, setCheckingOtherTrack] = useState(false);
 
   useEffect(() => {
     fetchBatches();
@@ -53,6 +55,34 @@ const ApplicationsPage = () => {
     const batch = batches.find(b => b._id === batchId);
     setSelectedBatch(batch);
     fetchApplications(batchId);
+  };
+
+  const checkOtherTrackApplication = async (studentId, currentBatchId) => {
+    setCheckingOtherTrack(true);
+    try {
+      const response = await API.get(`/applications/student/${studentId}`);
+      if (response.data.success) {
+        const otherApps = response.data.data.filter(
+          app => String(app.batch?._id) !== String(currentBatchId) && app.status === "ACCEPTED"
+        );
+        if (otherApps.length > 0) {
+          setExistingTrackInfo(otherApps[0]);
+        } else {
+          setExistingTrackInfo(null);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to check other track applications:", error);
+      setExistingTrackInfo(null);
+    } finally {
+      setCheckingOtherTrack(false);
+    }
+  };
+
+  const handleReview = (app) => {
+    setSelectedApp(app);
+    checkOtherTrackApplication(app.student?._id, app.batch?._id);
+    setIsReviewModalOpen(true);
   };
 
   const filteredApps = applications.filter(app => 
@@ -157,7 +187,7 @@ const ApplicationsPage = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button
-                        onClick={() => { setSelectedApp(app); setIsReviewModalOpen(true); }}
+                        onClick={() => handleReview(app)}
                         className="text-teal-600 hover:text-teal-900 dark:hover:text-teal-400 bg-teal-50 dark:bg-teal-900/20 px-3 py-1.5 rounded-lg inline-flex items-center transition-colors"
                       >
                         <Eye className="w-4 h-4 mr-1" /> Review
@@ -173,9 +203,11 @@ const ApplicationsPage = () => {
 
       <ApplicationReviewModal 
          isOpen={isReviewModalOpen}
-         onClose={() => { setIsReviewModalOpen(false); setSelectedApp(null); }}
+         onClose={() => { setIsReviewModalOpen(false); setSelectedApp(null); setExistingTrackInfo(null); }}
          application={selectedApp}
          batch={selectedBatch}
+         existingTrackInfo={existingTrackInfo}
+         checkingOtherTrack={checkingOtherTrack}
          onReviewed={() => fetchApplications(selectedBatch?._id)}
       />
     </div>

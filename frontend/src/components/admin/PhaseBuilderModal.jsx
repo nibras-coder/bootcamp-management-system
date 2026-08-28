@@ -1,12 +1,22 @@
-import React, { useState } from "react";
-import { Plus, X, ArrowUp, ArrowDown, Trash2 } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Plus, X, ArrowUp, ArrowDown, Trash2, CheckCircle2, Layers } from "lucide-react";
 import API from "../../api/axios";
 import { useToast } from "../../context/ToastContext";
 
 const PhaseBuilderModal = ({ batch, isOpen, onClose, onUpdated }) => {
   const { toast } = useToast();
-  const [phases, setPhases] = useState(batch?.phases || []);
+  const [phases, setPhases] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (batch && isOpen) {
+      if (batch.phases && Array.isArray(batch.phases) && batch.phases.length > 0) {
+        setPhases(JSON.parse(JSON.stringify(batch.phases)));
+      } else {
+        setPhases([]);
+      }
+    }
+  }, [batch, isOpen]);
 
   if (!isOpen) return null;
 

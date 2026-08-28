@@ -9,6 +9,8 @@ import {
   User as UserIcon,
   Edit,
   Layers,
+  Lock,
+  Unlock,
 } from "lucide-react";
 import API from "../../api/axios";
 import { useToast } from "../../context/ToastContext";
@@ -112,6 +114,35 @@ const BatchesPage = () => {
     }
   };
 
+  const handleToggleCloseRegistration = async (batchId, currentStatus) => {
+    const action = currentStatus ? "close" : "open";
+    const ok = await confirm({
+      title: currentStatus ? "Close Registration" : "Open Registration",
+      message: currentStatus 
+        ? "This will stop new applications for this track. Are you sure?"
+        : "This will allow students to apply to this track again. Are you sure?",
+      confirmText: currentStatus ? "Yes, Close" : "Yes, Open",
+      type: currentStatus ? "danger" : "success",
+    });
+    
+    if (ok) {
+      try {
+        const response = await API.put(`/batches/${batchId}/toggle-registration`, {
+          closeRegistration: !currentStatus,
+        });
+        if (response.data.success) {
+          setBatches(batches.map(b => 
+            b._id === batchId ? response.data.data : b
+          ));
+          toast.success(response.data.message);
+        }
+      } catch (error) {
+        console.error("Failed to toggle registration:", error);
+        toast.error(error.response?.data?.message || "Failed to update registration status");
+      }
+    }
+  };
+
   const handleDelete = async (id) => {
     const ok = await confirm({
       title: "Delete Track / Batch",
@@ -187,18 +218,18 @@ const BatchesPage = () => {
             key={batch._id}
             className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-md transition-shadow relative group"
           >
-            {/* Edit & Delete buttons (shows on hover) */}
-            <div className="absolute top-4 right-4 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+            {/* Edit & Delete buttons (always visible) */}
+            <div className="absolute top-4 right-4 flex space-x-2 z-10">
               <button
                 onClick={() => openEditModal(batch)}
-                className="p-1 bg-white dark:bg-gray-800 rounded-md text-gray-400 hover:text-teal-600 hover:bg-teal-50"
+                className="p-2 bg-white dark:bg-gray-800 rounded-md text-gray-400 hover:text-teal-600 hover:bg-teal-50 hover:shadow-sm transition-all"
                 title="Edit batch"
               >
                 <Edit size={16} />
               </button>
               <button
                 onClick={() => handleDelete(batch._id)}
-                className="p-1 bg-white dark:bg-gray-800 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-50"
+                className="p-2 bg-white dark:bg-gray-800 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-50 hover:shadow-sm transition-all"
                 title="Delete batch"
               >
                 <X size={16} />
@@ -246,10 +277,16 @@ const BatchesPage = () => {
                       : batch.instructor || "Not Assigned"}
                   </span>
                 </div>
+                {batch.closeRegistration && (
+                  <div className="flex items-center text-sm text-red-600 dark:text-red-400 font-medium">
+                    <Lock className="w-4 h-4 mr-2" />
+                    <span>Registration Closed</span>
+                  </div>
+                )}
               </div>
             </div>
 
-            <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex space-x-2">
+            <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex items-center justify-between space-x-2">
               <button
                 onClick={() => openBatchDetail(batch)}
                 className="flex-1 text-sm font-medium text-teal-600 hover:text-teal-700 transition-colors"
@@ -261,6 +298,25 @@ const BatchesPage = () => {
                 className="flex-1 flex items-center justify-center text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
               >
                 <Layers className="w-4 h-4 mr-1" /> Phases
+              </button>
+              <button
+                onClick={() => handleToggleCloseRegistration(batch._id, batch.closeRegistration)}
+                className={`flex items-center justify-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  batch.closeRegistration
+                    ? "bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400"
+                    : "bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400"
+                }`}
+                title={batch.closeRegistration ? "Reopen registration" : "Close registration"}
+              >
+                {batch.closeRegistration ? (
+                  <>
+                    <Lock className="w-4 h-4 mr-1" /> Close
+                  </>
+                ) : (
+                  <>
+                    <Unlock className="w-4 h-4 mr-1" /> Open
+                  </>
+                )}
               </button>
             </div>
           </div>
@@ -479,6 +535,31 @@ const BatchesPage = () => {
                   <option value="Completed">Completed</option>
                 </select>
               </div>
+
+              {/* Phases Quick Access inside Edit Modal */}
+              <div className="pt-2 pb-2 border-t border-gray-100 dark:border-gray-700">
+                <div className="flex items-center justify-between p-3 bg-teal-50 dark:bg-teal-900/20 rounded-xl border border-teal-200 dark:border-teal-800">
+                  <div>
+                    <h4 className="text-sm font-bold text-teal-900 dark:text-teal-200 flex items-center gap-1.5">
+                      <Layers size={16} /> Application Phases
+                    </h4>
+                    <p className="text-xs text-teal-700 dark:text-teal-400">
+                      {editingBatch.phases?.length || 0} phase(s) configured. Add or modify phases anytime.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedBatchForPhases(editingBatch);
+                      setIsPhaseModalOpen(true);
+                    }}
+                    className="px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-xs font-semibold transition-colors flex items-center gap-1"
+                  >
+                    <Edit size={12} /> Edit Phases
+                  </button>
+                </div>
+              </div>
+
               <div className="flex justify-end space-x-3 pt-4">
                 <button
                   type="button"
@@ -568,10 +649,12 @@ const BatchesPage = () => {
       {/* Phase Builder Modal */}
       <PhaseBuilderModal 
         isOpen={isPhaseModalOpen}
-        onClose={() => { setIsPhaseModalOpen(false); setSelectedBatchForPhases(null); }}
         batch={selectedBatchForPhases}
+        onClose={() => { setIsPhaseModalOpen(false); setSelectedBatchForPhases(null); }}
         onUpdated={(updatedBatch) => {
-          setBatches(batches.map((b) => (b._id === updatedBatch._id ? updatedBatch : b)));
+          setBatches((prev) => prev.map((b) => (b._id === updatedBatch._id ? updatedBatch : b)));
+          setEditingBatch((prev) => (prev && prev._id === updatedBatch._id ? { ...prev, ...updatedBatch } : prev));
+          setSelectedBatchForPhases(updatedBatch);
         }}
       />
     </div>

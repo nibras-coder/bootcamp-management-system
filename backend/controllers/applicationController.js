@@ -1,6 +1,7 @@
 const Application = require("../models/Application");
 const Batch = require("../models/Batch");
 const User = require("../models/User");
+const { notifyAdminAboutSubmission, notifyStudentAboutReview } = require("./notificationController");
 
 // @desc    Apply to a batch
 // @route   POST /api/applications/apply
@@ -14,6 +15,10 @@ const applyToBatch = async (req, res) => {
     const batch = await Batch.findById(batchId);
     if (!batch || !batch.isActive) {
       return res.status(404).json({ success: false, message: "Batch not found or inactive" });
+    }
+
+    if (batch.closeRegistration) {
+      return res.status(400).json({ success: false, message: "Registration for this track is currently closed." });
     }
 
     // Verify student hasn't already applied
@@ -31,6 +36,14 @@ const applyToBatch = async (req, res) => {
       status: "IN_PROGRESS",
       currentPhaseOrder: 1, // Start at phase 1
     });
+
+    // Notify admin about the new application
+    try {
+      await notifyAdminAboutSubmission(application._id);
+    } catch (notifyError) {
+      console.error("Failed to send admin notification:", notifyError);
+      // Don't fail the request if notification fails
+    }
 
     res.status(201).json({ success: true, message: "Application created successfully", data: application });
   } catch (error) {
@@ -66,6 +79,20 @@ const getMyApplications = async (req, res) => {
   } catch (error) {
     console.error("Get my applications error:", error);
     res.status(500).json({ success: false, message: "Failed to get applications", error: error.message });
+  }
+};
+
+// @desc    Get all applications for a student (for admin to check other tracks)
+// @route   GET /api/applications/student/:studentId
+// @access  Private (Admin)
+const getStudentApplications = async (req, res) => {
+  try {
+    const { studentId } = req.params;
+    const applications = await Application.find({ student: studentId }).populate('batch', 'name track');
+    res.status(200).json({ success: true, data: applications });
+  } catch (error) {
+    console.error("Get student applications error:", error);
+    res.status(500).json({ success: false, message: "Failed to get student applications", error: error.message });
   }
 };
 
@@ -112,10 +139,30 @@ const submitPhase = async (req, res) => {
       return res.status(400).json({ success: false, message: "You have already submitted this phase and it is pending review or approved." });
     }
 
-    // Basic required field validation
-    for (const field of phase.fields) {
-      if (field.required && (!data || data[field.name] === undefined || data[field.name] === "")) {
-         return res.status(400).json({ success: false, message: `Field ${field.name} is required.` });
+    // Robust required field validation
+    for (const field of phase.fields || []) {
+      if (field.required) {
+        let val = data ? data[field.name] : undefined;
+        if (val === undefined && data) {
+          const trimmed = (field.name || "").trim();
+          val = data[trimmed];
+          if (val === undefined) {
+            const matchKey = Object.keys(data).find(
+              (k) => k.trim().toLowerCase() === trimmed.toLowerCase()
+            );
+            if (matchKey) val = data[matchKey];
+          }
+        }
+        if (
+          val === undefined ||
+          val === null ||
+          val === "" ||
+          (typeof val === "string" && !val.trim())
+        ) {
+          return res
+            .status(400)
+            .json({ success: false, message: `Field "${field.name}" is required.` });
+        }
       }
     }
 
@@ -134,6 +181,14 @@ const submitPhase = async (req, res) => {
     }
 
     await application.save();
+
+    // Notify admin about the submission
+    try {
+      await notifyAdminAboutSubmission(application._id);
+    } catch (notifyError) {
+      console.error("Failed to send admin notification:", notifyError);
+      // Don't fail the request if notification fails
+    }
 
     res.status(200).json({ success: true, message: "Phase submitted successfully", data: application });
   } catch (error) {
@@ -218,6 +273,14 @@ const reviewSubmission = async (req, res) => {
 
     await application.save();
 
+    // Notify student about the review
+    try {
+      await notifyStudentAboutReview(application._id, status, reviewNotes);
+    } catch (notifyError) {
+      console.error("Failed to send student notification:", notifyError);
+      // Don't fail the request if notification fails
+    }
+
     res.status(200).json({ success: true, message: `Submission ${status.toLowerCase()}`, data: application });
   } catch (error) {
     console.error("Review submission error:", error);
@@ -225,11 +288,39 @@ const reviewSubmission = async (req, res) => {
   }
 };
 
+// @desc    Upload file for application phase submission
+// @route   POST /api/applications/upload
+// @access  Private (Student)
+const uploadApplicationFile = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: "No file uploaded" });
+    }
+
+    const fileUrl = `/uploads/${req.file.filename}`;
+    res.status(200).json({
+      success: true,
+      message: "File uploaded successfully",
+      data: {
+        url: fileUrl,
+        filename: req.file.originalname,
+        mimetype: req.file.mimetype,
+        size: req.file.size,
+      },
+    });
+  } catch (error) {
+    console.error("Upload application file error:", error);
+    res.status(500).json({ success: false, message: "Failed to upload file", error: error.message });
+  }
+};
+
 module.exports = {
   applyToBatch,
   getMyApplication,
   getMyApplications,
+  getStudentApplications,
   submitPhase,
   getBatchApplications,
-  reviewSubmission
+  reviewSubmission,
+  uploadApplicationFile,
 };
