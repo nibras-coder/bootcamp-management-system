@@ -32,6 +32,7 @@ function ResetPassword() {
     try {
       const response = await API.post(`/auth/reset-password/${token}`, formData);
       setSuccess(true);
+      setTimeout(() => navigate("/login"), 3000);
     } catch (err) {
       setError(err.response?.data?.message || "Failed to reset password. The link might be invalid or expired.");
     } finally {

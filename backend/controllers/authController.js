@@ -209,7 +209,8 @@ const forgotPassword = async (req, res) => {
     
     await user.save({ validateBeforeSave: false });
 
-    const resetUrl = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
+    const clientUrl = process.env.FRONTEND_URL || process.env.CLIENT_URL || 'http://localhost:5174';
+    const resetUrl = `${clientUrl}/reset-password/${resetToken}`;
 
     try {
       await transporter.sendMail({
@@ -304,8 +305,8 @@ const resetPassword = async (req, res) => {
     user.password = password;
 
     // Clear reset token
-    user.resetPasswordToken = null;
-    user.resetPasswordExpires = null;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
 
     await user.save({ validateBeforeSave: false });
 
