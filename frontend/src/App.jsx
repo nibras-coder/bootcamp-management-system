@@ -7,6 +7,7 @@ import {
   Outlet,
   useNavigate,
   useLocation,
+  Link,
 } from "react-router-dom";
 import "./style.css";
 import API from "./api/axios";
@@ -227,6 +228,9 @@ function Header() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const user = JSON.parse(sessionStorage.getItem("user") || "null");
+  const isAuthenticated = !!user;
+
   useEffect(() => {
     setOpen(false);
   }, [location.pathname]);
@@ -251,6 +255,24 @@ function Header() {
               {label}
             </a>
           ))}
+          {!isAuthenticated && (
+            <>
+              <Link
+                to="/login"
+                className={`${location.pathname === "/login" ? "active" : ""} min-[701px]:hidden dark:text-gray-100 dark:hover:text-teal-400`}
+                onClick={() => setOpen(false)}
+              >
+                Login
+              </Link>
+              <Link
+                to="/register"
+                className={`${location.pathname === "/register" ? "active" : ""} min-[701px]:hidden dark:text-gray-100 dark:hover:text-teal-400`}
+                onClick={() => setOpen(false)}
+              >
+                Register
+              </Link>
+            </>
+          )}
         </nav>
         <div className="nav-actions flex items-center gap-3">
           <button className="ghost-btn" onClick={() => navigate("/login")}>
