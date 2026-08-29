@@ -104,6 +104,7 @@ const getMentorAnnouncements = async (req, res) => {
       $or: [
         { batch: { $in: batchIds } },
         { author: mentorId },
+        { targetAudience: { $in: ["mentors", "all"] } },
       ],
     })
       .populate("batch", "name track")

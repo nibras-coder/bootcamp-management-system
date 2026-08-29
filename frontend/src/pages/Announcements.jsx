@@ -160,7 +160,7 @@ function Announcements() {
                         {item.title}
                       </h3>
                       <span className="text-xs px-2.5 py-0.5 rounded-full bg-teal-50 dark:bg-teal-950 text-teal-700 dark:text-teal-300 font-medium">
-                        {item.batch?.name || item.batch?.track || "Track Broadcast"}
+                        {item.batch?.name || item.batch?.track || (item.targetAudience === 'mentors' ? "Admin Broadcast to Mentors" : "General Broadcast")}
                       </span>
                     </div>
 
@@ -174,20 +174,22 @@ function Announcements() {
                     </div>
                   </div>
 
-                  <button
-                    onClick={() => handleDelete(item._id)}
-                    className="p-1.5 text-gray-400 hover:text-red-500 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                    title="Delete Announcement"
-                  >
-                    <Trash2 size={16} />
-                  </button>
+                  {(!item.targetAudience || item.targetAudience === 'students' || item.author?._id === JSON.parse(sessionStorage.getItem('user') || '{}').id) && (
+                    <button
+                      onClick={() => handleDelete(item._id)}
+                      className="p-1.5 text-gray-400 hover:text-red-500 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                      title="Delete Announcement"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
           </div>
         ) : (
           <div className="py-16 text-center bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-400 text-sm">
-            No announcements published yet. Click "New Announcement" to send one.
+            <p>No recent announcements.</p>
           </div>
         )}
 

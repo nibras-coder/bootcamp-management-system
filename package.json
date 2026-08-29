@@ -5,5 +5,8 @@
   "scripts": {
     "build": "npm run build --prefix frontend",
     "install:all": "npm install --prefix frontend && npm install --prefix backend"
+  },
+  "dependencies": {
+    "resend": "^6.25.0"
   }
 }
