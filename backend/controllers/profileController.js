@@ -7,7 +7,8 @@ const getMyProfile = async (req, res) => {
 
     const user = await User.findById(userId)
       .select("-password")
-      .populate("batch", "name track startDate endDate");
+      .populate("batch", "name track startDate endDate")
+      .populate("mentor", "name email");
 
     if (!user) {
       return res.status(404).json({
@@ -99,7 +100,8 @@ const updateMyProfile = async (req, res) => {
 
     const updated = await User.findById(userId)
       .select("-password")
-      .populate("batch", "name track startDate endDate");
+      .populate("batch", "name track startDate endDate")
+      .populate("mentor", "name email");
 
     res.status(200).json({
       success: true,

@@ -2503,12 +2503,12 @@ export default function StudentDashboard() {
                 <span className="text-xs text-teal-600 dark:text-teal-400 font-semibold block mb-1">
                   Assigned Mentor
                 </span>
-                {profile.mentor?.name ? (
+                {profile.mentor ? (
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-gray-900 dark:text-white">
-                      {profile.mentor.name} ({profile.mentor.email})
+                      {profile.mentor?.name || profile.mentor?.firstName || "No Mentor Assigned"} {profile.mentor?.email ? `(${profile.mentor.email})` : ""}
                     </span>
-                    {profile.mentor.phone && (
+                    {profile.mentor?.phone && (
                       <span className="text-xs text-teal-700 dark:text-teal-300">
                         {profile.mentor.phone}
                       </span>

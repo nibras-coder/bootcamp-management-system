@@ -44,7 +44,7 @@ function Login() {
   return (
     <>
       <PWAInstallButton />
-      <main className="min-h-screen flex flex-col md:flex-row bg-white dark:bg-gray-900">
+      <main className="min-h-[100dvh] overflow-y-auto flex flex-col md:flex-row bg-white dark:bg-gray-900">
 
       {/* Mobile Image (Visible only on < 768px) */}
       <div className="w-full h-48 block md:hidden relative order-first">
@@ -67,7 +67,7 @@ function Login() {
       </div>
 
       {/* Form Half (Right) */}
-      <div className="w-full md:w-1/2 flex items-center justify-center p-6 sm:p-12">
+      <div className="w-full md:w-1/2 flex items-center justify-center p-6 pb-24 sm:p-12 md:pb-12">
         <div className="max-w-md w-full space-y-8">
           <div className="text-center md:text-left">
 
