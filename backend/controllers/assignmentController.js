@@ -52,7 +52,7 @@ const createAssignment = async (req, res) => {
       title,
       description: description || "",
       instructions: instructions || "",
-      batch: batch || null,
+      batch: batch === "all" ? null : (batch || null),
       createdBy: mentorId,
       deadline,
       maxScore: maxScore !== undefined ? maxScore : 100,
@@ -363,7 +363,7 @@ const updateAssignment = async (req, res) => {
     }
 
     if (batch !== undefined) {
-      assignment.batch = batch;
+      assignment.batch = batch === "all" ? null : batch;
     }
 
     if (deadline !== undefined) {

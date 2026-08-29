@@ -175,21 +175,9 @@ function StudentSidebar({ mobileOpen, onClose, collapsed, onCollapse, unreadComm
             );
           })}
 
-          <button
-            type="button"
-            className="student-nav-item"
-            title={collapsed ? "Download App" : undefined}
-            onClick={() => {
-              window.dispatchEvent(new CustomEvent("open-pwa-install"));
-              onClose();
-            }}
-          >
-            <Download size={19} />
-            {!collapsed && <span>Download App</span>}
-          </button>
+
+
         </nav>
-
-
         <div className="student-sidebar-bottom">
           <div className="student-user-card">
             <div className="student-user-mini">

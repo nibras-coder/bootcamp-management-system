@@ -255,7 +255,7 @@ function Header() {
           <button className="ghost-btn" onClick={() => navigate("/login")}>
             Login
           </button>
-          <button className="small-btn" onClick={() => navigate("/register")}>
+          <button className="small-btn !bg-[#0b746d] !text-white hover:!bg-[#075f5a]" onClick={() => navigate("/register")}>
             Register
           </button>
         </div>
@@ -384,12 +384,12 @@ function Footer() {
   );
 }
 
-function Button({ children, variant = "primary", onClick, href }) {
+function Button({ children, variant = "primary", onClick, href, className = "" }) {
   const navigate = useNavigate();
   if (href)
     return (
       <a
-        className={`btn ${variant}`}
+        className={`btn ${variant} ${className}`.trim()}
         href={href}
         onClick={(e) => {
           if (href.startsWith("#")) {
@@ -407,7 +407,7 @@ function Button({ children, variant = "primary", onClick, href }) {
       </a>
     );
   return (
-    <button className={`btn ${variant}`} onClick={onClick}>
+    <button className={`btn ${variant} ${className}`.trim()} onClick={onClick}>
       {children}
     </button>
   );
@@ -467,6 +467,7 @@ function Home() {
 
   return (
     <>
+      <PWAInstallButton />
       <section className="hero">
         <img
           className="hero-image"
@@ -491,8 +492,8 @@ function Home() {
               sisters.
             </p>
             <div className="hero-buttons">
-              <Button href="/register">Join the next cohort</Button>
-              <Button href="#tracks" variant="outline">
+              <Button href="/register" className="!bg-[#0b746d] !border-[#0b746d] !text-white hover:!bg-[#075f5a] hover:!border-[#075f5a]">Join the next cohort</Button>
+              <Button href="#tracks" variant="outline" className="!bg-transparent !border-[#0b746d] !text-[#0b746d] hover:!bg-[#dfeeed]">
                 Explore tracks
               </Button>
             </div>
@@ -926,7 +927,6 @@ function App() {
   return (
     <>
     <BrowserRouter>
-      <PWAInstallButton />
       <Routes>
         {/* Public Landing Pages wrapped with Header & Footer */}
         <Route element={<PublicLayout />}>

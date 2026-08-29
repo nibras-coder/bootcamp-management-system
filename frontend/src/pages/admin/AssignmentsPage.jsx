@@ -53,7 +53,7 @@ const AssignmentsPage = () => {
     try {
       const payload = {
         title: newAssignment.title,
-        batch: newAssignment.batch,
+        batch: newAssignment.batch === "all" || newAssignment.batch === "" ? null : newAssignment.batch,
         deadline: newAssignment.deadline,
         maxScore: newAssignment.maxScore,
         description: newAssignment.description || newAssignment.title,
@@ -84,9 +84,10 @@ const AssignmentsPage = () => {
     e.preventDefault();
     if (!editingAssignment) return;
     try {
+      const batchVal = editingAssignment.batch?._id || editingAssignment.batch;
       const payload = {
         title: editingAssignment.title,
-        batch: editingAssignment.batch?._id || editingAssignment.batch,
+        batch: batchVal === "all" || batchVal === "" ? null : batchVal,
         deadline: editingAssignment.deadline,
         maxScore: editingAssignment.maxScore,
         description: editingAssignment.description,
@@ -294,6 +295,7 @@ const AssignmentsPage = () => {
                   className="w-full px-3 py-2 border rounded-lg focus:ring-teal-500"
                 >
                   <option value="">Select Track...</option>
+                  <option value="all">All</option>
                   {batches.map((b) => (
                     <option key={b._id} value={b._id}>
                       {b.name || b.track}
@@ -421,6 +423,7 @@ const AssignmentsPage = () => {
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                 >
                   <option value="">Select Track...</option>
+                  <option value="all">All</option>
                   {batches.map((b) => (
                     <option key={b._id} value={b._id}>
                       {b.name || b.track}

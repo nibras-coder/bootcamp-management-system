@@ -1,14 +1,19 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import loginBg from "../assets/login-bg.jpg";
+import loginMobileBg from "../assets/image_mobile.png";
 import calligraphy from "../assets/calligraphy.jpg";
 import logo from "../assets/logo.png";
 import API from "../api/axios";
-
+import PWAInstallButton from "../components/PWAInstallButton";
 function Login() {
   const navigate = useNavigate();
+  
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
   const [showPassword, setShowPassword] = useState(false);
-  const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -37,17 +42,28 @@ function Login() {
   };
 
   return (
-    <main className="min-h-screen flex flex-col md:flex-row bg-white dark:bg-gray-900">
+    <>
+      <PWAInstallButton />
+      <main className="min-h-screen flex flex-col md:flex-row bg-white dark:bg-gray-900">
 
-      {/* Image Half (Left) */}
-      <div className="hidden md:block w-full md:w-1/2 relative">
+      {/* Mobile Image (Visible only on < 768px) */}
+      <div className="w-full h-48 block md:hidden relative order-first">
+        <img
+          src={loginMobileBg}
+          alt="Login Background Mobile"
+          className="absolute inset-0 w-full h-full object-cover object-top"
+        />
+        <div className="absolute inset-0 bg-teal-900/20 mix-blend-multiply" />
+      </div>
+
+      {/* Desktop Image Half (Visible only on >= 768px) */}
+      <div className="hidden md:block w-full md:w-1/2 relative order-first">
         <img
           src={loginBg}
           alt="Login Background"
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-cover md:object-center"
         />
         <div className="absolute inset-0 bg-teal-900/20 mix-blend-multiply" />
-
       </div>
 
       {/* Form Half (Right) */}
@@ -144,6 +160,7 @@ function Login() {
       </div>
 
     </main>
+    </>
   );
 }
 

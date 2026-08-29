@@ -205,70 +205,49 @@ const forgotPassword = async (req, res) => {
       .digest("hex");
 
     user.resetPasswordToken = hashedToken;
+    user.resetPasswordExpires = Date.now() + 15 * 60 * 1000;
+    
+    await user.save({ validateBeforeSave: false });
 
-    // Token expires after 15 minutes
-    user.resetPasswordExpires =
-      Date.now() + 15 * 60 * 1000;
+    const resetUrl = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
 
-    await user.save();
+    try {
+      await transporter.sendMail({
+        from: process.env.EMAIL_USER,
+        to: user.email,
+        subject: "Bootcamp Management System - Password Reset",
+        html: `
+          <h2>Password Reset</h2>
+          <p>Hello ${user.name},</p>
+          <p>You requested to reset your password.</p>
+          <p>Click the button below to create a new password:</p>
+          <a href="${resetUrl}" style="display:inline-block; padding:12px 20px; background:#2563eb; color:white; text-decoration:none; border-radius:6px;">
+            Reset Password
+          </a>
+          <p>This link expires in 15 minutes.</p>
+          <p>If you didn't request this, you can ignore this email.</p>
+        `,
+      });
 
-    const resetUrl =
-      `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
+      res.status(200).json({
+        message: "If an account with that email exists, a password reset link has been sent.",
+      });
+    } catch (emailError) {
+      console.error("FORGOT PASSWORD CRASH:", emailError);
 
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: user.email,
-      subject: "Bootcamp Management System - Password Reset",
-      html: `
-        <h2>Password Reset</h2>
+      user.resetPasswordToken = undefined;
+      user.resetPasswordExpires = undefined;
+      await user.save({ validateBeforeSave: false });
 
-        <p>Hello ${user.name},</p>
-
-        <p>
-          You requested to reset your password.
-        </p>
-
-        <p>
-          Click the button below to create a new password:
-        </p>
-
-        <a
-          href="${resetUrl}"
-          style="
-            display:inline-block;
-            padding:12px 20px;
-            background:#2563eb;
-            color:white;
-            text-decoration:none;
-            border-radius:6px;
-          "
-        >
-          Reset Password
-        </a>
-
-        <p>
-          This link expires in 15 minutes.
-        </p>
-
-        <p>
-          If you didn't request this, you can ignore this email.
-        </p>
-      `,
-    });
-
-    res.status(200).json({
-      message:
-        "If an account with that email exists, a password reset link has been sent.",
-    });
+      return res.status(500).json({
+        message: emailError.message,
+      });
+    }
   } catch (error) {
-    console.error(
-      "Forgot password error:",
-      error
-    );
+    console.error("FORGOT PASSWORD CRASH:", error);
 
     res.status(500).json({
-      message:
-        "Unable to process password reset request",
+      message: error.message,
     });
   }
 };
@@ -321,17 +300,14 @@ const resetPassword = async (req, res) => {
       });
     }
 
-    // Hash new password
-    user.password = await bcrypt.hash(
-      password,
-      10
-    );
+    // Update password (pre-save hook will hash it)
+    user.password = password;
 
     // Clear reset token
     user.resetPasswordToken = null;
     user.resetPasswordExpires = null;
 
-    await user.save();
+    await user.save({ validateBeforeSave: false });
 
     res.status(200).json({
       message:

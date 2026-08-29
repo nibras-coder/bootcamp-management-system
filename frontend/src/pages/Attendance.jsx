@@ -217,7 +217,7 @@ function Attendance() {
       }
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to save attendance records");
-      console.error("Save attendance error:", err);
+      console.error("Save attendance error:", err.response?.data || err);
     } finally {
       setSaving(false);
     }

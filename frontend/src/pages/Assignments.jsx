@@ -34,10 +34,15 @@ function Assignments() {
         setAssignments(asgRes.data.data || []);
       }
       if (batchRes.data.success) {
-        const list = batchRes.data.data || [];
+        const fetchedTracks = batchRes.data.data || [];
+        console.log("Fetched mentor tracks:", fetchedTracks);
+        
+        const allOption = { _id: "all", name: "All Tracks / Open" };
+        const list = [allOption, ...fetchedTracks];
+        
         setBatches(list);
-        if (list.length > 0 && !formData.batch) {
-          setFormData((prev) => ({ ...prev, batch: list[0]._id }));
+        if (!formData.batch) {
+          setFormData((prev) => ({ ...prev, batch: "all" }));
         }
       }
     } catch (err) {
@@ -69,7 +74,7 @@ function Assignments() {
     setFormData({
       title: assignment.title || "",
       description: assignment.description || "",
-      batch: assignment.batch?._id || assignment.batch || "",
+      batch: assignment.batch?._id || assignment.batch || "all",
       deadline: assignment.deadline ? assignment.deadline.split("T")[0] : "",
       maxScore: assignment.maxScore || 100,
       link: assignment.link || "",
@@ -87,7 +92,7 @@ function Assignments() {
     try {
       const payload = {
         ...formData,
-        batch: formData.batch || null,
+        batch: formData.batch === "all" ? null : (formData.batch || null),
       };
       if (editingAssignment) {
         const res = await API.put(`/assignments/${editingAssignment._id}`, payload);
@@ -285,7 +290,6 @@ function Assignments() {
                     onChange={(e) => setFormData({ ...formData, batch: e.target.value })}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-teal-500"
                   >
-                    <option value="">All Tracks / Open</option>
                     {batches.map((b) => (
                       <option key={b._id} value={b._id}>
                         {b.name || b.track}

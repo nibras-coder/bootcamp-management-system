@@ -5,8 +5,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import calligraphy from "../assets/calligraphy.jpg";
 import registrationBg from "../assets/registration-bg.jpg";
+import loginMobileBg from "../assets/image_mobile.png";
 import logo from "../assets/logo.png";
 import API from "../api/axios";
+import PWAInstallButton from "../components/PWAInstallButton";
 
 // Zod Schema
 const registerSchema = z
@@ -91,7 +93,9 @@ function Register() {
   };
 
   return (
-    <main className="min-h-screen flex flex-col md:flex-row bg-white dark:bg-gray-900">
+    <>
+      <PWAInstallButton />
+      <main className="min-h-screen flex flex-col md:flex-row bg-white dark:bg-gray-900">
 
       {/* Form Half */}
       <div className="w-full md:w-1/2 flex items-center justify-center p-6 sm:p-12">
@@ -235,16 +239,27 @@ function Register() {
         </div>
       </div>
 
-      {/* Image Half */}
-      <div className="hidden md:block w-full md:w-1/2 relative">
+      {/* Mobile Image Half (< 768px) */}
+      <div className="block md:hidden w-full h-48 relative order-first md:order-last">
+        <img
+          src={loginMobileBg}
+          alt="Registration Background Mobile"
+          className="absolute inset-0 w-full h-full object-cover object-top"
+        />
+        <div className="absolute inset-0 bg-teal-900/20 mix-blend-multiply" />
+      </div>
+
+      {/* Desktop Image Half (>= 768px) */}
+      <div className="hidden md:block w-full md:w-1/2 relative order-first md:order-last">
         <img
           src={registrationBg}
           alt="Registration Background"
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-cover object-center"
         />
         <div className="absolute inset-0 bg-teal-900/20 mix-blend-multiply" />
       </div>
     </main>
+    </>
   );
 }
 

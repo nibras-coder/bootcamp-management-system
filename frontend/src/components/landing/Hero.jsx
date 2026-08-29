@@ -37,10 +37,10 @@ const Hero = () => {
           {/* Buttons */}
           <div className="mt-8 flex flex-wrap gap-4">
             <button className="bg-[#0f766e] text-white px-7 py-3.5 rounded-lg font-semibold hover:bg-[#115e59] transition duration-300 shadow-lg">
-              Get Started
+              Join the next cohort
             </button>
 
-            <button className="border-2 border-white text-white px-7 py-3.5 rounded-lg font-semibold hover:bg-white dark:bg-gray-800 hover:text-[#0f766e] transition duration-300">
+            <button className="bg-transparent border-2 border-white text-white px-7 py-3.5 rounded-lg font-semibold hover:bg-white hover:text-[#0f766e] transition duration-300">
               Explore Tracks
             </button>
           </div>

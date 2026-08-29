@@ -105,22 +105,32 @@ const markAttendance = async (req, res) => {
         date: { $gte: startOfDay, $lte: endOfDay },
       });
 
-      if (existingAttendance) {
-        // Option 1: skip or update. Let's just update if it already exists for this bulk approach
-        existingAttendance.status = status;
-        if (note) existingAttendance.note = note;
-        await existingAttendance.save();
-        savedRecords.push(existingAttendance);
-      } else {
-        const attendance = await Attendance.create({
-          student,
-          batch: actualBatch,
-          date: new Date(date),
-          status,
-          note,
-          markedBy: mentorId,
-        });
-        savedRecords.push(attendance);
+      try {
+        if (existingAttendance) {
+          // Option 1: skip or update. Let's just update if it already exists for this bulk approach
+          existingAttendance.status = status;
+          if (note) existingAttendance.note = note;
+          await existingAttendance.save();
+          savedRecords.push(existingAttendance);
+        } else {
+          // Ensure actualBatch is provided, otherwise Mongo will throw validation error
+          if (!actualBatch) {
+            errors.push({ student, message: "Student has no assigned batch, and no batch was selected" });
+            continue;
+          }
+          const attendance = await Attendance.create({
+            student,
+            batch: actualBatch,
+            date: new Date(date),
+            status,
+            note,
+            markedBy: mentorId,
+          });
+          savedRecords.push(attendance);
+        }
+      } catch (recordError) {
+        console.error("Error saving attendance for student", student, recordError.message);
+        errors.push({ student, message: recordError.message });
       }
     }
 
