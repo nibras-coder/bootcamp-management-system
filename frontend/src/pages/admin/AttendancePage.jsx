@@ -267,12 +267,13 @@ const AttendancePage = () => {
             />
           </div>
         </div>
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="border-b border-gray-200 dark:border-gray-700">
-              <th className="px-6 py-3 text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
-                Student
-              </th>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b border-gray-200 dark:border-gray-700">
+                <th className="px-6 py-3 text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
+                  Student
+                </th>
               <th className="px-6 py-3 text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
                 Track
               </th>
@@ -332,6 +333,7 @@ const AttendancePage = () => {
               ))}
           </tbody>
         </table>
+        </div>
         {records.length === 0 && (
           <div className="p-8 text-center text-gray-500">
             No attendance records found for this date.

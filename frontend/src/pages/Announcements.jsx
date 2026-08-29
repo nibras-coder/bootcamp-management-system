@@ -25,7 +25,7 @@ function Announcements() {
     try {
       const [annRes, batchRes] = await Promise.all([
         API.get("/announcements"),
-        API.get("/batches/my-batches"),
+        API.get("/batches"),
       ]);
       if (annRes.data.success) {
         setAnnouncements(annRes.data.data || []);

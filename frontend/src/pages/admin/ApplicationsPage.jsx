@@ -25,10 +25,11 @@ const ApplicationsPage = () => {
     try {
       const response = await API.get("/batches");
       if (response.data.success) {
-        setBatches(response.data.data);
-        if (response.data.data.length > 0) {
-           setSelectedBatch(response.data.data[0]);
-           fetchApplications(response.data.data[0]._id);
+        const batchesData = [{ _id: "all", name: "All Tracks" }, ...response.data.data];
+        setBatches(batchesData);
+        if (batchesData.length > 0) {
+           setSelectedBatch(batchesData[0]);
+           fetchApplications(batchesData[0]._id);
         }
       }
     } catch (error) {
@@ -106,10 +107,7 @@ const ApplicationsPage = () => {
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Admission Applications</h1>
-          <p className="text-gray-500 dark:text-gray-400">Review student applications phase by phase.</p>
-        </div>
+
         
         <div className="flex space-x-2">
            <select 

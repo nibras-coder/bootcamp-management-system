@@ -1,10 +1,9 @@
 const nodemailer = require("nodemailer");
 
+console.log("Checking Env Variables - User:", process.env.EMAIL_USER ? "Loaded" : "MISSING", "Pass:", process.env.EMAIL_PASS ? "Loaded" : "MISSING");
+
 const transporter = nodemailer.createTransport({
-  service: "gmail",
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
+  service: 'gmail',
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,

@@ -25,24 +25,23 @@ const createAnnouncement = async (req, res) => {
       });
     }
 
+    let actualBatch = batch === "all" ? null : (batch || null);
+
     if (req.user.role !== 'admin') {
-      if (!batch) {
-        return res.status(400).json({
-          success: false,
-          message: "Batch is required to create an announcement.",
+      if (!actualBatch) {
+        // Mentors posting global announcements
+      } else {
+        const mentorBatch = await Batch.findOne({
+          _id: actualBatch,
+          mentors: req.user.id,
         });
-      }
 
-      const mentorBatch = await Batch.findOne({
-        _id: batch,
-        mentors: req.user.id,
-      });
-
-      if (!mentorBatch) {
-        return res.status(403).json({
-          success: false,
-          message: "You cannot create announcements or assignments for a batch you do not mentor.",
-        });
+        if (!mentorBatch) {
+          return res.status(403).json({
+            success: false,
+            message: "You cannot create announcements or assignments for a batch you do not mentor.",
+          });
+        }
       }
     }
 
@@ -52,7 +51,7 @@ const createAnnouncement = async (req, res) => {
         content,
         targetAudience:
           targetAudience || "students",
-        batch: batch || null,
+        batch: actualBatch,
         author: mentorId,
         publishDate:
           publishDate || new Date(),
@@ -278,6 +277,12 @@ const updateAnnouncement = async (
     if (req.user.role !== "admin") {
       const isAuthor = String(announcement.author) === String(mentorId);
       if (!isAuthor) {
+        if (!announcement.batch) {
+          return res.status(403).json({
+            success: false,
+            message: "You cannot update this announcement",
+          });
+        }
         const mentorBatch = await Batch.findOne({
           _id: announcement.batch,
           mentors: mentorId,
@@ -373,6 +378,12 @@ const deleteAnnouncement = async (
     if (req.user.role !== "admin") {
       const isAuthor = String(announcement.author) === String(mentorId);
       if (!isAuthor) {
+        if (!announcement.batch) {
+          return res.status(403).json({
+            success: false,
+            message: "You cannot delete this announcement",
+          });
+        }
         const mentorBatch = await Batch.findOne({
           _id: announcement.batch,
           mentors: mentorId,

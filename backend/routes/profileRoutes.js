@@ -4,6 +4,7 @@ const {
   getMyProfile,
   updateProfilePhoto,
   updateMyProfile,
+  updatePassword,
 } = require("../controllers/profileController");
 
 const {
@@ -37,6 +38,13 @@ router.patch(
   "/photo",
   protect,
   updateProfilePhoto
+);
+
+// Update password
+router.put(
+  "/password",
+  protect,
+  updatePassword
 );
 
 module.exports = router;

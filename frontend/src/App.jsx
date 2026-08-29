@@ -235,7 +235,9 @@ function Header() {
     <header className="header">
       <div className="nav container">
         <Logo />
-        <nav className={`nav-links ${open ? "open" : ""} dark:max-[700px]:bg-gray-900 dark:max-[700px]:!border-gray-800`}>
+        <nav
+          className={`nav-links ${open ? "open" : ""} dark:max-[700px]:bg-gray-900 dark:max-[700px]:!border-gray-800`}
+        >
           {navItems.map(([path, label]) => (
             <a
               key={path}
@@ -251,11 +253,13 @@ function Header() {
           ))}
         </nav>
         <div className="nav-actions flex items-center gap-3">
-          
           <button className="ghost-btn" onClick={() => navigate("/login")}>
             Login
           </button>
-          <button className="small-btn !bg-[#0b746d] !text-white hover:!bg-[#075f5a]" onClick={() => navigate("/register")}>
+          <button
+            className="small-btn !bg-[#0b746d] !text-white hover:!bg-[#075f5a]"
+            onClick={() => navigate("/register")}
+          >
             Register
           </button>
         </div>
@@ -301,10 +305,10 @@ function SocialIcon({ type }) {
     ),
   };
   return (
-    <svg 
-      viewBox="0 0 24 24" 
-      aria-hidden="true" 
-      className={`w-[21px] h-[21px] fill-current ${type === 'tiktok' ? 'drop-shadow-[1px_1px_0_#fe2c55] drop-shadow-[-1px_-1px_0_#25f4ee]' : ''}`}
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      className={`w-[21px] h-[21px] fill-current ${type === "tiktok" ? "drop-shadow-[1px_1px_0_#fe2c55] drop-shadow-[-1px_-1px_0_#25f4ee]" : ""}`}
     >
       {paths[type]}
     </svg>
@@ -384,7 +388,13 @@ function Footer() {
   );
 }
 
-function Button({ children, variant = "primary", onClick, href, className = "" }) {
+function Button({
+  children,
+  variant = "primary",
+  onClick,
+  href,
+  className = "",
+}) {
   const navigate = useNavigate();
   if (href)
     return (
@@ -477,7 +487,9 @@ function Home() {
         <div className="hero-fade" />
         <div className="container hero-inner">
           <div className="hero-copy">
-            <div className="arabic text-gray-600 dark:text-gray-300">بسم الله الرحمن الرحيم</div>
+            <div className="arabic text-gray-600 dark:text-gray-300">
+              بسم الله الرحمن الرحيم
+            </div>
             <div className="arabic-rule">
               <span></span>۞<span></span>
             </div>
@@ -492,8 +504,17 @@ function Home() {
               sisters.
             </p>
             <div className="hero-buttons">
-              <Button href="/register" className="!bg-[#0b746d] !border-[#0b746d] !text-white hover:!bg-[#075f5a] hover:!border-[#075f5a]">Join the next cohort</Button>
-              <Button href="#tracks" variant="outline" className="!bg-transparent !border-[#0b746d] !text-[#0b746d] hover:!bg-[#dfeeed]">
+              <Button
+                href="/register"
+                className="!bg-[#0b746d] !border-[#0b746d] !text-white hover:!bg-[#075f5a] hover:!border-[#075f5a]"
+              >
+                Join the next cohort
+              </Button>
+              <Button
+                href="#tracks"
+                variant="outline"
+                className="!bg-transparent !border-[#0b746d] !text-[#0b746d] hover:!bg-[#dfeeed]"
+              >
                 Explore tracks
               </Button>
             </div>
@@ -520,7 +541,10 @@ function Home() {
       <section id="tracks" className="section container">
         <div className="section-title">
           <h2>Our tracks</h2>
-          <p>Choose one path and go deep. Every track is mentor-led and project-based.</p>
+          <p>
+            Choose one path and go deep. Every track is mentor-led and
+            project-based.
+          </p>
         </div>
         <div className="track-grid">
           {loading ? (
@@ -529,7 +553,8 @@ function Home() {
             topTracks.map((t) => (
               <article className="card track-card" key={t._id || t.name}>
                 <div className="icon">
-                  {t.track?.charAt(0).toUpperCase() || t.name?.charAt(0).toUpperCase()}
+                  {t.track?.charAt(0).toUpperCase() ||
+                    t.name?.charAt(0).toUpperCase()}
                 </div>
                 <h3>{t.track || t.name}</h3>
                 <p>{t.name || "Learning track"}</p>
@@ -624,7 +649,9 @@ function MentorCard({ m }) {
       <div className="w-16 h-16 bg-teal-100 text-teal-700 rounded-full flex items-center justify-center text-xl font-bold mb-4">
         {getInitials(m.name)}
       </div>
-      <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-1">{m.name}</h3>
+      <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-1">
+        {m.name}
+      </h3>
       <span className="text-sm font-medium text-teal-600 mb-4">{m.role}</span>
       <div className="flex flex-wrap justify-center gap-2">
         {m.expertise.map((skill, index) => (
@@ -685,7 +712,8 @@ function TracksPage() {
           tracks.map((t) => (
             <article className="card large-card" key={t._id || t.name}>
               <div className="icon">
-                {t.track?.charAt(0).toUpperCase() || t.name?.charAt(0).toUpperCase()}
+                {t.track?.charAt(0).toUpperCase() ||
+                  t.name?.charAt(0).toUpperCase()}
               </div>
               <h2>{t.track || t.name}</h2>
               <p>{t.name || "Learning track"}</p>
@@ -920,79 +948,120 @@ function PublicLayout() {
   );
 }
 
-
-
-
 function App() {
   return (
     <>
-    <BrowserRouter>
-      <Routes>
-        {/* Public Landing Pages wrapped with Header & Footer */}
-        <Route element={<PublicLayout />}>
-          <Route path="/" element={<Home />} />
-          <Route path="/tracks" element={<TracksPage />} />
-          <Route path="/mentors" element={<PublicMentorsPage />} />
-          <Route path="/about" element={<AboutPage />} />
-          <Route path="/contact" element={<ContactPage />} />
-          <Route path="/terms" element={<TermsPage />} />
-        </Route>
+      <BrowserRouter>
+        <Routes>
+          {/* Public Landing Pages wrapped with Header & Footer */}
+          <Route element={<PublicLayout />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/tracks" element={<TracksPage />} />
+            <Route path="/mentors" element={<PublicMentorsPage />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/contact" element={<ContactPage />} />
+            <Route path="/terms" element={<TermsPage />} />
+          </Route>
 
-        {/* Auth Routes (No Header/Footer, utilizing your Custom CSS) */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/forgot-password" element={<ForgotPage />} />
-        <Route path="/reset-password/:token" element={<ResetPassword />} />
+          {/* Auth Routes (No Header/Footer, utilizing your Custom CSS) */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPage />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
 
-        {/* Student Dashboard & Admissions */}
-        <Route path="/student-dashboard/*" element={<ProtectedRoute allowedRoles={["student"]}><StudentDashboard /></ProtectedRoute>} />
-        <Route path="/notifications" element={<ProtectedRoute allowedRoles={["student"]}><StudentNotificationsPage /></ProtectedRoute>} />
-        <Route path="/apply" element={<ProtectedRoute allowedRoles={["student"]}><ApplyPage defaultView="tracks" /></ProtectedRoute>} />
-        <Route path="/applications" element={<ProtectedRoute allowedRoles={["student"]}><ApplyPage defaultView="my-applications" /></ProtectedRoute>} />
+          {/* Student Dashboard & Admissions */}
+          <Route
+            path="/student-dashboard/*"
+            element={
+              <ProtectedRoute allowedRoles={["student"]}>
+                <StudentDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/notifications"
+            element={
+              <ProtectedRoute allowedRoles={["student"]}>
+                <StudentNotificationsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/apply"
+            element={
+              <ProtectedRoute allowedRoles={["student"]}>
+                <ApplyPage defaultView="tracks" />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/applications"
+            element={
+              <ProtectedRoute allowedRoles={["student"]}>
+                <ApplyPage defaultView="my-applications" />
+              </ProtectedRoute>
+            }
+          />
 
-        {/* Mentor Dashboard */}
-        <Route path="/mentor-dashboard/*" element={<ProtectedRoute allowedRoles={["mentor"]}><MentorDashboard /></ProtectedRoute>} />
-        <Route element={<ProtectedRoute allowedRoles={["mentor"]} />}>
-          <Route path="/my-students" element={<MyStudents />} />
-          <Route path="/communities" element={<Communities />} />
-          <Route path="/attendance" element={<Attendance />} />
-          <Route path="/progress" element={<Progress />} />
-          <Route path="/assignments" element={<Assignments />} />
-          <Route path="/grading" element={<Grading />} />
-          <Route path="/announcements" element={<Announcements />} />
-          <Route path="/resources" element={<Resources />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/notifications" element={<MentorNotificationsPage />} />
-        </Route>
+          {/* Mentor Dashboard */}
+          <Route
+            path="/mentor-dashboard/*"
+            element={
+              <ProtectedRoute allowedRoles={["mentor"]}>
+                <MentorDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route element={<ProtectedRoute allowedRoles={["mentor"]} />}>
+            <Route path="/my-students" element={<MyStudents />} />
+            <Route path="/communities" element={<Communities />} />
+            <Route path="/attendance" element={<Attendance />} />
+            <Route path="/progress" element={<Progress />} />
+            <Route path="/assignments" element={<Assignments />} />
+            <Route path="/grading" element={<Grading />} />
+            <Route path="/announcements" element={<Announcements />} />
+            <Route path="/resources" element={<Resources />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route
+              path="/notifications"
+              element={<MentorNotificationsPage />}
+            />
+          </Route>
 
-        
-        {/* Admin Routes */}
-        <Route path="/admin" element={<ProtectedRoute allowedRoles={["admin"]}><AdminLayout /></ProtectedRoute>}>
-          <Route index element={<Navigate to="/admin/dashboard" replace />} />
-          <Route path="dashboard" element={<AdminDashboard />} />
-          <Route path="batches" element={<BatchesPage />} />
-          <Route path="applications" element={<ApplicationsPage />} />
-          <Route path="mentors" element={<MentorsPage />} />
-          <Route path="students" element={<StudentsPage />} />
-          <Route path="attendance" element={<AttendancePage />} />
-          <Route path="assignments" element={<AssignmentsPage />} />
-          <Route path="announcements" element={<AnnouncementsPage />} />
-          <Route path="resources" element={<ResourcesPage />} />
-          <Route path="reports" element={<ReportsPage />} />
-          <Route path="settings" element={<SettingsPage />} />
-        </Route>
+          {/* Admin Routes */}
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <AdminLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<Navigate to="/admin/dashboard" replace />} />
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="batches" element={<BatchesPage />} />
+            <Route path="applications" element={<ApplicationsPage />} />
+            <Route path="mentors" element={<MentorsPage />} />
+            <Route path="students" element={<StudentsPage />} />
+            <Route path="attendance" element={<AttendancePage />} />
+            <Route path="assignments" element={<AssignmentsPage />} />
+            <Route path="announcements" element={<AnnouncementsPage />} />
+            <Route path="resources" element={<ResourcesPage />} />
+            <Route path="reports" element={<ReportsPage />} />
+            <Route path="settings" element={<SettingsPage />} />
+          </Route>
 
-        {/* Redirect old dashboard to admin/dashboard */}
-        <Route
-          path="/dashboard"
-          element={<Navigate to="/admindashboard" replace />}
-        />
+          {/* Redirect old dashboard to admin/dashboard */}
+          <Route
+            path="/dashboard"
+            element={<Navigate to="/admindashboard" replace />}
+          />
 
-        {/* Any unknown URL goes back to Login */}
-        <Route path="*" element={<Navigate to="/login" replace />} />
-      </Routes>
-    </BrowserRouter>
+          {/* Any unknown URL goes back to Login */}
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+      </BrowserRouter>
     </>
   );
 }

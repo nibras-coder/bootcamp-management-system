@@ -26,7 +26,6 @@ function MentorCard({ mentor }) {
       <div className="relative mb-5 pt-4 w-full flex justify-center">
         <div className="relative">
           <MentorAvatar name={mentor.name} />
-          <span className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 border-2 border-white dark:border-gray-800 rounded-full z-20"></span>
         </div>
       </div>
 
@@ -86,8 +85,8 @@ function Mentors({ isHighlight = false }) {
     fetchMentors();
   }, []);
 
-  // Show top 4 mentors in highlight mode
-  const displayedMentors = mentors.slice(0, 4);
+  // Show top 4 mentors in highlight mode, otherwise show all
+  const displayedMentors = isHighlight ? mentors.slice(0, 4) : mentors;
 
   const handleViewAll = () => {
     navigate("/mentors");

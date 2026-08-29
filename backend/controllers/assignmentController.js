@@ -27,24 +27,25 @@ const createAssignment = async (req, res) => {
       });
     }
 
+    let actualBatch = batch === "all" ? null : (batch || null);
+
     if (req.user.role !== 'admin') {
-      if (!batch) {
-        return res.status(400).json({
-          success: false,
-          message: "Batch is required to create an assignment.",
+      if (!actualBatch) {
+        // Depending on requirements, mentors might not be allowed to create global assignments,
+        // or they might. Let's assume they can if 'all' is selected.
+        // Wait, the bug description says: "Update the controller to either set track: null for global items"
+      } else {
+        const mentorBatch = await Batch.findOne({
+          _id: actualBatch,
+          mentors: req.user.id,
         });
-      }
 
-      const mentorBatch = await Batch.findOne({
-        _id: batch,
-        mentors: req.user.id,
-      });
-
-      if (!mentorBatch) {
-        return res.status(403).json({
-          success: false,
-          message: "You cannot create announcements or assignments for a batch you do not mentor.",
-        });
+        if (!mentorBatch) {
+          return res.status(403).json({
+            success: false,
+            message: "You cannot create announcements or assignments for a batch you do not mentor.",
+          });
+        }
       }
     }
 
@@ -52,7 +53,7 @@ const createAssignment = async (req, res) => {
       title,
       description: description || "",
       instructions: instructions || "",
-      batch: batch === "all" ? null : (batch || null),
+      batch: actualBatch,
       createdBy: mentorId,
       deadline,
       maxScore: maxScore !== undefined ? maxScore : 100,
@@ -328,6 +329,12 @@ const updateAssignment = async (req, res) => {
     if (req.user.role !== "admin") {
       const isCreator = String(assignment.createdBy) === String(mentorId);
       if (!isCreator) {
+        if (!assignment.batch) {
+          return res.status(403).json({
+            success: false,
+            message: "You cannot update this assignment",
+          });
+        }
         const mentorBatch = await Batch.findOne({
           _id: assignment.batch,
           mentors: mentorId,
@@ -420,6 +427,12 @@ const deleteAssignment = async (req, res) => {
     if (req.user.role !== "admin") {
       const isCreator = String(assignment.createdBy) === String(mentorId);
       if (!isCreator) {
+        if (!assignment.batch) {
+          return res.status(403).json({
+            success: false,
+            message: "You cannot delete this assignment",
+          });
+        }
         const mentorBatch = await Batch.findOne({
           _id: assignment.batch,
           mentors: mentorId,

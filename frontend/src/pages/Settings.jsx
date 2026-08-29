@@ -45,7 +45,7 @@ function Settings() {
     }
   };
 
-  const handlePasswordSubmit = (e) => {
+  const handlePasswordSubmit = async (e) => {
     e.preventDefault();
     if (pwdData.newPassword.length < 6) {
       toast.warning("New password must be at least 6 characters");
@@ -56,12 +56,21 @@ function Settings() {
       return;
     }
     setSavingPwd(true);
-    // Simulate updating password via auth or profile API
-    setTimeout(() => {
+    try {
+      const res = await API.put("/profile/password", {
+        currentPassword: pwdData.currentPassword,
+        newPassword: pwdData.newPassword,
+      });
+      if (res.data.success) {
+        toast.success("Password updated successfully");
+        setPwdData({ currentPassword: "", newPassword: "", confirmPassword: "" });
+      }
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || "Failed to update password";
+      toast.error(errorMessage);
+    } finally {
       setSavingPwd(false);
-      toast.success("Password updated successfully");
-      setPwdData({ currentPassword: "", newPassword: "", confirmPassword: "" });
-    }, 600);
+    }
   };
 
   return (

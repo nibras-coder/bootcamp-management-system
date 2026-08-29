@@ -203,7 +203,8 @@ const submitPhase = async (req, res) => {
 const getBatchApplications = async (req, res) => {
   try {
     const { batchId } = req.params;
-    const applications = await Application.find({ batch: batchId })
+    const query = batchId === "all" ? {} : { batch: batchId };
+    const applications = await Application.find(query)
       .populate('student', 'name email profilePhoto')
       .populate('batch', 'name track')
       .sort({ createdAt: -1 });

@@ -28,7 +28,7 @@ function Assignments() {
     try {
       const [asgRes, batchRes] = await Promise.all([
         API.get("/assignments"),
-        API.get("/batches/my-batches"),
+        API.get("/batches"),
       ]);
       if (asgRes.data.success) {
         setAssignments(asgRes.data.data || []);

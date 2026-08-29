@@ -16,50 +16,55 @@ const AdminLayout = () => {
           subtitle:
             "Welcome back, Admin! Here's what's happening in the bootcamp.",
         };
-      case "/admin-batches":
+      case "/admin/batches":
         return {
           title: "Tracks Management",
           subtitle: "View and manage all bootcamp cohorts",
         };
-      case "/admin-mentors":
+      case "/admin/applications":
+        return {
+          title: "Admission Applications",
+          subtitle: "Review student applications phase by phase",
+        };
+      case "/admin/mentors":
         return {
           title: "Mentors",
           subtitle: "Manage instructors and teaching assistants",
         };
-      case "/admin-students":
+      case "/admin/students":
         return {
           title: "Students",
           subtitle: "Student directory and performance",
         };
-      case "/admin-attendance":
+      case "/admin/attendance":
         return {
           title: "Attendance",
           subtitle: "Track and review daily attendance",
         };
-      case "/admin-assignments":
+      case "/admin/assignments":
         return {
           title: "Assignments",
           subtitle: "Manage tasks, projects, and grading",
         };
-      case "/admin-announcements":
+      case "/admin/announcements":
         return {
           title: "Announcements",
           subtitle: "Broadcast messages to batches",
         };
-      case "/admin-reports":
+      case "/admin/reports":
         return {
           title: "Reports & Analytics",
           subtitle: "Detailed statistics and data exports",
         };
-      case "/admin-settings":
+      case "/admin/settings":
         return {
           title: "Settings",
           subtitle: "System preferences and configurations",
         };
       default:
         return {
-          title: "Admin Dashboard",
-          subtitle: "Bootcamp Management System",
+          title: "",
+          subtitle: "",
         };
     }
   };

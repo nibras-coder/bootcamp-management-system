@@ -215,9 +215,9 @@ function Attendance() {
           setAllAttendanceRecords(refreshRes.data.data);
         }
       }
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to save attendance records");
-      console.error("Save attendance error:", err.response?.data || err);
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to mark attendance");
+      console.error("Save attendance error:", error.response?.data || error);
     } finally {
       setSaving(false);
     }

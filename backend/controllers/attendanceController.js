@@ -78,34 +78,34 @@ const markAttendance = async (req, res) => {
         continue;
       }
 
-      // Verify mentor owns this student (direct OR batch)
-      let studentUser = null;
-      if (userRole === "admin") {
-        studentUser = await User.findById(student);
-      } else {
-        studentUser = await mentorOwnsStudent(mentorId, student);
-      }
-      
-      if (!studentUser) {
-        errors.push({ student, message: "This student is not assigned to you" });
-        continue;
-      }
-
-      // Use student's actual batch if none provided
-      const actualBatch = batchId || studentUser.batch;
-
-      // Check duplicate/existing attendance for that day
-      const startOfDay = new Date(date);
-      startOfDay.setUTCHours(0, 0, 0, 0);
-      const endOfDay = new Date(date);
-      endOfDay.setUTCHours(23, 59, 59, 999);
-
-      const existingAttendance = await Attendance.findOne({
-        student,
-        date: { $gte: startOfDay, $lte: endOfDay },
-      });
-
       try {
+        // Verify mentor owns this student (direct OR batch)
+        let studentUser = null;
+        if (userRole === "admin") {
+          studentUser = await User.findById(student);
+        } else {
+          studentUser = await mentorOwnsStudent(mentorId, student);
+        }
+        
+        if (!studentUser) {
+          errors.push({ student, message: "This student is not assigned to you" });
+          continue;
+        }
+
+        // Use student's actual batch if none provided
+        const actualBatch = batchId || studentUser.batch;
+
+        // Check duplicate/existing attendance for that day
+        const startOfDay = new Date(date);
+        startOfDay.setUTCHours(0, 0, 0, 0);
+        const endOfDay = new Date(date);
+        endOfDay.setUTCHours(23, 59, 59, 999);
+
+        const existingAttendance = await Attendance.findOne({
+          student,
+          date: { $gte: startOfDay, $lte: endOfDay },
+        });
+
         if (existingAttendance) {
           // Option 1: skip or update. Let's just update if it already exists for this bulk approach
           existingAttendance.status = status;
@@ -149,7 +149,7 @@ const markAttendance = async (req, res) => {
       errors: errors.length > 0 ? errors : undefined,
     });
   } catch (error) {
-    console.error("Mark attendance error:", error);
+    console.error(error);
     res.status(500).json({
       success: false,
       message: "Failed to mark attendance",

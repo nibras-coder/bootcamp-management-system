@@ -6,6 +6,7 @@ import API from "../api/axios";
 
 function ForgotPage() {
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState("");
   const [email, setEmail] = useState("");
   const navigate = useNavigate();
 
@@ -76,20 +77,26 @@ function ForgotPage() {
             </div>
           ) : (
             <form 
-              className="mt-8 space-y-6" 
+              className="mt-8 space-y-6"
               onSubmit={async (e) => {
                 e.preventDefault();
+                setError("");
                 if (email.trim()) {
                   try {
                     await API.post("/auth/forgot-password", { email });
                     setSent(true);
                   } catch (err) {
                     console.error("Forgot password error", err);
-                    setSent(true); // Don't leak whether email exists or not
+                    setError(err.response?.data?.message || "Network error: Server disconnected");
                   }
                 }
               }}
             >
+              {error && (
+                <div className="p-3 rounded-md bg-red-50 dark:bg-red-900/30 text-red-800 dark:text-red-300 text-sm">
+                  {error}
+                </div>
+              )}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
                 <input

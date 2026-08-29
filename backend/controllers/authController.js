@@ -240,14 +240,14 @@ const forgotPassword = async (req, res) => {
       await user.save({ validateBeforeSave: false });
 
       return res.status(500).json({
-        message: emailError.message,
+        message: emailError.message || "Failed to process password reset",
       });
     }
   } catch (error) {
     console.error("FORGOT PASSWORD CRASH:", error);
 
     res.status(500).json({
-      message: error.message,
+      message: error.message || "Failed to process password reset",
     });
   }
 };
